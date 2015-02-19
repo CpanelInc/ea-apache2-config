@@ -13,7 +13,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       0%{?dist}
+Release:       1%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -21,6 +21,7 @@ Vendor:        cPanel, Inc.
 Source0:       paths.conf
 #Source1:       README
 #Source2:       LICENSE
+Source5:       ea4_built
 
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:      httpd
@@ -46,6 +47,11 @@ rm -rf %{buildroot}
 # means that we won't be able to clean up after ourselves just yet.
 install -D %{SOURCE0} %{buildroot}/var/cpanel/conf/apache/paths.conf
 
+# place ea4_built.conf
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/ea4_built
+install -m 644 $RPM_SOURCE_DIR/ea4_built \
+    $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/ea4_built
+
 %clean
 rm -rf %{buildroot}
 
@@ -55,8 +61,11 @@ rm -rf %{buildroot}
 %defattr(0640,root,root,0755)
 #%doc README LICENSE
 /var/cpanel/conf/apache/paths.conf
-
+/etc/httpd/conf.d/ea4_built
 
 %changelog
+* Wed Feb 18 2015 Matt Dees <matt.dees@cpanel.ne> - 1.0-1
+- add ea4_built flag file
+
 * Tue Jan 20 2015 S. Kurt Newman <kurt.newman@cpanel.net> - 1.0-0
 - Initial creation
