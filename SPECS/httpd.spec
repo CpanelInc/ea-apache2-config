@@ -13,18 +13,21 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       1%{?dist}
+Release:       2%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
 
 Source0:       paths.conf
-#Source1:       README
-#Source2:       LICENSE
+Source1:       cpanel.default
+Source2:       vhosts.default
+Source3:       vhost.default
+Source4:       ssl_vhost.default
 Source5:       ea4_built
 
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:      httpd
+Requires:      httpd-mpm
 Requires:      %{pkg_name}-runtime = %{version}
 
 %description
@@ -46,6 +49,10 @@ rm -rf %{buildroot}
 # gotta hardcode the path to this file without using a macro.  This also
 # means that we won't be able to clean up after ourselves just yet.
 install -D %{SOURCE0} %{buildroot}/var/cpanel/conf/apache/paths.conf
+install -D %{SOURCE1} %{buildroot}/var/cpanel/templates/apache2_4/cpanel.default
+install %{SOURCE2} %{buildroot}/var/cpanel/templates/apache2_4/vhosts.default
+install %{SOURCE3} %{buildroot}/var/cpanel/templates/apache2_4/vhost.default
+install %{SOURCE4} %{buildroot}/var/cpanel/templates/apache2_4/ssl_vhosts.default
 
 # place ea4_built.conf
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/ea4_built
@@ -59,12 +66,16 @@ rm -rf %{buildroot}
 
 %files runtime
 %defattr(0640,root,root,0755)
-#%doc README LICENSE
 /var/cpanel/conf/apache/paths.conf
+/var/cpanel/templates/apache2_4/*
 /etc/httpd/conf.d/ea4_built
 
 %changelog
-* Wed Feb 18 2015 Matt Dees <matt.dees@cpanel.ne> - 1.0-1
+* Thu Feb 26 2015 Trinity Quirk <trinity.quirk@cpanel.net> - 1.0-2
+- Added cPanel config templates
+- Added dependency on httpd-mpm
+
+* Wed Feb 18 2015 Matt Dees <matt.dees@cpanel.net> - 1.0-1
 - add ea4_built flag file
 
 * Tue Jan 20 2015 S. Kurt Newman <kurt.newman@cpanel.net> - 1.0-0
