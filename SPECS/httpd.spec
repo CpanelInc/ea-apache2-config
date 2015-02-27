@@ -5,7 +5,7 @@
 # this RPM package to be the "shim" that makes Apache and WHM
 # work together.
 
-%global pkg_name httpd24
+%global pkg_name httpd
 
 # do not produce empty debuginfo package
 %global debug_package %{nil}
@@ -13,7 +13,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       2%{?dist}
+Release:       3%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -26,8 +26,8 @@ Source4:       ssl_vhost.default
 Source5:       ea4_built
 
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Requires:      httpd
-Requires:      httpd-mpm
+Requires:      ea-apache2
+Requires:      ea-apache2-mpm
 Requires:      %{pkg_name}-runtime = %{version}
 
 %description
@@ -48,16 +48,17 @@ rm -rf %{buildroot}
 # NOTE: There isn't a (meta) RPM that owns /var/cpanel directory, so.. we
 # gotta hardcode the path to this file without using a macro.  This also
 # means that we won't be able to clean up after ourselves just yet.
-install -D %{SOURCE0} %{buildroot}/var/cpanel/conf/apache/paths.conf
-install -D %{SOURCE1} %{buildroot}/var/cpanel/templates/apache2_4/cpanel.default
-install %{SOURCE2} %{buildroot}/var/cpanel/templates/apache2_4/vhosts.default
-install %{SOURCE3} %{buildroot}/var/cpanel/templates/apache2_4/vhost.default
-install %{SOURCE4} %{buildroot}/var/cpanel/templates/apache2_4/ssl_vhosts.default
+install -D %{SOURCE0} %{buildroot}%{_localstatedir}/cpanel/conf/apache/paths.conf
+install -D %{SOURCE1} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/cpanel.default
+install %{SOURCE2} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/vhosts.default
+install %{SOURCE3} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/vhost.default
+install %{SOURCE4} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ssl_vhosts.default
 
-# place ea4_built.conf
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/ea4_built
-install -m 644 $RPM_SOURCE_DIR/ea4_built \
-    $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/ea4_built
+# place ea4_built
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/apache2/conf.d
+install -m 644 %{SOURCE5} $RPM_BUILD_ROOT%{_sysconfdir}/apache2/conf.d/ea4_built
+
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/apache2/domlogs
 
 %clean
 rm -rf %{buildroot}
@@ -66,11 +67,17 @@ rm -rf %{buildroot}
 
 %files runtime
 %defattr(0640,root,root,0755)
-/var/cpanel/conf/apache/paths.conf
-/var/cpanel/templates/apache2_4/*
-/etc/httpd/conf.d/ea4_built
+%{_localstatedir}/cpanel/conf/apache/paths.conf
+%dir %{_localstatedir}/cpanel/templates/apache2_4
+%{_localstatedir}/cpanel/templates/apache2_4/*
+%{_sysconfdir}/apache2/conf.d/ea4_built
+%dir %{_localstatedir}/log/apache2/domlogs
 
 %changelog
+* Fri Feb 27 2015 Trinity Quirk <trinity.quirk@cpanel.net> - 1.0-3
+- Changed package name to httpd
+- Updated paths.conf to reflect new filesystem layout
+
 * Thu Feb 26 2015 Trinity Quirk <trinity.quirk@cpanel.net> - 1.0-2
 - Added cPanel config templates
 - Added dependency on httpd-mpm
