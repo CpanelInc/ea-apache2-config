@@ -13,7 +13,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       3%{?dist}
+Release:       4%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -26,8 +26,7 @@ Source4:       ssl_vhost.default
 Source5:       ea4_built
 
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Requires:      ea-apache2
-Requires:      ea-apache2-mpm
+Requires:      ea-webserver
 Requires:      %{pkg_name}-runtime = %{version}
 
 %description
