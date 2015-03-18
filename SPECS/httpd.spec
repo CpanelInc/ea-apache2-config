@@ -13,7 +13,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       4%{?dist}
+Release:       5%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -23,7 +23,7 @@ Source1:       cpanel.default
 Source2:       vhosts.default
 Source3:       vhost.default
 Source4:       ssl_vhost.default
-Source5:       ea4_built
+Source5:       is_ea4
 
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:      ea-webserver
@@ -53,9 +53,9 @@ install %{SOURCE2} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/vhos
 install %{SOURCE3} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/vhost.default
 install %{SOURCE4} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ssl_vhosts.default
 
-# place ea4_built
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/apache2/conf.d
-install -m 644 %{SOURCE5} $RPM_BUILD_ROOT%{_sysconfdir}/apache2/conf.d/ea4_built
+# place is_ea4
+mkdir -p $RPM_BUILD_ROOT/var/cpanel/conf
+install -m 644 %{SOURCE5} $RPM_BUILD_ROOT/var/cpanel/conf/is_ea4
 
 mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/apache2/domlogs
 
@@ -69,10 +69,14 @@ rm -rf %{buildroot}
 %{_localstatedir}/cpanel/conf/apache/paths.conf
 %dir %{_localstatedir}/cpanel/templates/apache2_4
 %{_localstatedir}/cpanel/templates/apache2_4/*
-%{_sysconfdir}/apache2/conf.d/ea4_built
+/var/cpanel/conf/is_ea4
 %dir %{_localstatedir}/log/apache2/domlogs
 
 %changelog
+* Tue Mar 17 2015 Dan Muey <dan@cpanel.net> - 1.0-5
+- changed indicator file from conf_dir/ea4_built to /var/cpanel/conf/is_ea4
+- bump version for release
+
 * Fri Feb 27 2015 Trinity Quirk <trinity.quirk@cpanel.net> - 1.0-3
 - Changed package name to httpd
 - Updated paths.conf to reflect new filesystem layout
