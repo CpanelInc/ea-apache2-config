@@ -63,9 +63,6 @@ install -m 644 %{SOURCE5} $RPM_BUILD_ROOT/var/cpanel/conf/is_ea4
 mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/apache2/domlogs
 
 # Install the cache purge trigger
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__
 install -m 755 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/010_purge_cache.pl
 install -m 755 %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
