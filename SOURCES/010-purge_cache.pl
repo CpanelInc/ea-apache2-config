@@ -22,7 +22,7 @@ sub purge_cached_commands {
 
     eval { require '/usr/local/cpanel/Cpanel/CachedCommand/Utils.pm'; };
     if ($@) {
-        print STDERR "Unable to load module:  $!\n";
+        print STDERR "Unable to load module:  $@\n";
         return;
     }
 
