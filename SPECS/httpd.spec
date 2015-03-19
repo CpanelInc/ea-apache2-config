@@ -13,7 +13,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       6%{?dist}
+Release:       7%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -25,6 +25,7 @@ Source3:       vhost.default
 Source4:       ssl_vhost.default
 Source5:       is_ea4
 Source6:       010_purge_cache.pl
+Source7:       070-cloudlinux-cagefs.pl
 
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:      yum-utils
@@ -67,6 +68,7 @@ mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__
 install -m 755 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/010_purge_cache.pl
+install -m 755 %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
 
 %clean
 rm -rf %{buildroot}
@@ -81,8 +83,12 @@ rm -rf %{buildroot}
 /var/cpanel/conf/is_ea4
 %dir %{_localstatedir}/log/apache2/domlogs
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/010_purge_cache.pl
+%attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
 
 %changelog
+* Wed Mar 18 2015  Dan Muey <dan@cpanel.net> - 1.0-7
+- Added the cloudlinux cagefs yum plugin script
+
 * Wed Mar 18 2015 Tim Mullin <tim@cpanel.net> - 1.0-6
 - Added the cache purge yum plugin script
 - bump version for release
