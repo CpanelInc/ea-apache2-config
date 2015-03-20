@@ -6,6 +6,7 @@
 
 use strict;
 use warnings;
+use Cpanel::CachedCommand::Utils ();
 
 #
 # First purge all the CachedCommand caches
@@ -19,12 +20,6 @@ print "Rebuilding global cache\n";
 system('/usr/local/cpanel/bin/build_global_cache');
 
 sub purge_cached_commands {
-
-    eval { require '/usr/local/cpanel/Cpanel/CachedCommand/Utils.pm'; };
-    if ($@) {
-        print STDERR "Unable to load module:  $@\n";
-        return;
-    }
 
     print "Purging all relavant cached command results\n";
 

@@ -28,7 +28,6 @@ Source6:       010-purge_cache.pl
 Source7:       070-cloudlinux-cagefs.pl
 
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Requires:      yum-plugin-cpanel
 Requires:      ea-webserver
 Requires:      %{pkg_name}-runtime = %{version}
 
@@ -41,6 +40,8 @@ Group:     System Environment/Daemons
 Vendor:    cPanel, Inc.
 License:   Apache License 2.0
 Requires:  %{pkg_name} = %{version}
+Requires:  yum-plugin-cpanel
+AutoReq:   no
 
 %description runtime
 Package shipping essential scripts/configurations to work with cPanel & WHM.
