@@ -5,7 +5,8 @@
 # this RPM package to be the "shim" that makes Apache and WHM
 # work together.
 
-%global pkg_name httpd
+%global ns_name  ea
+%global pkg_name %{ns_name}-httpd
 
 # do not produce empty debuginfo package
 %global debug_package %{nil}
@@ -13,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       8%{?dist}
+Release:       10%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -94,6 +95,9 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
 
 %changelog
+* Mon Mar 23 2015 Trinity Quirk <trinity.quirk@cpanel.net> 1.0-10
+- Renamed to ea-httpd*
+
 * Fri Mar 20 2015  Tim Mullin <tim@cpanel.net> 1.0-9
 - Stopped autogenerating "requires" for httpd-runtime
 - Invoking restartsrv_http via a script rather than a symlink
