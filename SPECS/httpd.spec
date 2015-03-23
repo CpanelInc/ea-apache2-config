@@ -25,7 +25,8 @@ Source3:       vhost.default
 Source4:       ssl_vhost.default
 Source5:       is_ea4
 Source6:       010-purge_cache.pl
-Source7:       070-cloudlinux-cagefs.pl
+Source7:       040-restartsrv_httpd.sh
+Source8:       070-cloudlinux-cagefs.pl
 
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:      ea-webserver
@@ -68,10 +69,10 @@ mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILD
 install -m 755 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/010-purge_cache.pl
 ln -sf /usr/local/cpanel/scripts/rebuildhttpdconf $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/020-rebuild-httpdconf
 ln -sf /usr/local/cpanel/scripts/update_apachectl $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/030-update-apachectl
-ln -sf /usr/local/cpanel/scripts/restartsrv_httpd $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/040-restart-httpd
+install -m 755 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/040-restartsrv_httpd.sh
 ln -sf /usr/local/cpanel/scripts/update_apachectl $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/050-update-apachectl
 # 060-symlink-setup will go here - to be done in HB-313
-install -m 755 %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
+install -m 755 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
 
 %clean
 rm -rf %{buildroot}
@@ -88,11 +89,15 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/010-purge_cache.pl
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/020-rebuild-httpdconf
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/030-update-apachectl
-%attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/040-restart-httpd
+%attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/040-restartsrv_httpd.sh
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/050-update-apachectl
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
 
 %changelog
+* Fri Mar 20 2015  Tim Mullin <tim@cpanel.net> 1.0-9
+- Stopped autogenerating "requires" for httpd-runtime
+- Invoking restartsrv_http via a script rather than a symlink
+
 * Thu Mar 19 2015  Tim Mullin <tim@cpanel.net> 1.0-8
 - Added symlinked triggers for apache
 
