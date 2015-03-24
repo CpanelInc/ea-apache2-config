@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       10%{?dist}
+Release:       11%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -28,6 +28,7 @@ Source5:       is_ea4
 Source6:       010-purge_cache.pl
 Source7:       040-restartsrv_httpd.sh
 Source8:       070-cloudlinux-cagefs.pl
+Source9:       ea4_main.default
 
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:      ea-webserver
@@ -58,6 +59,7 @@ install -D %{SOURCE1} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/c
 install %{SOURCE2} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/vhosts.default
 install %{SOURCE3} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/vhost.default
 install %{SOURCE4} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ssl_vhosts.default
+install %{SOURCE9} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ea4_main.default
 
 # place is_ea4
 mkdir -p $RPM_BUILD_ROOT/var/cpanel/conf
@@ -95,6 +97,9 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
 
 %changelog
+* Tue Mar 24 2015 Trinity Quirk <trinity.quirk@cpanel.net> 1.0-11
+- Added ea4_main template, and pointed things back to httpd.conf
+
 * Mon Mar 23 2015 Trinity Quirk <trinity.quirk@cpanel.net> 1.0-10
 - Renamed to ea-httpd*
 
