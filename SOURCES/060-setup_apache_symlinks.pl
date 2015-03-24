@@ -57,12 +57,16 @@ eval {
 
         # Remove the old symlink if one exists
         if ( -l $ea3_confdir ) {
-            unlink($ea3_confdir)
-              or die("Unable unlink $ea3_confdir:  $!");
+            if ( readlink($ea3_confdir) ne $apacheconf->{dir_conf} ) {
+                unlink($ea3_confdir)
+                  or die("Unable unlink $ea3_confdir:  $!");
+            }
         }
 
-        symlink( $apacheconf->{dir_conf}, $ea3_confdir )
-          or die("Unable to symlink $apacheconf->{dir_conf} to $ea3_confdir:  $!");
+        if ( !-l $ea3_confdir ) {
+            symlink( $apacheconf->{dir_conf}, $ea3_confdir )
+              or die("Unable to symlink $apacheconf->{dir_conf} to $ea3_confdir:  $!");
+        }
     }
 
     # Make a symlink from all the old ea3 paths to the new folders
@@ -70,7 +74,7 @@ eval {
 
         # If the old and the new are the same, no symlink required
         if ( $apacheconf->{$key} eq $ea3_paths{$key} ) {
-            print "Source and destination same, $ea3_paths{$key}, no need to link";
+            print "Source and destination same, $ea3_paths{$key}, no need to link\n";
             next;
         }
 
@@ -82,9 +86,15 @@ eval {
 
         # If a symlink already exists, it may be old/wrong, remake it
         if ( -l $ea3_paths{$key} ) {
-            print "Previous symlink at $ea3_paths{$key}, unlinking\n";
-            unlink( $ea3_paths{$key} )
-              or die("Unable to unlink $ea3_paths{$key}:  $!");
+            if ( readlink( $ea3_paths{$key} ) ne $apacheconf->{$key} ) {
+                print "Previous symlink at $ea3_paths{$key}, unlinking\n";
+                unlink( $ea3_paths{$key} )
+                  or die("Unable to unlink $ea3_paths{$key}:  $!");
+            }
+            else {
+                print "Link already exists:  $ea3_paths{$key} -> $apacheconf->{$key}\n";
+                next;
+            }
         }
 
         # If we can see the item to be linked, it is likely visible
