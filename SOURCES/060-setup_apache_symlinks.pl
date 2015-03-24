@@ -7,7 +7,6 @@
 use strict;
 use warnings;
 
-use File::Path                  ();
 use Cpanel::ConfigFiles::Apache ();
 
 # Get the paths from the paths.conf file
