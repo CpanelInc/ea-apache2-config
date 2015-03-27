@@ -99,7 +99,6 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
 
 %changelog
-<<<<<<< HEAD
 * Tue Mar 24 2015 Trinity Quirk <trinity.quirk@cpanel.net> 1.0-12
 - Added ea4_main template, and pointed things back to httpd.conf
 
