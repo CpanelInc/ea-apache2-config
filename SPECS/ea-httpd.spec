@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       11%{?dist}
+Release:       12%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -27,8 +27,9 @@ Source4:       ssl_vhost.default
 Source5:       is_ea4
 Source6:       010-purge_cache.pl
 Source7:       040-restartsrv_httpd.sh
-Source8:       070-cloudlinux-cagefs.pl
-Source9:       ea4_main.default
+Source8:       060-setup_apache_symlinks.pl
+Source9:       070-cloudlinux-cagefs.pl
+Source10:      ea4_main.default
 
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:      ea-webserver
@@ -59,7 +60,7 @@ install -D %{SOURCE1} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/c
 install %{SOURCE2} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/vhosts.default
 install %{SOURCE3} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/vhost.default
 install %{SOURCE4} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ssl_vhosts.default
-install %{SOURCE9} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ea4_main.default
+install %{SOURCE10} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ea4_main.default
 
 # place is_ea4
 mkdir -p $RPM_BUILD_ROOT/var/cpanel/conf
@@ -72,10 +73,10 @@ mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILD
 install -m 755 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/010-purge_cache.pl
 ln -sf /usr/local/cpanel/scripts/rebuildhttpdconf $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/020-rebuild-httpdconf
 ln -sf /usr/local/cpanel/scripts/update_apachectl $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/030-update-apachectl
-install -m 755 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/040-restartsrv_httpd.sh
+install -m 755 %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/040-restartsrv_httpd.sh
 ln -sf /usr/local/cpanel/scripts/update_apachectl $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/050-update-apachectl
-# 060-symlink-setup will go here - to be done in HB-313
-install -m 755 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
+install -m 755 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/060-setup_apache_symlinks.pl
+install -m 755 %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
 
 %clean
 rm -rf %{buildroot}
@@ -94,11 +95,16 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/030-update-apachectl
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/040-restartsrv_httpd.sh
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/050-update-apachectl
+%attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/060-setup_apache_symlinks.pl
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
 
 %changelog
-* Tue Mar 24 2015 Trinity Quirk <trinity.quirk@cpanel.net> 1.0-11
+<<<<<<< HEAD
+* Tue Mar 24 2015 Trinity Quirk <trinity.quirk@cpanel.net> 1.0-12
 - Added ea4_main template, and pointed things back to httpd.conf
+
+* Mon Mar 23 2015 Tim Mullin <tim@cpanel.net> 1.0-11
+- Added symlink script
 
 * Mon Mar 23 2015 Trinity Quirk <trinity.quirk@cpanel.net> 1.0-10
 - Renamed to ea-httpd*
