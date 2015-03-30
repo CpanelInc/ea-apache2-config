@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       12%{?dist}
+Release:       13%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -99,6 +99,10 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
 
 %changelog
+* Mon Mar 30 2015 Dan Muey <dan@cpanel.net> - 1.0-13
+- Fixed 060 to not symlink conf dir (specific content already symlinked)
+- consolidated 060's mkdirs and fixed bug w/ error variable
+
 * Tue Mar 24 2015 Trinity Quirk <trinity.quirk@cpanel.net> 1.0-12
 - Added ea4_main template, and pointed things back to httpd.conf
 

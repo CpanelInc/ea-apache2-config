@@ -35,39 +35,14 @@ my %ea3_paths = (
     bin_suexec           => "$ea3_bindir/suexec",
 );
 
-if ( !-d $ea3_basedir ) {
-    if ( !mkdir($ea3_basedir) ) {
-        print STDERR "Unable to create $ea3_basedir:  $1\n";
-        exit 1;
-    }
-}
-
-if ( !-d $ea3_bindir ) {
-    if ( !mkdir($ea3_bindir) ) {
-        print STDERR "Unable to create $ea3_bindir:  $1\n";
-        exit 1;
+for my $dir ( $ea3_basedir, $ea3_bindir, $ea3_confdir ) {
+    next if -d $dir;
+    if ( !mkdir($dir) ) {
+        die "Unable to create $dir: $!\n";
     }
 }
 
 eval {
-    # Link the config directory, this is probably a parent directory to
-    # other items we are linking, we'll set this link up first
-    if ( $apacheconf->{dir_conf} ne $ea3_confdir ) {
-
-        # Remove the old symlink if one exists
-        if ( -l $ea3_confdir ) {
-            if ( readlink($ea3_confdir) ne $apacheconf->{dir_conf} ) {
-                unlink($ea3_confdir)
-                  or die("Unable unlink $ea3_confdir:  $!");
-            }
-        }
-
-        if ( !-l $ea3_confdir ) {
-            symlink( $apacheconf->{dir_conf}, $ea3_confdir )
-              or die("Unable to symlink $apacheconf->{dir_conf} to $ea3_confdir:  $!");
-        }
-    }
-
     # Make a symlink from all the old ea3 paths to the new folders
     foreach my $key ( keys %ea3_paths ) {
 
