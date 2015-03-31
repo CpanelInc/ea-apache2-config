@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       13%{?dist}
+Release:       14%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -30,6 +30,7 @@ Source7:       040-restartsrv_httpd.sh
 Source8:       060-setup_apache_symlinks.pl
 Source9:       070-cloudlinux-cagefs.pl
 Source10:      ea4_main.default
+Source11:      080-phpconf.pl
 
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:      ea-webserver
@@ -77,6 +78,7 @@ install -m 755 %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/po
 ln -sf /usr/local/cpanel/scripts/update_apachectl $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/050-update-apachectl
 install -m 755 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/060-setup_apache_symlinks.pl
 install -m 755 %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
+install -m 755 %{SOURCE11} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/080-phpconf.pl
 
 %clean
 rm -rf %{buildroot}
@@ -97,8 +99,12 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/050-update-apachectl
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/060-setup_apache_symlinks.pl
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
+%attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/080-phpconf.pl
 
 %changelog
+* Mon Mar 30 2015 Dan Muey <dan@cpanel.net> - 1.0-14
+- Added 080-phpconf script
+
 * Mon Mar 30 2015 Dan Muey <dan@cpanel.net> - 1.0-13
 - Fixed 060 to not symlink conf dir (specific content already symlinked)
 - consolidated 060's mkdirs and fixed bug w/ error variable
