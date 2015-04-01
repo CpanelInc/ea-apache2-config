@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       14%{?dist}
+Release:       15%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -102,6 +102,9 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/080-phpconf.pl
 
 %changelog
+* Tue Apr 01 2015 Dan Muey <dan@cpanel.net> - 1.0-15
+- Updated 080 script to not use method that was removed upstream
+
 * Mon Mar 30 2015 Dan Muey <dan@cpanel.net> - 1.0-14
 - Added 080-phpconf script
 
