@@ -1,4 +1,4 @@
-PidFile /var/run/apache2/apache2.pid
+PidFile /var/run/apache2/httpd.pid
 [% IF configured.ip_listen -%]
 [%- FOREACH ip IN configured.ip_listen -%]
 Listen [% ip %]:[% configured.main_port %]
