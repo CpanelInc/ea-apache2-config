@@ -32,6 +32,6 @@ try {
     $php->php_set_system_default_version(%php_settings);
 }
 catch {
-    log->die("$_");    # copy $_ since it can be magical
+    logger->die("$_");    # copy $_ since it can be magical
 }
 

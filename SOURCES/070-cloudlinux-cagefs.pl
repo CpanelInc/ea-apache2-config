@@ -12,7 +12,7 @@ if ( Cpanel::CloudLinux::installed() && _has_lines_matching( '/etc/cagefs/cagefs
     print locale->maketext('Updating the [asis,CloudLinux CageFS] virtual filesystem …') . "\n";
 
     system('/usr/sbin/cagefsctl --update --force-update')
-      && log->warn("/usr/sbin/cagefsctl exited non-zero: $?");
+      && logger->warn("/usr/sbin/cagefsctl exited non-zero: $?");
 
     print "\n";
     print locale->maketext(' … done.') . "\n";
@@ -34,7 +34,7 @@ sub _has_lines_matching {
         return 1 if $matches;
     }
     else {
-        log->warn("Could not read $file: $!");
+        logger->warn("Could not read $file: $!");
     }
 
     return;
