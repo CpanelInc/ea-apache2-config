@@ -29,9 +29,9 @@ for my $ver (@phps) {
 $php_settings{version} = $yaml->{'phpversion'} || $phps[-1];
 
 try {
-    $php->php_set_system_default_version(%php_settings);
+    $php->php_set_system_default_version(%php_settings);    # This can return erroneous results for this script’s puproses. See EA-526 for specifics.
 }
 catch {
-    logger->die("$_");    # copy $_ since it can be magical
+    logger->die("$_");                                      # copy $_ since it can be magical
 }
 
