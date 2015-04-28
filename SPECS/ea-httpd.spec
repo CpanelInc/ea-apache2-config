@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       15%{?dist}
+Release:       16%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -56,7 +56,6 @@ rm -rf %{buildroot}
 # NOTE: There isn't a (meta) RPM that owns /var/cpanel directory, so.. we
 # gotta hardcode the path to this file without using a macro.  This also
 # means that we won't be able to clean up after ourselves just yet.
-install -D %{SOURCE0} %{buildroot}%{_localstatedir}/cpanel/conf/apache/paths.conf
 install -D %{SOURCE1} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/cpanel.default
 install %{SOURCE2} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/vhosts.default
 install %{SOURCE3} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/vhost.default
@@ -64,8 +63,9 @@ install %{SOURCE4} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ssl_
 install %{SOURCE10} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ea4_main.default
 
 # place is_ea4
-mkdir -p $RPM_BUILD_ROOT/var/cpanel/conf
-install -m 644 %{SOURCE5} $RPM_BUILD_ROOT/var/cpanel/conf/is_ea4
+mkdir -p $RPM_BUILD_ROOT/etc/cpanel/ea4
+install -m 644 %{SOURCE5} $RPM_BUILD_ROOT/etc/cpanel/ea4/is_ea4
+install -m 644 %{SOURCE0} $RPM_BUILD_ROOT/etc/cpanel/ea4/paths.conf
 
 mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/apache2/domlogs
 
@@ -87,10 +87,10 @@ rm -rf %{buildroot}
 
 %files runtime
 %defattr(0640,root,root,0755)
-%{_localstatedir}/cpanel/conf/apache/paths.conf
+/etc/cpanel/ea4/paths.conf
 %dir %{_localstatedir}/cpanel/templates/apache2_4
 %{_localstatedir}/cpanel/templates/apache2_4/*
-/var/cpanel/conf/is_ea4
+/etc/cpanel/ea4/is_ea4
 %dir %{_localstatedir}/log/apache2/domlogs
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/010-purge_cache.pl
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/020-rebuild-httpdconf
@@ -102,6 +102,9 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/080-phpconf.pl
 
 %changelog
+* Tue Apr 28 2015 Dan Muey <dan@cpanel.net> - 1.0-16
+- Put paths.conf & is_ea4 in /etc/cpanel/ea4 for non-root users
+
 * Tue Apr 01 2015 Dan Muey <dan@cpanel.net> - 1.0-15
 - Updated 080 script to not use method that was removed upstream
 
