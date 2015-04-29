@@ -4,18 +4,11 @@
 #
 #-------------------------------------------------------------------------------------
 
-# name of the file in the SPECS directory
-SPEC := httpd.spec
+# the upstream project
+OBS_PROJECT := EA4
 
-# name of the file in the SRPMS directory
-SRPM := httpd24-1.0-0.el6.src.rpm
-
-# name of the configuration file in /etc/mock (excluding .cfg)
-CFG := ea4-httpd24-epel-6-x86_64
-
-# inspect build environment (on by default)
-# NOTE: This is useful if you don't want mock to clean up after itself
-CLEAN_ROOT ?= 1
+# the package name in OBS
+OBS_PACKAGE := ea-httpd
 
 #-------------------------------------------------------------------------------------
 #
@@ -23,71 +16,98 @@ CLEAN_ROOT ?= 1
 #
 #-------------------------------------------------------------------------------------
 
+#-------------------------------------------------------------------------------------
+#
+# TODO
+#
+#-------------------------------------------------------------------------------------
+# - Cleaning the OBS target when files are removed from git
+# - Add a obs_dependencies target to rebuild the package and all of it's dependencies
+# - Create a devel RPM that contains all of these Makefile stubs.  This way it's
+#   in one place, instead of being copied everywhere.
+#
+#
+
 #-------------------
 # Variables
 #-------------------
 
-whoami := $(shell whoami)
-
-ifeq (root, $(whoami))
-	MOCK := /usr/bin/mock
-else
-	MOCK := /usr/sbin/mock
+# allow override
+ifndef $(ARCH)
+ARCH := $(shell uname -m)
 endif
 
-CACHE := /var/cache/mock/$(CFG)/root_cache/cache.tar.gz
-MOCK_CFG := /etc/mock/$(CFG).cfg
+ERRMSG := "Please read, https://cpanel.wiki/display/AL/Setting+up+yourself+for+using+OBS"
+OBS_USERNAME := $(shell grep -A5 '[build.dev.cpanel.net]' ~/.oscrc | awk -F= '/user=/ {print $$2}')
+# NOTE: OBS only like ascii alpha-numeric characters
+GIT_BRANCH := $(shell git branch | awk '/^*/ { print $$2 }' | sed -e 's/[^a-z0-9]/_/ig')
+BUILD_TARGET := home:$(OBS_USERNAME):$(OBS_PROJECT):$(GIT_BRANCH)
+OBS_WORKDIR := $(BUILD_TARGET)/$(OBS_PACKAGE)
 
-MOCK_BASE_ARGS := --unpriv
-MOCK_SRPM_ARGS := $(MOCK_BASE_ARGS)
-MOCK_RPM_ARGS := $(MOCK_BASE_ARGS)
-
-ifeq ($(CLEAN_ROOT),0)
-	MOCK_RPM_ARGS := $(MOCK_RPM_ARGS) --no-cleanup-after
-endif
-
-.PHONY: all pristine clean
+.PHONY: all clean local vars chroot obs check build-clean build-init
 
 #-----------------------
 # Primary make targets
 #-----------------------
 
-# (Re)Build SRPMs and RPMs
-all: $(MOCK_CFG) clean make-build
+all: local
 
-# Same as 'all', but also rebuilds all cached data
-pristine: $(MOCK_CFG) clean make-pristine make-build
+clean: build-clean
 
-# Remove per-build temp directory
-clean:
-	rm -rf RPMS SRPMS
-	$(MOCK) -v -r $(CFG) --clean
+# Builds the RPM on your local machine using the OBS infrstructure.
+# This is useful to test before submitting to OBS.
+#
+# For example, if you wanted to build PHP without running tests:
+#	OSC_BUILD_OPTS='--define="runselftest 0"' make local
+local: check
+	make build-init
+	cd OBS/$(OBS_WORKDIR) && osc build $(OSC_BUILD_OPTS) --clean --noverify --disable-debuginfo
+	make build-clean
+
+# Commits local file changes to OBS, and ensures a build is performed.
+obs: check
+	make build-init
+	cd OBS/$(OBS_WORKDIR) && osc addremove -r 2> /dev/null || exit 0
+	cd OBS/$(OBS_WORKDIR) && osc ci -m "Makefile check-in - date($(shell date)) branch($(GIT_BRANCH))"
+	make build-clean
+
+# This allows you to debug your build if it fails by logging into the
+# build environment and letting you manually run commands.
+chroot: check
+	make build-init
+	cd OBS/$(OBS_WORKDIR) && osc chroot --local-package -o CentOS_6.5_standard $(ARCH) $(OBS_PACKAGE)
+	make build-clean
+
+# Debug target: Prints out variables to ensure they're correct
+vars: check
+	@echo "ARCH: $(ARCH)"
+	@echo "OBS_USERNAME: $(OBS_USERNAME)"
+	@echo "GIT_BRANCH: $(GIT_BRANCH)"
+	@echo "BUILD_TARGET: $(BUILD_TARGET)"
+	@echo "OBS_WORKDIR: $(OBS_WORKDIR)"
+	@echo "OBS_PROJECT: $(OBS_PROJECT)"
+	@echo "OBS_PACKAGE: $(OBS_PACKAGE)"
 
 #-----------------------
 # Helper make targets
 #-----------------------
 
-# Remove the root filesystem tarball used for the build environment
-make-pristine:
-	$(MOCK) -v -r $(CFG) --scrub=all
-	rm -rf SRPMS RPMS
+build-init: build-clean
+	mkdir OBS
+	osc branch $(OBS_PROJECT) $(OBS_PACKAGE) $(BUILD_TARGET) $(OBS_PACKAGE) 2>/dev/null || exit 0
+	cd OBS && osc co $(BUILD_TARGET)
+	mv OBS/$(OBS_WORKDIR)/.osc OBS/.osc.proj.$$ && rm -rf OBS/$(OBS_WORKDIR)/* && cp --remove-destination -pr SOURCES/* SPECS/* OBS/$(OBS_WORKDIR) && mv OBS/.osc.proj.$$ OBS/$(OBS_WORKDIR)/.osc
 
-# Build SRPM
-make-srpm-build: $(CACHE)
-	$(MOCK) -v -r $(CFG) $(MOCK_SRPM_ARGS) --resultdir SRPMS --buildsrpm --spec SPECS/$(SPEC) --sources SOURCES
+build-clean:
+	rm -rf OBS
 
-# Build RPMs
-make-rpm-build: $(CACHE)
-	$(MOCK) -v -r $(CFG) $(MOCK_RPM_ARGS) --resultdir RPMS SRPMS/$(SRPM)
+check:
+	@[ -e ~/.oscrc ] || make errmsg
+	@[ -x /usr/bin/osc ] || make errmsg
+	@[ -x /usr/bin/build ] || make errmsg
+	@[ -d .git ] || ERRMSG="This isn't a git repository." make -e errmsg
+	@[ -n "$(ARCH)" ] || ERRMSG="Unable to determine host architecture type using ARCH environment variable" make -e errmsg
 
-# Build both SRPM and RPMs
-make-build: make-srpm-build make-rpm-build
-
-# Create/update the root cache containing chroot env used by mock
-$(CACHE):
-	$(MOCK) -v -r $(CFG) --init --update
-
-# Ensure the mock configuration is installed
-$(MOCK_CFG):
-	sudo cp $(CFG).cfg $@
-
+errmsg:
+	@echo -e "\nERROR: You haven't set up OBS correctly on your machine.\n $(ERRMSG)\n"
+	@exit 1
