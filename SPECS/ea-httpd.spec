@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       16%{?dist}
+Release:       17%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -102,6 +102,9 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/080-phpconf.pl
 
 %changelog
+* Tue May 05 2015 Dan Muey <dan@cpanel.net> - 1.0-17
+- Added TypesConfig for mime types to the template for Apache 2.4
+
 * Tue Apr 28 2015 Dan Muey <dan@cpanel.net> - 1.0-16
 - Put paths.conf & is_ea4 in /etc/cpanel/ea4 for non-root users
 
