@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       18%{?dist}
+Release:       19%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -102,6 +102,10 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/080-phpconf.pl
 
 %changelog
+* Wed May 06 2015 Dan Muey <dan@cpanel.net> - 1.0-19
+- Update license from cpanel to BSD 2-Clause
+- add comment to 040 exlaining why it isn't a symlink
+
 * Wed May 06 2015 Julian Brown <julian.brown@cpanel.net> - 1.0-18
 - Modified template to include CustomLogs
 
