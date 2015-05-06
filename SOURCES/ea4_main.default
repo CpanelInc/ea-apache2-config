@@ -55,6 +55,17 @@ Include "/etc/apache2/conf.d/*.conf"
 [% IF main.minspareservers.item.minspareservers.length %]MinSpareServers [% main.minspareservers.item.minspareservers %][% END %]
 [% IF main.maxspareservers.item.maxspareservers.length %]MaxSpareServers [% main.maxspareservers.item.maxspareservers %][% END %]
 </IfModule>
+
+<IfModule [% main.mainifmodulemodlogconfigc.item.ifmodule %]>
+[% FOREACH dir IN main.ifmodulemodlogconfigc.logformat.items -%]
+    LogFormat [% dir.logformat %]
+[% END -%]
+
+[% FOREACH dir IN main.ifmodulemodlogconfigc.customlog.items -%]
+    CustomLog [% dir.target %] [% dir.format %]
+[% END -%]
+</IfModule>
+
 [% IF main.serverlimit.item.serverlimit.length %]ServerLimit [% main.serverlimit.item.serverlimit %][% END %]
 [% IF main.maxclients.item.maxclients.length %]MaxRequestWorkers [% main.maxclients.item.maxclients %][% END %]
 [% IF main.maxrequestsperchild.item.maxrequestsperchild.length %]MaxConnectionsPerChild [% main.maxrequestsperchild.item.maxrequestsperchild %][% END %]
