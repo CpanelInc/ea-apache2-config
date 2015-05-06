@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       19%{?dist}
+Release:       20%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -45,7 +45,7 @@ Group:     System Environment/Daemons
 Vendor:    cPanel, Inc.
 License:   Apache License 2.0
 Requires:  %{pkg_name} = %{version}
-Requires:  yum-plugin-cpanel
+Requires:  yum-plugin-universal-hooks
 AutoReq:   no
 
 %description runtime
@@ -70,15 +70,15 @@ install -m 644 %{SOURCE0} $RPM_BUILD_ROOT/etc/cpanel/ea4/paths.conf
 mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/apache2/domlogs
 
 # Install the cache purge trigger
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__
-install -m 755 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/010-purge_cache.pl
-ln -sf /usr/local/cpanel/scripts/rebuildhttpdconf $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/020-rebuild-httpdconf
-ln -sf /usr/local/cpanel/scripts/update_apachectl $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/030-update-apachectl
-install -m 755 %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/040-restartsrv_httpd.sh
-ln -sf /usr/local/cpanel/scripts/update_apachectl $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/050-update-apachectl
-install -m 755 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/060-setup_apache_symlinks.pl
-install -m 755 %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
-install -m 755 %{SOURCE11} $RPM_BUILD_ROOT%{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/080-phpconf.pl
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__
+install -m 755 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/010-purge_cache.pl
+ln -sf /usr/local/cpanel/scripts/rebuildhttpdconf $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/020-rebuild-httpdconf
+ln -sf /usr/local/cpanel/scripts/update_apachectl $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/030-update-apachectl
+install -m 755 %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/040-restartsrv_httpd.sh
+ln -sf /usr/local/cpanel/scripts/update_apachectl $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/050-update-apachectl
+install -m 755 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/060-setup_apache_symlinks.pl
+install -m 755 %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
+install -m 755 %{SOURCE11} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/080-phpconf.pl
 
 %clean
 rm -rf %{buildroot}
@@ -92,16 +92,19 @@ rm -rf %{buildroot}
 %{_localstatedir}/cpanel/templates/apache2_4/*
 /etc/cpanel/ea4/is_ea4
 %dir %{_localstatedir}/log/apache2/domlogs
-%attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/010-purge_cache.pl
-%attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/020-rebuild-httpdconf
-%attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/030-update-apachectl
-%attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/040-restartsrv_httpd.sh
-%attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/050-update-apachectl
-%attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/060-setup_apache_symlinks.pl
-%attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
-%attr(0755,root,root) %{_sysconfdir}/yum/cpanel/multi_pkgs/posttrans/ea-__WILDCARD__/080-phpconf.pl
+%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/010-purge_cache.pl
+%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/020-rebuild-httpdconf
+%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/030-update-apachectl
+%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/040-restartsrv_httpd.sh
+%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/050-update-apachectl
+%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/060-setup_apache_symlinks.pl
+%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
+%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/080-phpconf.pl
 
 %changelog
+* Wed May 06 2015 Dan Muey <dan@cpanel.net> - 1.0-20
+- update name of yum-plugin
+
 * Wed May 06 2015 Dan Muey <dan@cpanel.net> - 1.0-19
 - Update license from cpanel to BSD 2-Clause
 - add comment to 040 exlaining why it isn't a symlink
