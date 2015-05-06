@@ -41,6 +41,9 @@ ERRMSG := "Please read, https://cpanel.wiki/display/AL/Setting+up+yourself+for+u
 OBS_USERNAME := $(shell grep -A5 '[build.dev.cpanel.net]' ~/.oscrc | awk -F= '/user=/ {print $$2}')
 # NOTE: OBS only like ascii alpha-numeric characters
 GIT_BRANCH := $(shell git branch | awk '/^*/ { print $$2 }' | sed -e 's/[^a-z0-9]/_/ig')
+ifdef bamboo_repository_git_branch
+GIT_BRANCH := $(bamboo_repository_git_branch)
+endif
 BUILD_TARGET := home:$(OBS_USERNAME):$(OBS_PROJECT):$(GIT_BRANCH)
 OBS_WORKDIR := $(BUILD_TARGET)/$(OBS_PACKAGE)
 
