@@ -8,7 +8,7 @@
 OBS_PROJECT := EA4
 
 # the package name in OBS
-OBS_PACKAGE := ea-httpd
+OBS_PACKAGE := ea-apache2-config
 
 #-------------------------------------------------------------------------------------
 #

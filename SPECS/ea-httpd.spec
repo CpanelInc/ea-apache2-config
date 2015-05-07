@@ -6,7 +6,7 @@
 # work together.
 
 %global ns_name  ea
-%global pkg_name %{ns_name}-httpd
+%global pkg_name %{ns_name}-apache2-config
 
 # do not produce empty debuginfo package
 %global debug_package %{nil}
@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       20%{?dist}
+Release:       21%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -102,6 +102,9 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/080-phpconf.pl
 
 %changelog
+* Mon May 07 2015 Darren Mobley <darren@cpanel.net> 1.0-21
+- Renamed to ea-apache2-config
+
 * Wed May 06 2015 Dan Muey <dan@cpanel.net> - 1.0-20
 - update name of yum-plugin
 
