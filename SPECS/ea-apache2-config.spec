@@ -87,7 +87,7 @@ rm -rf %{buildroot}
 
 %files runtime
 %defattr(0640,root,root,0755)
-/etc/cpanel/ea4/paths.conf
+%attr(0644,root,root) /etc/cpanel/ea4/paths.conf
 %dir %{_localstatedir}/cpanel/templates/apache2_4
 %{_localstatedir}/cpanel/templates/apache2_4/*
 /etc/cpanel/ea4/is_ea4
