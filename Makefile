@@ -52,6 +52,8 @@ BUILD_TARGET := $(OBS_PROJECT)
 else
 BUILD_TARGET := home:$(OBS_USERNAME):$(OBS_PROJECT):$(GIT_BRANCH)
 endif
+# OBS does not support / in branch names
+$(substr /,-,BUILD_TARGET)
 
 OBS_WORKDIR := $(BUILD_TARGET)/$(OBS_PACKAGE)
 
