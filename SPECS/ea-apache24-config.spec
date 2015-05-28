@@ -6,7 +6,7 @@
 # work together.
 
 %global ns_name  ea
-%global pkg_name %{ns_name}-apache2-config
+%global pkg_name %{ns_name}-apache24-config
 
 # do not produce empty debuginfo package
 %global debug_package %{nil}
@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       22%{?dist}
+Release:       23%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -102,6 +102,9 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/080-phpconf.pl
 
 %changelog
+* Thu May 28 2015 Darren Mobley <darren@cpanel.net> 1.0-23
+- Renamed package to ea-apache24-config for granularity
+
 * Mon May 11 2015 Darren Mobley <darren@cpanel.net> 1.0-22
 - Renamed spec file itself to ea-apache2-config.spec
 
