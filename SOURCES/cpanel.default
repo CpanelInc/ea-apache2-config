@@ -111,14 +111,6 @@ StartServers [% main.startservers.item.startservers %]
   MaxSpareServers [% main.maxspareservers.item.maxspareservers %]
 [% END -%]
 </IfModule>
-<IfModule mpm_itk_module>
-[% IF main.minspareservers.item.minspareservers.length -%]
-  MinSpareServers [% main.minspareservers.item.minspareservers %]
-[% END -%]
-[% IF main.maxspareservers.item.maxspareservers.length -%]
-  MaxSpareServers [% main.maxspareservers.item.maxspareservers %]
-[% END -%]
-</IfModule>
 [% IF main.serverlimit.item.serverlimit.length -%]
 ServerLimit [% main.serverlimit.item.serverlimit %]
 [% END -%]
@@ -153,7 +145,7 @@ MaxKeepAliveRequests [% main.maxkeepaliverequests.item.maxkeepaliverequests || 0
   <IfModule mod_ruid2.c>
     UserDir disabled
   </IfModule>
-  <IfModule itk.c>
+  <IfModule mpm_itk.c>
     UserDir disabled
   </IfModule>
 </IfModule>

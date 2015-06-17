@@ -24,7 +24,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
   <IfModule userdir_module>
     UserDir disabled
 [%- IF defaultvhost.userdirprotect != '' %]
-    <IfModule !mpm_itk_module>
+    <IfModule !mpm_itk.c>
       <IfModule !ruid2_module>
         UserDir enabled [% defaultvhost.userdirprotect %]
       </IfModule>
@@ -52,7 +52,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
   <IfModule userdir_module>
     UserDir disabled
 [%- IF defaultvhost.userdirprotect != '' %]
-    <IfModule !mpm_itk_module>
+    <IfModule !mpm_itk.c>
       <IfModule !ruid2_module>
         UserDir enabled [% defaultvhost.userdirprotect %]
       </IfModule>
@@ -120,7 +120,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
       <IfModule userdir_module>
         UserDir disabled
 [%- IF defaultvhost.userdirprotect != '' %]
-        <IfModule !mpm_itk_module>
+        <IfModule !mpm_itk.c>
           <IfModule !ruid2_module>
             UserDir enabled [% defaultvhost.userdirprotect %]
           </IfModule>
@@ -181,7 +181,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
       <IfModule userdir_module>
         UserDir disabled
 [%- IF defaultvhost.userdirprotect != '' %]
-        <IfModule !mpm_itk_module>
+        <IfModule !mpm_itk.c>
           <IfModule !ruid2_module>
             UserDir enabled [% defaultvhost.userdirprotect %]
           </IfModule>

@@ -51,10 +51,6 @@ Include "/etc/apache2/conf.d/*.conf"
 [% IF main.minspareservers.item.minspareservers.length %]MinSpareServers [% main.minspareservers.item.minspareservers %][% END %]
 [% IF main.maxspareservers.item.maxspareservers.length %]MaxSpareServers [% main.maxspareservers.item.maxspareservers %][% END %]
 </IfModule>
-<IfModule itk.c>
-[% IF main.minspareservers.item.minspareservers.length %]MinSpareServers [% main.minspareservers.item.minspareservers %][% END %]
-[% IF main.maxspareservers.item.maxspareservers.length %]MaxSpareServers [% main.maxspareservers.item.maxspareservers %][% END %]
-</IfModule>
 
 <IfModule [% main.mainifmodulemodlogconfigc.item.ifmodule %]>
 [% FOREACH dir IN main.ifmodulemodlogconfigc.logformat.items -%]
@@ -92,7 +88,7 @@ UserDir public_html
 <IfModule mod_ruid2.c>
 UserDir disabled
 </IfModule>
-<IfModule itk.c>
+<IfModule mpm_itk.c>
 UserDir disabled
 </IfModule>
 [% END -%]
@@ -210,7 +206,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
     [%- END %]
     [%- IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' %]
     UserDir disabled
-    [%- IF defaultvhost.userdirprotect != '' && !supported.itk && !supported.mod_ruid2 %]
+    [%- IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 %]
     UserDir enabled [% defaultvhost.userdirprotect %]
     [%- END -%]
     [%- END %]
@@ -231,7 +227,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
     [%- END %]
     [%- IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' %]
     UserDir disabled
-    [%- IF defaultvhost.userdirprotect != '' && !supported.itk && !supported.mod_ruid2 %]
+    [%- IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 %]
     UserDir enabled [% defaultvhost.userdirprotect %]
     [%- END -%]
     [%- END %]
@@ -292,7 +288,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
     [%- END %]
     [%- IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' %]
     UserDir disabled
-    [%- IF defaultvhost.userdirprotect != '' && !supported.itk && !supported.mod_ruid2 %]
+    [%- IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 %]
     UserDir enabled [% defaultvhost.userdirprotect %]
     [%- END -%]
     [%- END %]
@@ -354,7 +350,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
     [%- END %]
     [%- IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' %]
     UserDir disabled
-    [%- IF defaultvhost.userdirprotect != '' && !supported.itk && !supported.mod_ruid2 %]
+    [%- IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 %]
     UserDir enabled [% defaultvhost.userdirprotect %]
     [%- END -%]
     [%- END %]
