@@ -73,6 +73,13 @@ Include "/etc/apache2/conf.d/*.conf"
 [% IF main.keepalivetimeout.item.keepalivetimeout.length %]KeepAliveTimeout [% main.keepalivetimeout.item.keepalivetimeout %][% END %]
 [% IF main.maxkeepaliverequests.item.exists('maxkeepaliverequests') %]MaxKeepAliveRequests [% main.maxkeepaliverequests.item.maxkeepaliverequests || 0 %][% END %]
 
+[% IF main.rlimitcpu.item.softrlimitcpu -%]
+RLimitCPU [% main.rlimitcpu.item.softrlimitcpu %] [% mainrlimitcpu.item.maxrlimitcpu %]
+[% END -%] 
+[% IF main.rlimitmem.item.softrlimitmem -%]
+RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimitmem %]
+[% END -%]
+
 <IfModule mime_module>
   TypesConfig conf/mime.types
   AddType application/x-compress .Z
