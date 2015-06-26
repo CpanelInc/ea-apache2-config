@@ -39,7 +39,7 @@
 [% END -%]
   ## User [% vhost.user %] # Needed for Cpanel::ApacheConf
   <IfModule userdir_module>
-    <IfModule !mpm_itk_module>
+    <IfModule !mpm_itk.c>
       <IfModule !ruid2_module>
 [%- IF userdirprotect_enabled %]
 [%- IF vhost.userdirprotect == '-1' %]
@@ -104,7 +104,7 @@
     RDocumentChRoot /home/virtfs/[% vhost.user %] [% vhost.documentroot %]
 [% END -%]
   </IfModule>
-  <IfModule mpm_itk_module>
+  <IfModule mpm_itk.c>
     # For more information on MPM ITK, please read:
     #   http://mpm-itk.sesse.net/
     AssignUserID [% vhost.user %] [% vhost.group %]
