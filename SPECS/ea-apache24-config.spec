@@ -14,14 +14,14 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       26%{?dist}
+Release:       27%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
 
 Source0:       paths.conf
-Source1:       cpanel.default
-Source2:       vhosts.default
+# Source1: reuse this as needed
+# Source2: reuse this as needed
 Source3:       vhost.default
 Source4:       ssl_vhost.default
 Source5:       is_ea4
@@ -56,10 +56,9 @@ rm -rf %{buildroot}
 # NOTE: There isn't a (meta) RPM that owns /var/cpanel directory, so.. we
 # gotta hardcode the path to this file without using a macro.  This also
 # means that we won't be able to clean up after ourselves just yet.
-install -D %{SOURCE1} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/cpanel.default
-install %{SOURCE2} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/vhosts.default
+mkdir -p %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4
 install %{SOURCE3} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/vhost.default
-install %{SOURCE4} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ssl_vhosts.default
+install %{SOURCE4} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ssl_vhost.default
 install %{SOURCE10} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ea4_main.default
 
 # place is_ea4
@@ -102,6 +101,9 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/500-restartsrv_httpd.sh
 
 %changelog
+* Tue Jun 30 2015 S. Kurt Newman <kurt.newman@cpanel.net> 1.0-27
+- Removed unused Apache templates
+
 * Thu Jun 25 2015 Darren Mobley <darren@cpanel.net> 1.0-26
 - Added rlimitmem and rlimitcpu options to the ea4_main template
 
