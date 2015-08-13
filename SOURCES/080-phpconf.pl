@@ -25,9 +25,13 @@ use Cpanel::DataStore           ();
 use Cpanel::ConfigFiles::Apache ();
 use Cpanel::Lang::PHP::Settings ();
 
-my $php = Cpanel::Lang::PHP::Settings->new();
+my $php  = eval { Cpanel::Lang::PHP::Settings->new(); };         # We silently ignore the “No PHP packages are installed.” exception that this throws because an empty list is not an error
 my @phps = eval { @{ $php->php_get_installed_versions() }; };    # TODO: fix php_get_installed_versions(). We silently ignore the “No PHP packages are installed.” exception that this throws because an empty list is not an error. Unfortunately, any actual errors this throws won’t be catchable until it throws a specific type we can look for and ignore.
+
 if ( !@phps ) {
+    my $apacheconf = Cpanel::ConfigFiles::Apache->new();
+    unlink $apacheconf->file_conf_php_conf() . '.yaml';
+    unlink $apacheconf->file_conf_php_conf();
     print locale->maketext("No PHP packages are installed.") . "\n";
     exit;
 }
