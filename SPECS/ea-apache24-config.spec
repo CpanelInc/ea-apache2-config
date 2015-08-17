@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       29%{?dist}
+Release:       30%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -98,6 +98,9 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/500-restartsrv_httpd.sh
 
 %changelog
+* Mon Aug 17 2015 Trinity Quirk <trinity.quirk@cpanel.net> 1.0-30
+- Added cgi fallback to phpconf hook when suphp is not available
+
 * Mon Aug 17 2015 Darren Mobley <darren@cpanel.net> 1.0-29
 - Remove handling of /etc/cpanel/ea4/is_ea4
 
