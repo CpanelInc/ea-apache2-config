@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       27%{?dist}
+Release:       28%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -24,7 +24,6 @@ Source0:       paths.conf
 # Source2: reuse this as needed
 Source3:       vhost.default
 Source4:       ssl_vhost.default
-Source5:       is_ea4
 Source6:       010-purge_cache.pl
 Source7:       500-restartsrv_httpd.sh
 Source8:       060-setup_apache_symlinks.pl
@@ -61,9 +60,8 @@ install %{SOURCE3} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/vhos
 install %{SOURCE4} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ssl_vhost.default
 install %{SOURCE10} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ea4_main.default
 
-# place is_ea4
+# 
 mkdir -p $RPM_BUILD_ROOT/etc/cpanel/ea4
-install -m 644 %{SOURCE5} $RPM_BUILD_ROOT/etc/cpanel/ea4/is_ea4
 install -m 644 %{SOURCE0} $RPM_BUILD_ROOT/etc/cpanel/ea4/paths.conf
 
 mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/apache2/domlogs
@@ -89,7 +87,6 @@ rm -rf %{buildroot}
 %attr(0644,root,root) /etc/cpanel/ea4/paths.conf
 %dir %{_localstatedir}/cpanel/templates/apache2_4
 %{_localstatedir}/cpanel/templates/apache2_4/*
-/etc/cpanel/ea4/is_ea4
 %dir %{_localstatedir}/log/apache2/domlogs
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/010-purge_cache.pl
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/020-rebuild-httpdconf
@@ -101,6 +98,9 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/500-restartsrv_httpd.sh
 
 %changelog
+* Mon Aug 17 2015 Darren Mobley <darren@cpanel.net> - 1.0-28
+- Remove handling of /etc/cpanel/ea4/is_ea4
+
 * Tue Jun 30 2015 S. Kurt Newman <kurt.newman@cpanel.net> 1.0-27
 - Removed unused Apache templates
 
