@@ -21,9 +21,10 @@
 use strict;
 use Cpanel::Imports;
 use Try::Tiny;
-use Cpanel::DataStore           ();
-use Cpanel::ConfigFiles::Apache ();
-use Cpanel::Lang::PHP::Settings ();
+use Cpanel::AdvConfig::apache::modules ();
+use Cpanel::ConfigFiles::Apache        ();
+use Cpanel::DataStore                  ();
+use Cpanel::Lang::PHP::Settings        ();
 
 my $php  = eval { Cpanel::Lang::PHP::Settings->new(); };         # We silently ignore the “No PHP packages are installed.” exception that this throws because an empty list is not an error
 my @phps = eval { @{ $php->php_get_installed_versions() }; };    # TODO: fix php_get_installed_versions(). We silently ignore the “No PHP packages are installed.” exception that this throws because an empty list is not an error. Unfortunately, any actual errors this throws won’t be catchable until it throws a specific type we can look for and ignore.
@@ -39,9 +40,15 @@ if ( !@phps ) {
 my $apacheconf = Cpanel::ConfigFiles::Apache->new();
 my $yaml       = Cpanel::DataStore::fetch_ref( $apacheconf->file_conf_php_conf() . '.yaml' );
 
+# We can't assume that suphp will always be available.  We'll try to
+# use it if the module is there, but if not, we'll fall back to cgi.
+# Based on the way ea-php* packages install, we can guarantee that cgi
+# will always be available.
+my $handler = ( Cpanel::AdvConfig::apache::modules::is_supported('mod_suphp') ? 'suphp' : 'cgi' );
+
 my %php_settings = ( dryrun => 0 );
 for my $ver (@phps) {
-    $php_settings{$ver} = $yaml->{$ver} || 'suphp';
+    $php_settings{$ver} = $yaml->{$ver} || $handler;
 }
 
 $php_settings{version} = $yaml->{'phpversion'} || $phps[-1];
