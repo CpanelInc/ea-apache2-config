@@ -26,19 +26,22 @@ use Cpanel::ConfigFiles::Apache        ();
 use Cpanel::DataStore                  ();
 use Cpanel::Lang::PHP::Settings        ();
 
-my $php  = eval { Cpanel::Lang::PHP::Settings->new(); };         # We silently ignore the “No PHP packages are installed.” exception that this throws because an empty list is not an error
-my @phps = eval { @{ $php->php_get_installed_versions() }; };    # TODO: fix php_get_installed_versions(). We silently ignore the “No PHP packages are installed.” exception that this throws because an empty list is not an error. Unfortunately, any actual errors this throws won’t be catchable until it throws a specific type we can look for and ignore.
+my $apacheconf = Cpanel::ConfigFiles::Apache->new();
+my ( $php, @phps );
 
-if ( !@phps ) {
-    my $apacheconf = Cpanel::ConfigFiles::Apache->new();
+# If there are no PHPs installed, we could get an exception.
+try {
+    $php = Cpanel::Lang::PHP::Settings->new();
+    @phps = @{ $php->php_get_installed_versions() } or die;
+}
+catch {
     unlink $apacheconf->file_conf_php_conf() . '.yaml';
     unlink $apacheconf->file_conf_php_conf();
     print locale->maketext("No PHP packages are installed.") . "\n";
     exit;
-}
+};
 
-my $apacheconf = Cpanel::ConfigFiles::Apache->new();
-my $yaml       = Cpanel::DataStore::fetch_ref( $apacheconf->file_conf_php_conf() . '.yaml' );
+my $yaml = Cpanel::DataStore::fetch_ref( $apacheconf->file_conf_php_conf() . '.yaml' );
 
 # We can't assume that suphp will always be available.  We'll try to
 # use it if the module is there, but if not, we'll fall back to cgi.
@@ -51,12 +54,29 @@ for my $ver (@phps) {
     $php_settings{$ver} = $yaml->{$ver} || $handler;
 }
 
-$php_settings{version} = $yaml->{'phpversion'} || $phps[-1];
+# Let's make sure that the system default version is still actually
+# installed.  If not, we'll try to set the highest-numbered version
+# that we have.  We are guaranteed to have at least one installed
+# version at this point in the script.
+#
+# It is possible that the system default setting may not match what we
+# got from the YAML file, so let's make sure things are as we expect.
+# System default will take precedence.
+my $sys_default = eval { $php->php_get_system_default_version(); };
+($sys_default) = grep { $_ eq $sys_default } @phps if defined $sys_default;
+
+my $yaml_default = $yaml->{'phpversion'} || undef;
+($yaml_default) = grep { $_ eq $yaml_default } @phps if defined $yaml_default;
+
+# Both vars will be either an installed version, or undef.  Undef can
+# mean that the previously-set version is not installed, or there was
+# no setting in the first place, or there was some other error.
+$php_settings{version} = $sys_default || $yaml_default || $phps[-1];
 
 try {
-    $php->php_set_system_default_version(%php_settings);    # This can return erroneous results for this script’s puproses. See EA-526 for specifics.
+    $php->php_set_system_default_version(%php_settings);
 }
 catch {
-    logger->die("$_");                                      # copy $_ since it can be magical
+    logger->die("$_");    # copy $_ since it can be magical
 }
 

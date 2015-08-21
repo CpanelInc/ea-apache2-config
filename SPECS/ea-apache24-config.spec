@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       30%{?dist}
+Release:       31%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -60,7 +60,7 @@ install %{SOURCE3} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/vhos
 install %{SOURCE4} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ssl_vhost.default
 install %{SOURCE10} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ea4_main.default
 
-# 
+#
 mkdir -p $RPM_BUILD_ROOT/etc/cpanel/ea4
 install -m 644 %{SOURCE0} $RPM_BUILD_ROOT/etc/cpanel/ea4/paths.conf
 
@@ -98,6 +98,9 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/500-restartsrv_httpd.sh
 
 %changelog
+* Fri Aug 21 2015 Trinity Quirk <trinity.quirk@cpanel.net> 1.0-31
+- Added checking in php hook that sysdefault is still installed
+
 * Mon Aug 17 2015 Trinity Quirk <trinity.quirk@cpanel.net> 1.0-30
 - Added cgi fallback to phpconf hook when suphp is not available
 
