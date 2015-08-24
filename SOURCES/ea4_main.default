@@ -190,6 +190,9 @@ AddType application/vnd.wap.wmlscriptc .wmlsc
 [% IF file_test('f', paths.dir_conf_includes _ '/account_suspensions.conf') -%]
 Include "[% paths.dir_conf_includes %]/account_suspensions.conf"
 [% END -%]
+[% IF file_test('f', paths.dir_conf_includes _ '/errordocument.conf') -%]
+Include "[% paths.dir_conf_includes %]/errordocument.conf"
+[% END -%]
 [% IF file_test('f', paths.dir_conf_includes _ '/pre_virtualhost_global.conf') -%]
 Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 [% END -%]
