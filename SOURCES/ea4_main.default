@@ -17,6 +17,12 @@ LogLevel [% main.loglevel.item.loglevel %]
 Include "/etc/apache2/conf.modules.d/*.conf"
 Include "/etc/apache2/conf.d/*.conf"
 
+# Adjust the root directory Options in WHM under 'Apache Configuration' -> 'Global Configuration'
+<Directory "/">
+    AllowOverride All
+    Options [% main.directory.options.item.options %]
+</Directory>
+
 <IfModule alias_module>
   ScriptAliasMatch ^/?controlpanel/?$ /usr/local/cpanel/cgi-sys/redirect.cgi
   ScriptAliasMatch ^/?cpanel/?$ /usr/local/cpanel/cgi-sys/redirect.cgi
