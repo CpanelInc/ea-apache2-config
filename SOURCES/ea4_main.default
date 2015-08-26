@@ -1,4 +1,127 @@
-PidFile /var/run/apache2/httpd.pid
+[%# NOTE: The IF variable.exists() method used throughout this template is to deal with
+    migration from ea3 to ea4.  This should allow pre-existing distillation of variables
+    when the user was on EA3 but didn't use the WHM interfaces to update their httpd.conf.
+    The ELSE clause is there to ensure a default is placed into the configuration regardless
+    of previous distillations and will attempt to use the WHM settings where possible.
+
+    Ideally speaking, the user shouldn't be using previously distilled information since
+    we're moving towards a solution where httpd.conf isn't a database.  However, we're not
+    there yet, so the exists() method is used to ensure easier migration.
+-%]
+Include "[% paths.dir_base %]/conf.modules.d/*.conf"
+
+# Hard-coded default values
+PidFile [% paths.dir_run %]/httpd.pid
+User nobody
+Group nobody
+ExtendedStatus [% IF main.exists('extendedstatus') %][% main.extendedstatus.item.extendedstatus %][% ELSE %]Off[% END %]
+LogLevel [% IF main.exists('loglevel') %][% main.loglevel.item.loglevel %][% ELSE %]warn[% END %]
+
+# Can be set in WHM under 'Basic cPanel & WHM Setup' -> 'Contact Information'
+ServerAdmin [% main.serveradmin.item.serveradmin %]
+
+# Can be set in WHM under 'Networking Setup' => 'Change Hostname'
+ServerName [% wildcard_safe(main.servername.item.servername) %]
+
+# These can be set in WHM under 'Apache Configuration' -> 'Global Configuration'
+[% IF main.exists('traceenable') %]TraceEnable [% main.traceenable.item.traceenable %][% END %]
+[% IF main.exists('serversignature') %]ServerSignature [% main.serversignature.item.serversignature %][% END %]
+[% IF main.exists('servertokens') %]ServerTokens [% main.servertokens.item.servertokens %][% END %]
+[% IF main.exists('fileetag') %]FileETag [% main.fileetag.item.fileetag %][% END %]
+
+<Directory "/">
+    AllowOverride All
+    Options [% main.directory.options.item.options %]
+</Directory>
+
+[% IF main.exists('startservers') %]StartServers [% main.startservers.item.startservers %][% END %]
+<IfModule prefork.c>
+    [% IF main.exists('minspareservers') %]MinSpareServers [% main.minspareservers.item.minspareservers %][% END %]
+    [% IF main.exists('maxspareservers') %]MaxSpareServers [% main.maxspareservers.item.maxspareservers %][% END %]
+</IfModule>
+[% USE Dumper %]
+[% IF main.exists('serverlimit') %]ServerLimit [% main.serverlimit.item.serverlimit %][% END %]
+[% IF main.exists('maxclients') %]MaxRequestWorkers [% main.maxclients.item.maxclients %][% END %]
+[% IF main.exists('maxrequestsperchild') %]MaxConnectionsPerChild [% main.maxrequestsperchild.item.maxrequestsperchild %][% END %]
+[% IF main.exists('keepalive') %]KeepAlive [% main.keepalive.item.keepalive %][% END %]
+[% IF main.exists('keepalivetimeout') %]KeepAliveTimeout [% main.keepalivetimeout.item.keepalivetimeout %][% END %]
+[% IF main.exists('maxkeepaliverequests') %]MaxKeepAliveRequests [% main.maxkeepaliverequests.item.maxkeepaliverequests || 0 %][% END %]
+[% IF main.exists('timeout') %]Timeout [% main.timeout.item.timeout %][% END %]
+
+# DirectoryIndex is set in WHM under 'Apache Configuration' -> 'DirectoryIndex Priority'
+<IfModule dir_module>
+    DirectoryIndex [% main.directoryindex.item.directoryindex %]
+</IfModule>
+
+# Needed by cPanel & WHM
+<IfModule alias_module>
+    ScriptAliasMatch ^/?controlpanel/?$ /usr/local/cpanel/cgi-sys/redirect.cgi
+    ScriptAliasMatch ^/?cpanel/?$ /usr/local/cpanel/cgi-sys/redirect.cgi
+    ScriptAliasMatch ^/?kpanel/?$ /usr/local/cpanel/cgi-sys/redirect.cgi
+    ScriptAliasMatch ^/?securecontrolpanel/?$ /usr/local/cpanel/cgi-sys/sredirect.cgi
+    ScriptAliasMatch ^/?securecpanel/?$ /usr/local/cpanel/cgi-sys/sredirect.cgi
+    ScriptAliasMatch ^/?securewhm/?$ /usr/local/cpanel/cgi-sys/swhmredirect.cgi
+    ScriptAliasMatch ^/?webmail$ /usr/local/cpanel/cgi-sys/wredirect.cgi
+    ScriptAliasMatch ^/?webmail/ /usr/local/cpanel/cgi-sys/wredirect.cgi
+    ScriptAliasMatch ^/?whm/?$ /usr/local/cpanel/cgi-sys/whmredirect.cgi
+
+    Alias /bandwidth /usr/local/bandmin/htdocs/
+    Alias /img-sys /usr/local/cpanel/img-sys/
+    Alias /java-sys /usr/local/cpanel/java-sys/
+    Alias /mailman/archives /usr/local/cpanel/3rdparty/mailman/archives/public/
+    Alias /pipermail /usr/local/cpanel/3rdparty/mailman/archives/public/
+    Alias /sys_cpanel /usr/local/cpanel/sys_cpanel/
+
+    ScriptAlias /cgi-sys /usr/local/cpanel/cgi-sys/
+    ScriptAlias /mailman /usr/local/cpanel/3rdparty/mailman/cgi-bin/
+    ScriptAlias /scgi-bin /usr/local/cpanel/cgi-sys/scgiwrap
+</IfModule>
+
+[% IF file_test('f', '/usr/local/cpanel/bin/leechprotect') -%]
+# Needed by cPanel & WHM
+<IfModule rewrite_module>
+    RewriteEngine on
+    RewriteMap LeechProtect prg:/usr/local/cpanel/bin/leechprotect
+    Mutex file:[% paths.dir_run %] rewrite-map
+</IfModule>
+[% END -%]
+
+<IfModule mime_module>
+    TypesConfig conf/mime.types
+
+    AddType application/x-compress .Z
+    AddType application/x-gzip .gz .tgz
+    AddType text/html .shtml
+    AddType application/x-tar .tgz
+    AddType text/vnd.wap.wml .wml
+    AddType image/vnd.wap.wbmp .wbmp
+    AddType text/vnd.wap.wmlscript .wmls
+    AddType application/vnd.wap.wmlc .wmlc
+    AddType application/vnd.wap.wmlscriptc .wmlsc
+
+    # Needed by WHM
+    AddHandler cgi-script .cgi .pl .plx .ppl .perl
+    AddHandler server-parsed .shtml
+</IfModule>
+
+# cPanel security policy
+<IfModule userdir_module>
+    # Set UserDir directory for all virtual hosts, except when
+    # mod_ruid2 or mpm_itk are loaded
+    UserDir public_html
+
+    <IfModule mod_ruid2.c>
+        UserDir disabled
+    </IfModule>
+    <IfModule mpm_itk.c>
+        UserDir disabled
+    </IfModule>
+</IfModule>
+
+Include "/etc/apache2/conf.d/*.conf"
+
+#---- no longer clean
+
 [% IF configured.ip_listen -%]
 [%- FOREACH ip IN configured.ip_listen -%]
 Listen [% ip %]:[% configured.main_port %]
@@ -7,56 +130,7 @@ Listen [% ip %]:[% configured.main_port %]
 # Defined in /var/cpanel/cpanel.config: apache_port
 Listen [% main.listen.item.listen %]
 [% END -%]
-User [% main.user.item.user %]
-Group [% main.group.item.group %]
-ExtendedStatus [% main.extendedstatus.item.extendedstatus %]
-ServerAdmin [% main.serveradmin.item.serveradmin %]
-ServerName [% wildcard_safe(main.servername.item.servername) %]
-LogLevel [% main.loglevel.item.loglevel %]
 
-Include "/etc/apache2/conf.modules.d/*.conf"
-Include "/etc/apache2/conf.d/*.conf"
-
-# Adjust the root directory Options in WHM under 'Apache Configuration' -> 'Global Configuration'
-<Directory "/">
-    AllowOverride All
-    Options [% main.directory.options.item.options %]
-</Directory>
-
-<IfModule alias_module>
-  ScriptAliasMatch ^/?controlpanel/?$ /usr/local/cpanel/cgi-sys/redirect.cgi
-  ScriptAliasMatch ^/?cpanel/?$ /usr/local/cpanel/cgi-sys/redirect.cgi
-  ScriptAliasMatch ^/?kpanel/?$ /usr/local/cpanel/cgi-sys/redirect.cgi
-  ScriptAliasMatch ^/?securecontrolpanel/?$ /usr/local/cpanel/cgi-sys/sredirect.cgi
-  ScriptAliasMatch ^/?securecpanel/?$ /usr/local/cpanel/cgi-sys/sredirect.cgi
-  ScriptAliasMatch ^/?securewhm/?$ /usr/local/cpanel/cgi-sys/swhmredirect.cgi
-  ScriptAliasMatch ^/?webmail$ /usr/local/cpanel/cgi-sys/wredirect.cgi
-  ScriptAliasMatch ^/?webmail/ /usr/local/cpanel/cgi-sys/wredirect.cgi
-  ScriptAliasMatch ^/?whm/?$ /usr/local/cpanel/cgi-sys/whmredirect.cgi
-
-  Alias /bandwidth /usr/local/bandmin/htdocs/
-  Alias /img-sys /usr/local/cpanel/img-sys/
-  Alias /java-sys /usr/local/cpanel/java-sys/
-  Alias /mailman/archives /usr/local/cpanel/3rdparty/mailman/archives/public/
-  Alias /pipermail /usr/local/cpanel/3rdparty/mailman/archives/public/
-  Alias /sys_cpanel /usr/local/cpanel/sys_cpanel/
-
-  ScriptAlias /cgi-sys /usr/local/cpanel/cgi-sys/
-  ScriptAlias /mailman /usr/local/cpanel/3rdparty/mailman/cgi-bin/
-  ScriptAlias /scgi-bin /usr/local/cpanel/cgi-sys/scgiwrap
-</IfModule>
-
-# These can be set in WHM under 'Apache Global Configuration'
-[% IF main.timeout.item.timeout.length %]Timeout [% main.timeout.item.timeout %][% END %]
-[% IF main.traceenable.item.traceenable.length %]TraceEnable [% main.traceenable.item.traceenable %][% END %]
-[% IF main.serversignature.item.serversignature.length %]ServerSignature [% main.serversignature.item.serversignature %][% END %]
-[% IF main.servertokens.item.servertokens.length %]ServerTokens [% main.servertokens.item.servertokens %][% END %]
-[% IF main.fileetag.item.fileetag.length %]FileETag [% main.fileetag.item.fileetag %][% END %]
-[% IF main.startservers.item.startservers.length %]StartServers [% main.startservers.item.startservers %][% END %]
-<IfModule prefork.c>
-[% IF main.minspareservers.item.minspareservers.length %]MinSpareServers [% main.minspareservers.item.minspareservers %][% END %]
-[% IF main.maxspareservers.item.maxspareservers.length %]MaxSpareServers [% main.maxspareservers.item.maxspareservers %][% END %]
-</IfModule>
 
 <IfModule [% main.mainifmodulemodlogconfigc.item.ifmodule %]>
 [% FOREACH dir IN main.ifmodulemodlogconfigc.logformat.items -%]
@@ -68,13 +142,6 @@ Include "/etc/apache2/conf.d/*.conf"
 [% END -%]
 </IfModule>
 
-[% IF main.serverlimit.item.serverlimit.length %]ServerLimit [% main.serverlimit.item.serverlimit %][% END %]
-[% IF main.maxclients.item.maxclients.length %]MaxRequestWorkers [% main.maxclients.item.maxclients %][% END %]
-[% IF main.maxrequestsperchild.item.maxrequestsperchild.length %]MaxConnectionsPerChild [% main.maxrequestsperchild.item.maxrequestsperchild %][% END %]
-[% IF main.keepalive.item.keepalive.length %]KeepAlive [% main.keepalive.item.keepalive %][% END %]
-[% IF main.keepalivetimeout.item.keepalivetimeout.length %]KeepAliveTimeout [% main.keepalivetimeout.item.keepalivetimeout %][% END %]
-[% IF main.maxkeepaliverequests.item.exists('maxkeepaliverequests') %]MaxKeepAliveRequests [% main.maxkeepaliverequests.item.maxkeepaliverequests || 0 %][% END %]
-
 [% IF main.rlimitcpu.item.softrlimitcpu -%]
 RLimitCPU [% main.rlimitcpu.item.softrlimitcpu %] [% mainrlimitcpu.item.maxrlimitcpu %]
 [% END -%] 
@@ -82,104 +149,64 @@ RLimitCPU [% main.rlimitcpu.item.softrlimitcpu %] [% mainrlimitcpu.item.maxrlimi
 RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimitmem %]
 [% END -%]
 
-<IfModule mime_module>
-  TypesConfig conf/mime.types
-  AddType application/x-compress .Z
-  AddType application/x-gzip .gz .tgz
-</IfModule>
-
-[% IF file_test('f', '/usr/local/cpanel/bin/leechprotect') -%]
-RewriteEngine on
-RewriteMap LeechProtect prg:/usr/local/cpanel/bin/leechprotect
-Mutex file:[% paths.dir_run %] rewrite-map
-[% END -%]
-
-[% IF supported.mod_userdir -%]
-# Set UserDir directory for all virtual hosts, except..
-UserDir public_html
-# when the following two modules are loaded
-<IfModule mod_ruid2.c>
-UserDir disabled
-</IfModule>
-<IfModule mpm_itk.c>
-UserDir disabled
-</IfModule>
-[% END -%]
-
-[% IF supported.mod_dir -%]
-# DirectoryIndex is set via the WHM -> Service Configuration -> Apache Setup -> DirectoryIndex Priority
-DirectoryIndex [% main.directoryindex.item.directoryindex %]
-[% END -%]
-
-[% IF supported.mod_ssl -%]
 <IfModule ssl_module>
-# SSLCipherSuite can be set in WHM under 'Apache Global Configuration'
-[% IF main.sslciphersuite.item.sslciphersuite.length %]SSLCipherSuite [% main.sslciphersuite.item.sslciphersuite %][% END %]
-[% IF main.sslprotocol.item.sslprotocol.length %]SSLProtocol [% main.sslprotocol.item.sslprotocol %][% END %]
-SSLPassPhraseDialog  builtin
+    # cipher and protocol directives can be set in WHM under 'Apache Configuration' -> 'Global Configuration'
+    [% IF main.sslciphersuite.item.sslciphersuite.length %]SSLCipherSuite [% main.sslciphersuite.item.sslciphersuite %][% END %]
+    [% IF main.sslprotocol.item.sslprotocol.length %]SSLProtocol [% main.sslprotocol.item.sslprotocol %][% END %]
+    SSLPassPhraseDialog  builtin
 
-[% IF supported.mod_socache_shmcb -%]
-[% IF supported.stapling -%]
-SSLUseStapling on
-SSLStaplingCache shmcb:[% paths.dir_run %]/stapling_cache_shmcb(256000)
-[% END -%]
-SSLSessionCache shmcb:[% paths.dir_run %]/ssl_gcache_data_shmcb(1024000)
-[% ELSE -%]
-SSLSessionCache dbm:[% paths.dir_run %]/ssl_gcache_data_dbm
-[% END -%]
+    <IfModule socache_shmcb_module>
+        [% IF supported.stapling -%]
+        SSLUseStapling on
+        SSLStaplingCache shmcb:[% paths.dir_run %]/stapling_cache_shmcb(256000)
+        [% END -%]
+        SSLSessionCache shmcb:[% paths.dir_run %]/ssl_gcache_data_shmcb(1024000)
+    </IfModule>
+    <IfModule !socache_shmcb_module>
+        SSLSessionCache dbm:[% paths.dir_run %]/ssl_gcache_data_dbm
+    </IfModule>
 
-SSLSessionCacheTimeout  300
-Mutex                   file:[% paths.dir_run %] ssl-cache
-SSLRandomSeed startup builtin
-SSLRandomSeed connect builtin
+    SSLSessionCacheTimeout  300
+    Mutex                   file:[% paths.dir_run %] ssl-cache
+    SSLRandomSeed startup builtin
+    SSLRandomSeed connect builtin
 
+    [% IF configured.ip_listen_ssl -%]
+        [%- FOREACH ip IN configured.ip_listen_ssl -%]
+            Listen [% ip %]:[% configured.main_port_ssl %]
+        [% END -%]
+    [% ELSE -%]
+        # Defined in /var/cpanel/cpanel.config: apache_ssl_port
+        Listen [% main.ifdefinessl.listen.item.listen %]
+    [% END -%]
 
-
-[% IF configured.ip_listen_ssl -%]
-[%- FOREACH ip IN configured.ip_listen_ssl -%]
-    Listen [% ip %]:[% configured.main_port_ssl %]
-[% END -%]
-[% ELSE -%]
-    # Defined in /var/cpanel/cpanel.config: apache_ssl_port
-    Listen [% main.ifdefinessl.listen.item.listen %]
-[% END -%]
     AddType application/x-x509-ca-cert .crt
     AddType application/x-pkcs7-crl .crl
-[% END -%]
 </IfModule>
 
+<IfModule status_module>
+    <Location /whm-server-status>
+        SetHandler server-status
+        Order deny,allow
+        Deny from all
+        [% IF options_support.APR_HAVE_IPV6 %]
+        Allow from 127.0.0.1 ::1
+        [% ELSE %]
+        Allow from 127.0.0.1
+        [% END %]
+    </Location>
 
-[% IF supported.mod_mime -%]
-AddHandler cgi-script .cgi .pl .plx .ppl .perl
-AddHandler server-parsed .shtml
-AddType text/html .shtml
-AddType application/x-tar .tgz
-AddType text/vnd.wap.wml .wml
-AddType image/vnd.wap.wbmp .wbmp
-AddType text/vnd.wap.wmlscript .wmls
-AddType application/vnd.wap.wmlc .wmlc
-AddType application/vnd.wap.wmlscriptc .wmlsc
-[% END -%]
+    [% IF serve_server_status %]
+    <Location /server-status>
+        SetHandler server-status
+        Order deny,allow
+        Deny from all
+        Allow from [% allow_server_info_status_from %]
+    </Location>
+    [% END -%]
 
-<Location /whm-server-status>
-    SetHandler server-status
-    Order deny,allow
-    Deny from all
-    [% IF options_support.APR_HAVE_IPV6 %]
-    Allow from 127.0.0.1 ::1
-    [% ELSE %]
-    Allow from 127.0.0.1
-    [% END %]
-</Location>
+</IfModule>
 
-[% IF serve_server_status %]
-<Location /server-status>
-    SetHandler server-status
-    Order deny,allow
-    Deny from all
-    Allow from [% allow_server_info_status_from %]
-</Location>
-[% END -%]
 [% IF serve_server_info %]
 <Location /server-info>
     SetHandler server-info
