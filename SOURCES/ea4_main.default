@@ -95,6 +95,18 @@ RLimitCPU [% main.rlimitcpu.item.softrlimitcpu %] [% mainrlimitcpu.item.maxrlimi
 RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimitmem %]
 [% END -%]
 
+# Needed by cPanel & WHM to provide access to a default webpage when none exists
+<Directory "[% paths.dir_docroot %]">
+    Options All
+    AllowOverride None
+    Require all granted
+</Directory>
+
+# cPanel security policy: Disallow remote access to .htaccess and .htpasswd files
+<Files ".ht*">
+    Require all denied
+</Files>
+
 <IfModule alias_module>
     ScriptAliasMatch ^/?controlpanel/?$ /usr/local/cpanel/cgi-sys/redirect.cgi
     ScriptAliasMatch ^/?cpanel/?$ /usr/local/cpanel/cgi-sys/redirect.cgi
@@ -170,7 +182,7 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
 [%  END -%]
 </IfModule>
 
-# cPanel security policy that disables userdir when mod_ruid2 or mpm_itk are loaded
+# cPanel security policy: disable userdir when mod_ruid2 or mpm_itk are loaded
 <IfModule userdir_module>
     UserDir public_html
 
