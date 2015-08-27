@@ -46,6 +46,7 @@ License:   Apache License 2.0
 Requires:  %{pkg_name} = %{version}
 Requires:  yum-plugin-universal-hooks
 AutoReq:   no
+BuildArch: noarch
 
 %description runtime
 Package shipping essential scripts/configurations to work with cPanel & WHM.
