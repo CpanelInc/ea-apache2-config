@@ -1,19 +1,34 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#   DO NOT EDIT. AUTOMATICALLY GENERATED.  USE INCLUDE FILES IF YOU NEED TO MAKE A CHANGE
+#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#
 #   Direct modifications to the Apache configuration file WILL be lost upon subsequent
 #   regeneration of this configuration file, or an Apache update.
 #
 #   To have your modifications retained, you should create/edit administrator-specific
 #   include files:
+#
+#       # Applies to all versions of Apache
 #       [% paths.dir_conf_includes %]/pre_main_global.conf
-#       [% paths.dir_conf_includes %]/pre_main_2.conf
 #       [% paths.dir_conf_includes %]/pre_virtualhost_global.conf
+#       [% paths.dir_conf_includes %]/post_virtualhost_global.conf
+#
+#       # This applies to Apache 2.x
+#       [% paths.dir_conf_includes %]/pre_main_2.conf
 #       [% paths.dir_conf_includes %]/pre_virtualhost_2.conf
+#       [% paths.dir_conf_includes %]/post_virtualhost_2.conf
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+##################################################
+##################################################
 #
-# DO NOT EDIT. AUTOMATICALLY GENERATED.  IF YOU NEED TO MAKE A CHANGE PLEASE USE THE INCLUDE FILES.
+# BEGIN cPanel & WHM required Apache configuration
 #
+##################################################
+##################################################
 
 [%# NOTE: The IF variable.exists() method used throughout this template is to deal with
     migration from ea3 to ea4.  This should allow pre-existing distillation of variables
@@ -31,15 +46,15 @@ Include "[% paths.dir_base %]/conf.modules.d/*.conf"
 [% IF file_test('f', paths.dir_conf_includes _ '/pre_main_global.conf') -%]
 Include "[% paths.dir_conf_includes %]/pre_main_global.conf"
 [% ELSE -%]
-# Missing "[% paths.dir_conf_includes %]/pre_main_global.conf".  Create it if you want to customize httpd.conf.
+# Create "[% paths.dir_conf_includes %]/pre_main_global.conf" if you want to customize httpd.conf.
 [% END -%]
 [% IF file_test('f', paths.dir_conf_includes _ '/pre_main_2.conf') -%]
 Include "[% paths.dir_conf_includes %]/pre_main_2.conf"
 [% ELSE -%]
-# Missing "[% paths.dir_conf_includes %]/pre_main_2.conf".  Create it if you want to customize httpd.conf.
+# Create "[% paths.dir_conf_includes %]/pre_main_2.conf" if you want to customize httpd.conf.
 [% END -%]
 
-# Hard-coded default values
+# These are hard-coded default values
 PidFile [% paths.dir_run %]/httpd.pid
 User nobody
 Group nobody
@@ -91,7 +106,6 @@ RLimitCPU [% main.rlimitcpu.item.softrlimitcpu %] [% mainrlimitcpu.item.maxrlimi
 RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimitmem %]
 [% END -%]
 
-# Needed by cPanel & WHM
 <IfModule alias_module>
     ScriptAliasMatch ^/?controlpanel/?$ /usr/local/cpanel/cgi-sys/redirect.cgi
     ScriptAliasMatch ^/?cpanel/?$ /usr/local/cpanel/cgi-sys/redirect.cgi
@@ -116,7 +130,6 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
 </IfModule>
 
 [% IF file_test('f', '/usr/local/cpanel/bin/leechprotect') -%]
-# Needed by cPanel & WHM
 <IfModule rewrite_module>
     RewriteEngine on
     RewriteMap LeechProtect prg:/usr/local/cpanel/bin/leechprotect
@@ -137,14 +150,16 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
     AddType application/vnd.wap.wmlc .wmlc
     AddType application/vnd.wap.wmlscriptc .wmlsc
 
-    # Needed by WHM
+    # These extensions are used to redirect incoming requests to WHM
     AddHandler cgi-script .cgi .pl .plx .ppl .perl
+
+    # This is used for custom error documents
     AddHandler server-parsed .shtml
 </IfModule>
 
-# Needed by WHM 'Apache Status'
 # NOTE: You should update WHM under 'Tweak Settings' to add additional hosts
 <IfModule status_module>
+    # This is used by the WHM 'Apache Status' application
     <Location /whm-server-status>
         SetHandler server-status
         Order deny,allow
@@ -166,13 +181,11 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
 [%  END -%]
 </IfModule>
 
-# cPanel security policy
+# cPanel security policy that disables userdir when mod_ruid2 or mpm_itk are loaded
 <IfModule userdir_module>
-    # Set UserDir directory for all virtual hosts, except when
-    # mod_ruid2 or mpm_itk are loaded
     UserDir public_html
 
-    <IfModule mod_ruid2.c>
+    <IfModule ruid2_module>
         UserDir disabled
     </IfModule>
     <IfModule mpm_itk.c>
@@ -267,7 +280,6 @@ Include "[% paths.dir_conf_includes %]/errordocument.conf"
 [% END -%]
 
 [%- FOREACH vh IN sharedips -%]
-# DO NOT EDIT. AUTOMATICALLY GENERATED.
 <VirtualHost [% vh %]>
     ServerName [% parsed_ip(vh) %]
     DocumentRoot [% paths.dir_docroot %]
@@ -286,7 +298,6 @@ Include "[% paths.dir_conf_includes %]/errordocument.conf"
 </VirtualHost>
 
 [% END -%]
-# DO NOT EDIT. AUTOMATICALLY GENERATED.
 <VirtualHost *>
     # Default vhost for unbound IPs
     ServerName [% wildcard_safe(servername) %]
@@ -305,7 +316,6 @@ Include "[% paths.dir_conf_includes %]/errordocument.conf"
 [%-     END %]
 </VirtualHost>
 
-# DO NOT EDIT. AUTOMATICALLY GENERATED.
 [% ips_in_use.push("127.0.0.1") -%]
 [% SET copy_of_ips_in_use = ips_in_use.slice(0) -%]
 [% WHILE (ip_block = copy_of_ips_in_use.splice(0, 50)) AND ip_block.size -%]
@@ -376,7 +386,6 @@ Include "[% paths.dir_conf_includes %]/errordocument.conf"
 [%      END %]
 [% END -%]
 
-# DO NOT EDIT. AUTOMATICALLY GENERATED.
 [% WHILE (ip_block = ips_in_use.splice(0, 50)) AND ip_block.size -%]
 [%      IF proxysubdomains && supported.mod_proxy && supported.mod_rewrite -%]
 <VirtualHost[% FOREACH server_ip IN ip_block -%] [% "${server_ip}:${configured.main_port_ssl}" %][% END -%]>
@@ -491,7 +500,6 @@ Include "[% paths.dir_conf_includes %]/errordocument.conf"
 [% END -%]
 
 [% IF file_test('f', '/var/cpanel/domainfwdip') -%]
-# DO NOT EDIT. AUTOMATICALLY GENERATED. WHM DOMAIN FORWARDING VHOST
 <VirtualHost [% domainfwdip %]>
     ServerName [% wildcard_safe(domainfwdip) %]
     ServerAdmin root\@localhost
@@ -500,16 +508,32 @@ Include "[% paths.dir_conf_includes %]/errordocument.conf"
 </VirtualHost>
 [% END %]
 
+##################################################
+##################################################
+#
+# END cPanel & WHM required Apache configuration
+#
+##################################################
+##################################################
+
+##################################################
+##################################################
+#
+# BEGIN Virtual Host configurtion for user domains
+#
+##################################################
+##################################################
+
 # Administrator locations for safely altering httpd.conf
 [% IF file_test('f', paths.dir_conf_includes _ '/pre_virtualhost_global.conf') -%]
 Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 [% ELSE -%]
-# Missing "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf".  Create it if you want to customize httpd.conf.
+# Create "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf" if you want to customize httpd.conf.
 [% END -%]
 [% IF file_test('f', paths.dir_conf_includes _ '/pre_virtualhost_2.conf') -%]
 Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
 [% ELSE -%]
-# Missing "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf".  Create it if you want to customize httpd.conf.
+# Create "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf" if you want to customize httpd.conf.
 [% END -%]
 
 # BEGIN: HTTP vhosts list
@@ -536,10 +560,26 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
 [% IF file_test('f', paths.dir_conf_includes _ '/post_virtualhost_global.conf') -%]
 Include "[% paths.dir_conf_includes %]/post_virtualhost_global.conf"
 [% ELSE -%]
-# Missing "[% paths.dir_conf_includes %]/post_virtualhost_global.conf".  Create it if you want to customize httpd.conf.
+# Create "[% paths.dir_conf_includes %]/post_virtualhost_global.conf" if you want to customize httpd.conf.
 [% END -%]
 [% IF file_test('f', paths.dir_conf_includes _ '/post_virtualhost_2.conf') -%]
 Include "[% paths.dir_conf_includes %]/post_virtualhost_2.conf"
 [% ELSE -%]
-# Missing "[% paths.dir_conf_includes %]/post_virtualhost_2.conf".  Create it if you want to customize httpd.conf.
+# Create "[% paths.dir_conf_includes %]/post_virtualhost_2.conf" if you want to customize httpd.conf.
 [% END -%]
+
+##################################################
+##################################################
+#
+# END Virtual Host configurtion for user domains
+#
+##################################################
+##################################################
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#   DO NOT EDIT. AUTOMATICALLY GENERATED.  USE INCLUDE FILES IF YOU NEED TO MAKE A CHANGE
+#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
