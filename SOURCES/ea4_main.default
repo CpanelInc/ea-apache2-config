@@ -138,6 +138,30 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
     AddHandler server-parsed .shtml
 </IfModule>
 
+# Needed by WHM 'Apache Status'
+# NOTE: You should update WHM under 'Tweak Settings' to add additional hosts
+<IfModule status_module>
+    <Location /whm-server-status>
+        SetHandler server-status
+        Order deny,allow
+        Deny from all
+[%  IF options_support.APR_HAVE_IPV6 -%]
+        Allow from 127.0.0.1 ::1
+[%  ELSE -%]
+        Allow from 127.0.0.1
+[%  END -%]
+    </Location>
+
+[%  IF serve_server_status -%]
+    <Location /server-status>
+        SetHandler server-status
+        Order deny,allow
+        Deny from all
+        Allow from [% allow_server_info_status_from %]
+    </Location>
+[%  END -%]
+</IfModule>
+
 # cPanel security policy
 <IfModule userdir_module>
     # Set UserDir directory for all virtual hosts, except when
@@ -229,41 +253,7 @@ Listen [% default_apache_port %]
     AddType application/x-pkcs7-crl .crl
 </IfModule>
 
-<IfModule status_module>
-    <Location /whm-server-status>
-        SetHandler server-status
-        Order deny,allow
-        Deny from all
-        [% IF options_support.APR_HAVE_IPV6 %]
-        Allow from 127.0.0.1 ::1
-        [% ELSE %]
-        Allow from 127.0.0.1
-        [% END %]
-    </Location>
-
-    [% IF serve_server_status %]
-    <Location /server-status>
-        SetHandler server-status
-        Order deny,allow
-        Deny from all
-        Allow from [% allow_server_info_status_from %]
-    </Location>
-    [% END -%]
-
-</IfModule>
-
-[% IF serve_server_info %]
-<Location /server-info>
-    SetHandler server-info
-    Order deny,allow
-    Deny from all
-    Allow from [% allow_server_info_status_from %]
-</Location>
-[% END -%]
-
-[% IF supported.suexec == 1 %]
-# SUEXEC is supported
-[% END -%]
+Include "[% paths.dir_conf %]/*.conf"
 
 # Administrator locations for safely altering httpd.conf
 [% IF file_test('f', paths.dir_conf_includes _ '/account_suspensions.conf') -%]
