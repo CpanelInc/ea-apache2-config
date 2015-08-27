@@ -68,7 +68,7 @@ ServerName [% wildcard_safe(main.servername.item.servername) %]
     [% IF main.exists('minspareservers') %]MinSpareServers [% main.minspareservers.item.minspareservers %][% END %]
     [% IF main.exists('maxspareservers') %]MaxSpareServers [% main.maxspareservers.item.maxspareservers %][% END %]
 </IfModule>
-[% USE Dumper %]
+
 [% IF main.exists('serverlimit') %]ServerLimit [% main.serverlimit.item.serverlimit %][% END %]
 [% IF main.exists('maxclients') %]MaxRequestWorkers [% main.maxclients.item.maxclients %][% END %]
 [% IF main.exists('maxrequestsperchild') %]MaxConnectionsPerChild [% main.maxrequestsperchild.item.maxrequestsperchild %][% END %]
@@ -259,27 +259,15 @@ Listen [% default_apache_port %]
 
 Include "[% paths.dir_conf %]/*.conf"
 
-# Administrator locations for safely altering httpd.conf
 [% IF file_test('f', paths.dir_conf_includes _ '/account_suspensions.conf') -%]
 Include "[% paths.dir_conf_includes %]/account_suspensions.conf"
 [% END -%]
 [% IF file_test('f', paths.dir_conf_includes _ '/errordocument.conf') -%]
 Include "[% paths.dir_conf_includes %]/errordocument.conf"
 [% END -%]
-[% IF file_test('f', paths.dir_conf_includes _ '/pre_virtualhost_global.conf') -%]
-Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
-[% ELSE -%]
-# Missing "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf".  Create it if you want to customize httpd.conf.
-[% END -%]
-[% IF file_test('f', paths.dir_conf_includes _ '/pre_virtualhost_2.conf') -%]
-Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
-[% ELSE -%]
-# Missing "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf".  Create it if you want to customize httpd.conf.
-[% END -%]
-
 
 [%- FOREACH vh IN sharedips -%]
-# DO NOT EDIT. AUTOMATICALLY GENERATED.  IF YOU NEED TO MAKE A CHANGE PLEASE USE THE INCLUDE FILES.
+# DO NOT EDIT. AUTOMATICALLY GENERATED.
 <VirtualHost [% vh %]>
     ServerName [% parsed_ip(vh) %]
     DocumentRoot [% paths.dir_docroot %]
@@ -298,7 +286,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
 </VirtualHost>
 
 [% END -%]
-# DO NOT EDIT. AUTOMATICALLY GENERATED.  IF YOU NEED TO MAKE A CHANGE PLEASE USE THE INCLUDE FILES.
+# DO NOT EDIT. AUTOMATICALLY GENERATED.
 <VirtualHost *>
     # Default vhost for unbound IPs
     ServerName [% wildcard_safe(servername) %]
@@ -316,6 +304,213 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
 [%-         END -%]
 [%-     END %]
 </VirtualHost>
+
+# DO NOT EDIT. AUTOMATICALLY GENERATED.
+[% ips_in_use.push("127.0.0.1") -%]
+[% SET copy_of_ips_in_use = ips_in_use.slice(0) -%]
+[% WHILE (ip_block = copy_of_ips_in_use.splice(0, 50)) AND ip_block.size -%]
+[%      IF proxysubdomains && supported.mod_proxy && supported.mod_rewrite -%]
+<VirtualHost[% FOREACH server_ip IN ip_block -%] [% "${server_ip}:${configured.main_port}" %][% END -%]>
+    ServerName [% wildcard_safe(servername) %]
+[%          IF autodiscover_proxy_subdomains -%]
+    # CPANEL/WHM/WEBMAIL/WEBDISK/AUTOCONFIG PROXY SUBDOMAINS
+    ServerAlias cpanel.* whm.* webmail.* webdisk.* cpcalendars.* cpcontacts.* autodiscover.* autoconfig.*
+[%          ELSE -%]
+    # CPANEL/WHM/WEBMAIL/WEBDISK PROXY SUBDOMAINS
+    ServerAlias cpanel.* whm.* webmail.* webdisk.* cpcalendars.* cpcontacts.*
+[%          END -%]
+
+    DocumentRoot [% paths.dir_docroot %]
+    ServerAdmin [% serveradmin %]
+
+    <IfModule suphp_module>
+        suPHP_UserGroup nobody nobody
+    </IfModule>
+    <IfModule security2_module>
+        SecRuleEngine Off
+    </IfModule>
+
+[%          IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' -%]
+    UserDir disabled
+[%              IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 -%]
+    UserDir enabled [% defaultvhost.userdirprotect %]
+[%              END -%]
+[%          END -%]
+
+    RewriteEngine On
+    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
+    RewriteCond %{HTTP_HOST} ^cpanel\.
+    RewriteRule ^/(.*) http://127.0.0.1:2082/$1 [P]
+
+    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
+    RewriteCond %{HTTP_HOST} ^webmail\.
+    RewriteRule ^/(.*) http://127.0.0.1:2095/$1 [P]
+
+    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
+    RewriteCond %{HTTP_HOST} ^whm\.
+    RewriteRule ^/(.*) http://127.0.0.1:2086/$1 [P]
+
+    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
+    RewriteCond %{HTTP_HOST} ^webdisk\.
+    RewriteRule ^/(.*) http://127.0.0.1:2077/$1 [P]
+
+    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
+    RewriteCond %{HTTP_HOST} ^cpcalendars\.
+    RewriteRule ^/(.*) http://127.0.0.1:2079/$1 [P]
+
+    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
+    RewriteCond %{HTTP_HOST} ^cpcontacts\.
+    RewriteRule ^/(.*) http://127.0.0.1:2079/$1 [P]
+
+[%          IF autodiscover_proxy_subdomains %]
+    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
+    RewriteCond %{HTTP_HOST} ^autodiscover\.
+    RewriteRule ^[^?]*(\\?.*)? http://127.0.0.1/cgi-sys/autodiscover.cgi [P]
+
+    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
+    RewriteCond %{HTTP_HOST} ^autoconfig\.
+    RewriteRule ^[^?]*(\\?.*)? http://127.0.0.1/cgi-sys/autoconfig.cgi [P]
+[%          END %]
+    UseCanonicalName Off
+</VirtualHost>
+[%      END %]
+[% END -%]
+
+# DO NOT EDIT. AUTOMATICALLY GENERATED.
+[% WHILE (ip_block = ips_in_use.splice(0, 50)) AND ip_block.size -%]
+[%      IF proxysubdomains && supported.mod_proxy && supported.mod_rewrite -%]
+<VirtualHost[% FOREACH server_ip IN ip_block -%] [% "${server_ip}:${configured.main_port_ssl}" %][% END -%]>
+    ServerName [% wildcard_safe(servername) %]
+[%          IF autodiscover_proxy_subdomains %]
+    # CPANEL/WHM/WEBMAIL/WEBDISK/AUTOCONFIG PROXY SUBDOMAINS
+    ServerAlias cpanel.* whm.* webmail.* webdisk.* cpcalendars.* cpcontacts.* autodiscover.* autoconfig.*
+[%          ELSE %]
+    # CPANEL/WHM/WEBMAIL/WEBDISK PROXY SUBDOMAINS
+    ServerAlias cpanel.* whm.* webmail.* webdisk.* cpcalendars.* cpcontacts.*
+[%          END %]
+    DocumentRoot [% paths.dir_docroot %]
+    ServerAdmin [% serveradmin %]
+
+    <IfModule suphp_module>
+        suPHP_UserGroup nobody nobody
+    </IfModule>
+    <IfModule security2_module>
+        SecRuleEngine Off
+    </IfModule>
+
+[%          IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' -%]
+    UserDir disabled
+[%              IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 -%]
+    UserDir enabled [% defaultvhost.userdirprotect %]
+[%              END -%]
+[%          END -%]
+
+    RewriteEngine On
+
+    <IfModule ssl_module>
+        SSLEngine on
+        SSLProxyEngine On
+        SSLProxyVerify none
+        # Setting to Off for backwards-compatibility
+        # Read for more info: http://httpd.apache.org/docs/2.4/mod/mod_ssl.html#sslproxycheckpeercn
+        SSLProxyCheckPeerCN Off
+[%          IF options_support.split_version.2 >= 5 -%]
+        SSLProxyCheckPeerName Off
+[%          END -%]
+        SSLProxyCheckPeerExpire Off
+[%          IF file_test('f', '/var/cpanel/ssl/cpanel/mycpanel.pem') -%]
+        SSLCertificateFile /var/cpanel/ssl/cpanel/mycpanel.pem
+        SSLCertificateKeyFile /var/cpanel/ssl/cpanel/mycpanel.pem
+        SSLCertificateChainFile /var/cpanel/ssl/cpanel/mycpanel.pem
+[%              IF supported.stapling && !has_ocsp('/var/cpanel/ssl/cpanel/mycpanel.pem') -%]
+        SSLUseStapling Off
+[%              END -%]
+[%          ELSIF file_test('f', '/var/cpanel/ssl/cpanel/cpanel.pem') -%]
+        SSLCertificateFile /var/cpanel/ssl/cpanel/cpanel.pem
+        SSLCertificateKeyFile /var/cpanel/ssl/cpanel/cpanel.pem
+        SSLCertificateChainFile /var/cpanel/ssl/cpanel/cpanel.pem
+[%              IF supported.stapling && !has_ocsp('/var/cpanel/ssl/cpanel/cpanel.pem') -%]
+        SSLUseStapling Off
+[%              END -%]
+[%          ELSIF file_test('f', '/var/cpanel/ssl/cpanel/cpanel.crt') && file_test('f', '/var/cpanel/ssl/cpanel/cpanel.key') -%]
+        SSLCertificateFile /var/cpanel/ssl/cpanel/cpanel.crt
+        SSLCertificateKeyFile /var/cpanel/ssl/cpanel/cpanel.key
+[%              IF file_test('f', '/var/cpanel/ssl/cpanel/cpanel.cab') -%]
+        SSLCertificateChainFile /var/cpanel/ssl/cpanel/cpanel.cab
+[%              END -%]
+[%              IF supported.stapling && !has_ocsp('/var/cpanel/ssl/cpanel/cpanel.crt') -%]
+        SSLUseStapling Off
+[%              END -%]
+[%          ELSE -%]
+        # No service SSL installed for cPanel
+[%          END -%]
+    </IfModule>
+
+    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
+    RewriteCond %{HTTP_HOST} ^cpanel\.
+    RewriteCond %{HTTPS} on
+    RewriteRule ^/(.*) https://127.0.0.1:2083/$1 [P]
+
+    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
+    RewriteCond %{HTTP_HOST} ^webmail\.
+    RewriteCond %{HTTPS} on
+    RewriteRule ^/(.*) https://127.0.0.1:2096/$1 [P]
+
+    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
+    RewriteCond %{HTTP_HOST} ^whm\.
+    RewriteCond %{HTTPS} on
+    RewriteRule ^/(.*) https://127.0.0.1:2087/$1 [P]
+
+    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
+    RewriteCond %{HTTP_HOST} ^webdisk\.
+    RewriteCond %{HTTPS} on
+    RewriteRule ^/(.*) https://127.0.0.1:2078/$1 [P]
+
+    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
+    RewriteCond %{HTTP_HOST} ^cpcontacts\.
+    RewriteCond %{HTTPS} on
+    RewriteRule ^/(.*) https://127.0.0.1:2078/$1 [P]
+
+    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
+    RewriteCond %{HTTP_HOST} ^cpcalendars\.
+    RewriteCond %{HTTPS} on
+    RewriteRule ^/(.*) https://127.0.0.1:2078/$1 [P]
+
+[%          IF autodiscover_proxy_subdomains %]
+    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
+    RewriteCond %{HTTP_HOST} ^autodiscover\.
+    RewriteRule ^[^?]*(\\?.*)? http://127.0.0.1/cgi-sys/autodiscover.cgi [P]
+
+    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
+    RewriteCond %{HTTP_HOST} ^autoconfig\.
+    RewriteRule ^[^?]*(\\?.*)? http://127.0.0.1/cgi-sys/autoconfig.cgi [P]
+[%          END %]
+    UseCanonicalName Off
+</VirtualHost>
+[%      END -%]
+[% END -%]
+
+[% IF file_test('f', '/var/cpanel/domainfwdip') -%]
+# DO NOT EDIT. AUTOMATICALLY GENERATED. WHM DOMAIN FORWARDING VHOST
+<VirtualHost [% domainfwdip %]>
+    ServerName [% wildcard_safe(domainfwdip) %]
+    ServerAdmin root\@localhost
+    DocumentRoot /dev/null
+    ScriptAliasMatch .* /usr/local/cpanel/cgi-sys/domainredirect.cgi
+</VirtualHost>
+[% END %]
+
+# Administrator locations for safely altering httpd.conf
+[% IF file_test('f', paths.dir_conf_includes _ '/pre_virtualhost_global.conf') -%]
+Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
+[% ELSE -%]
+# Missing "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf".  Create it if you want to customize httpd.conf.
+[% END -%]
+[% IF file_test('f', paths.dir_conf_includes _ '/pre_virtualhost_2.conf') -%]
+Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
+[% ELSE -%]
+# Missing "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf".  Create it if you want to customize httpd.conf.
+[% END -%]
 
 # BEGIN: HTTP vhosts list
 [%  FOREACH vhost IN vhosts -%]
@@ -337,188 +532,14 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
 [% END -%]
 # END: HTTPS vhosts list
 
-[% ips_in_use.push("127.0.0.1") %]
-[% SET copy_of_ips_in_use = ips_in_use.slice(0) %]
-[% WHILE (ip_block = copy_of_ips_in_use.splice(0, 50)) AND ip_block.size %]
-[% IF proxysubdomains && supported.mod_proxy && supported.mod_rewrite %]
-[% IF autodiscover_proxy_subdomains %]
-# CPANEL/WHM/WEBMAIL/WEBDISK/AUTOCONFIG PROXY SUBDOMAINS
-[% ELSE %]
-# CPANEL/WHM/WEBMAIL/WEBDISK PROXY SUBDOMAINS
-[% END %]
-<VirtualHost[% FOREACH server_ip IN ip_block %] [% "${server_ip}:${configured.main_port}" %][% END %]>
-    ServerName [% wildcard_safe(servername) %]
-[% IF autodiscover_proxy_subdomains %]
-    ServerAlias cpanel.* whm.* webmail.* webdisk.* autodiscover.* autoconfig.*
-[% ELSE %]
-    ServerAlias cpanel.* whm.* webmail.* webdisk.*
-[% END %]
-    DocumentRoot [% paths.dir_docroot %]
-    ServerAdmin [% serveradmin %]
-    [%- IF supported.mod_suphp %]
-    <IfModule mod_suphp.c>
-        suPHP_UserGroup nobody nobody
-    </IfModule>
-    [%- END %]
-    [%- IF supported.mod_security2 %]
-    <IfModule mod_security2.c>
-        SecRuleEngine Off
-    </IfModule>
-    [%- END %]
-    [%- IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' %]
-    UserDir disabled
-    [%- IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 %]
-    UserDir enabled [% defaultvhost.userdirprotect %]
-    [%- END -%]
-    [%- END %]
-    RewriteEngine On
-    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]\$
-    RewriteCond %{HTTP_HOST} ^cpanel\.
-    RewriteRule ^/(.*) http://127.0.0.1:2082/\$1 [P]
-
-    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]\$
-    RewriteCond %{HTTP_HOST} ^webmail\.
-    RewriteRule ^/(.*) http://127.0.0.1:2095/\$1 [P]
-
-    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]\$
-    RewriteCond %{HTTP_HOST} ^whm\.
-    RewriteRule ^/(.*) http://127.0.0.1:2086/\$1 [P]
-
-    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]\$
-    RewriteCond %{HTTP_HOST} ^webdisk\.
-    RewriteRule ^/(.*) http://127.0.0.1:2077/\$1 [P]
-[% IF autodiscover_proxy_subdomains %]
-    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]\$
-    RewriteCond %{HTTP_HOST} ^autodiscover\.
-    RewriteRule ^[^?]*(\\?.*)? http://127.0.0.1/cgi-sys/autodiscover.cgi [P]
-
-    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]\$
-    RewriteCond %{HTTP_HOST} ^autoconfig\.
-    RewriteRule ^[^?]*(\\?.*)? http://127.0.0.1/cgi-sys/autoconfig.cgi [P]
-[% END %]
-    UseCanonicalName Off
-</VirtualHost>
-[% END %]
-[% END %]
-
-[% WHILE (ip_block = ips_in_use.splice(0, 50)) AND ip_block.size %]
-[% IF proxysubdomains && supported.mod_proxy && supported.mod_rewrite %]
-[% IF autodiscover_proxy_subdomains %]
-# CPANEL/WHM/WEBMAIL/WEBDISK/AUTOCONFIG PROXY SUBDOMAINS
-[% ELSE %]
-# CPANEL/WHM/WEBMAIL/WEBDISK PROXY SUBDOMAINS
-[% END %]
-<VirtualHost[% FOREACH server_ip IN ip_block %] [% "${server_ip}:${configured.main_port_ssl}" %][% END %]>
-    ServerName [% wildcard_safe(servername) %]
-[% IF autodiscover_proxy_subdomains %]
-    ServerAlias cpanel.* whm.* webmail.* webdisk.* autodiscover.* autoconfig.*
-[% ELSE %]
-    ServerAlias cpanel.* whm.* webmail.* webdisk.*
-[% END %]
-    DocumentRoot [% paths.dir_docroot %]
-    ServerAdmin [% serveradmin %]
-    [%- IF supported.mod_suphp %]
-    <IfModule mod_suphp.c>
-        suPHP_UserGroup nobody nobody
-    </IfModule>
-    [%- END %]
-    [%- IF supported.mod_security2 %]
-    <IfModule mod_security2.c>
-        SecRuleEngine Off
-    </IfModule>
-    [%- END %]
-    [%- IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' %]
-    UserDir disabled
-    [%- IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 %]
-    UserDir enabled [% defaultvhost.userdirprotect %]
-    [%- END -%]
-    [%- END %]
-    RewriteEngine On
-    <IfModule mod_ssl.c>
-        SSLEngine on
-        SSLProxyEngine On
-        SSLProxyVerify none
-        # Setting to Off for backwards-compatibility
-        # Read for more info: http://httpd.apache.org/docs/2.4/mod/mod_ssl.html#sslproxycheckpeercn
-        SSLProxyCheckPeerCN Off
-        [%- IF options_support.split_version.2 >= 5 %]
-        SSLProxyCheckPeerName Off
-        [%- END %]
-        SSLProxyCheckPeerExpire Off
-    [% IF file_test('f', '/var/cpanel/ssl/cpanel/mycpanel.pem') -%]
-        SSLCertificateFile /var/cpanel/ssl/cpanel/mycpanel.pem
-        SSLCertificateKeyFile /var/cpanel/ssl/cpanel/mycpanel.pem
-        SSLCertificateChainFile /var/cpanel/ssl/cpanel/mycpanel.pem
-        [%- IF supported.stapling && !has_ocsp('/var/cpanel/ssl/cpanel/mycpanel.pem') %]
-        SSLUseStapling Off
-        [%- END %]
-    [% ELSIF file_test('f', '/var/cpanel/ssl/cpanel/cpanel.pem') -%]
-        SSLCertificateFile /var/cpanel/ssl/cpanel/cpanel.pem
-        SSLCertificateKeyFile /var/cpanel/ssl/cpanel/cpanel.pem
-        SSLCertificateChainFile /var/cpanel/ssl/cpanel/cpanel.pem
-        [%- IF supported.stapling && !has_ocsp('/var/cpanel/ssl/cpanel/cpanel.pem') %]
-        SSLUseStapling Off
-        [%- END %]
-    [% ELSIF file_test('f', '/var/cpanel/ssl/cpanel/cpanel.crt') && file_test('f', '/var/cpanel/ssl/cpanel/cpanel.key') %]
-        SSLCertificateFile /var/cpanel/ssl/cpanel/cpanel.crt
-        SSLCertificateKeyFile /var/cpanel/ssl/cpanel/cpanel.key
-        [% IF file_test('f', '/var/cpanel/ssl/cpanel/cpanel.cab') %]
-        SSLCertificateChainFile /var/cpanel/ssl/cpanel/cpanel.cab
-        [% END %]
-        [%- IF supported.stapling && !has_ocsp('/var/cpanel/ssl/cpanel/cpanel.crt') %]
-        SSLUseStapling Off
-        [%- END %]
-    [% ELSE %]
-        # No service SSL installed for cPanel
-    [% END %]
-    </IfModule>
-    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]\$
-    RewriteCond %{HTTP_HOST} ^cpanel\.
-    RewriteCond %{HTTPS} on
-    RewriteRule ^/(.*) https://127.0.0.1:2083/\$1 [P]
-
-    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]\$
-    RewriteCond %{HTTP_HOST} ^webmail\.
-    RewriteCond %{HTTPS} on
-    RewriteRule ^/(.*) https://127.0.0.1:2096/\$1 [P]
-    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]\$
-    RewriteCond %{HTTP_HOST} ^whm\.
-    RewriteCond %{HTTPS} on
-    RewriteRule ^/(.*) https://127.0.0.1:2087/\$1 [P]
-
-    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]\$
-    RewriteCond %{HTTP_HOST} ^webdisk\.
-    RewriteCond %{HTTPS} on
-    RewriteRule ^/(.*) https://127.0.0.1:2078/\$1 [P]
-[% IF autodiscover_proxy_subdomains %]
-    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]\$
-    RewriteCond %{HTTP_HOST} ^autodiscover\.
-    RewriteRule ^[^?]*(\\?.*)? http://127.0.0.1/cgi-sys/autodiscover.cgi [P]
-
-    RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]\$
-    RewriteCond %{HTTP_HOST} ^autoconfig\.
-    RewriteRule ^[^?]*(\\?.*)? http://127.0.0.1/cgi-sys/autoconfig.cgi [P]
-[% END %]
-    UseCanonicalName Off
-</VirtualHost>
-[% END %]
-[% END %]
-
+# Administrator locations for safely altering httpd.conf
 [% IF file_test('f', paths.dir_conf_includes _ '/post_virtualhost_global.conf') -%]
 Include "[% paths.dir_conf_includes %]/post_virtualhost_global.conf"
+[% ELSE -%]
+# Missing "[% paths.dir_conf_includes %]/post_virtualhost_global.conf".  Create it if you want to customize httpd.conf.
 [% END -%]
 [% IF file_test('f', paths.dir_conf_includes _ '/post_virtualhost_2.conf') -%]
 Include "[% paths.dir_conf_includes %]/post_virtualhost_2.conf"
+[% ELSE -%]
+# Missing "[% paths.dir_conf_includes %]/post_virtualhost_2.conf".  Create it if you want to customize httpd.conf.
 [% END -%]
-
-[% IF file_test('f', '/var/cpanel/domainfwdip') -%]
-# WHM DOMAIN FORWARDING VHOST
-<VirtualHost [% domainfwdip %]>
-    ServerName [% wildcard_safe(domainfwdip) %]
-    ServerAdmin root\@localhost
-    DocumentRoot /dev/null
-    ScriptAliasMatch .* /usr/local/cpanel/cgi-sys/domainredirect.cgi
-</VirtualHost>
-[% END -%]
-
-# DO NOT EDIT. AUTOMATICALLY GENERATED.  IF YOU NEED TO MAKE A CHANGE PLEASE USE THE INCLUDE FILES.
