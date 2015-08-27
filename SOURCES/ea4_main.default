@@ -150,12 +150,19 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
 [%  END -%]
 </IfModule>
 
-[% IF main.rlimitcpu.item.softrlimitcpu -%]
-RLimitCPU [% main.rlimitcpu.item.softrlimitcpu %] [% mainrlimitcpu.item.maxrlimitcpu %]
-[% END -%] 
-[% IF main.rlimitmem.item.softrlimitmem -%]
-RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimitmem %]
-[% END -%]
+[%  IF configured.ip_listen -%]
+# The Listen port can be updated using 'Tweak Settings' -> 'System',
+# However, if you have any Apache Reserved IPs, then this Tweak setting will
+# be ignored. Instead, each IP on your system (excluding Apache Reserved IPs)
+# will be listed here.
+[%      FOREACH ip IN configured.ip_listen -%]
+Listen [% ip %]:[% configured.main_port %]
+[%      END -%]
+[%  ELSE -%]
+# WARNING: This is the default value assigned during installation, and should
+#          be updated in WHM ('Tweak Settings' -> 'System')
+Listen [% default_apache_port %]
+[%  END -%]
 
 <IfModule ssl_module>
     # cipher and protocol directives can be set in WHM under 'Apache Configuration' -> 'Global Configuration'
