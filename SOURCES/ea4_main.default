@@ -11,6 +11,10 @@
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+#
+# DO NOT EDIT. AUTOMATICALLY GENERATED.  IF YOU NEED TO MAKE A CHANGE PLEASE USE THE INCLUDE FILES.
+#
+
 [%# NOTE: The IF variable.exists() method used throughout this template is to deal with
     migration from ea3 to ea4.  This should allow pre-existing distillation of variables
     when the user was on EA3 but didn't use the WHM interfaces to update their httpd.conf.
@@ -273,73 +277,65 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
 # Missing "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf".  Create it if you want to customize httpd.conf.
 [% END -%]
 
-# DO NOT EDIT. AUTOMATICALLY GENERATED.  IF YOU NEED TO MAKE A CHANGE PLEASE USE THE INCLUDE FILES.
 
 [%- FOREACH vh IN sharedips -%]
 # DO NOT EDIT. AUTOMATICALLY GENERATED.  IF YOU NEED TO MAKE A CHANGE PLEASE USE THE INCLUDE FILES.
-
 <VirtualHost [% vh %]>
     ServerName [% parsed_ip(vh) %]
     DocumentRoot [% paths.dir_docroot %]
     ServerAdmin [% serveradmin %]
-    [%- IF supported.mod_suphp %]
-    <IfModule mod_suphp.c>
+
+    <IfModule suphp_module>
         suPHP_UserGroup nobody nobody
     </IfModule>
-    [%- END %]
-    [%- IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' %]
+
+[%-     IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' %]
     UserDir disabled
-    [%- IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 %]
+[%-         IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 %]
     UserDir enabled [% defaultvhost.userdirprotect %]
-    [%- END -%]
-    [%- END %]
+[%-         END -%]
+[%-     END %]
 </VirtualHost>
 
 [% END -%]
-
-# Default vhost for unbound IPs
-
+# DO NOT EDIT. AUTOMATICALLY GENERATED.  IF YOU NEED TO MAKE A CHANGE PLEASE USE THE INCLUDE FILES.
 <VirtualHost *>
+    # Default vhost for unbound IPs
     ServerName [% wildcard_safe(servername) %]
     DocumentRoot [% paths.dir_docroot %]
     ServerAdmin [% serveradmin %]
-    [%- IF supported.mod_suphp %]
-    <IfModule mod_suphp.c>
+
+    <IfModule suphp_module>
         suPHP_UserGroup nobody nobody
     </IfModule>
-    [%- END %]
-    [%- IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' %]
+
+[%-     IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' %]
     UserDir disabled
-    [%- IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 %]
+[%-         IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 %]
     UserDir enabled [% defaultvhost.userdirprotect %]
-    [%- END -%]
-    [%- END %]
+[%-         END -%]
+[%-     END %]
 </VirtualHost>
 
-[%- FOREACH vhost IN vhosts -%]
+# BEGIN: HTTP vhosts list
+[%  FOREACH vhost IN vhosts -%]
+[%      IF vhost.custom_vhost_template_ap2 != '' -%]
+[%          INCLUDE $vhost.custom_vhost_template_ap2 -%]
+[%      ELSE -%]
+[%          INCLUDE $includes.vhost -%]
+[%      END -%]
+[%  END -%]
+# END: HTTP vhosts list
 
-# DO NOT EDIT. AUTOMATICALLY GENERATED.  IF YOU NEED TO MAKE A CHANGE PLEASE USE THE INCLUDE FILES.
-
-[%- IF vhost.custom_vhost_template_ap2 != '' -%]
-    [%- INCLUDE $vhost.custom_vhost_template_ap2 -%]
-[%- ELSE -%]
-    [%- INCLUDE $includes.vhost -%]
-[%- END -%]
-[%- END -%]
-
-# DO NOT EDIT. AUTOMATICALLY GENERATED.  IF YOU NEED TO MAKE A CHANGE PLEASE USE THE INCLUDE FILES.
-
-# SSL
-[%- FOREACH vhost IN ssl_vhosts -%]
-
-# DO NOT EDIT. AUTOMATICALLY GENERATED.  IF YOU NEED TO MAKE A CHANGE PLEASE USE THE INCLUDE FILES.
-
-[%- IF vhost.custom_vhost_template_ap2 != '' -%]
-    [%- INCLUDE $vhost.custom_vhost_template_ap2 -%]
-[%- ELSE -%]
-    [%- INCLUDE $includes.ssl_vhost -%]
-[%- END -%]
-[%- END -%]
+# BEGIN: HTTPS vhosts list
+[% FOREACH vhost IN ssl_vhosts -%]
+[%     IF vhost.custom_vhost_template_ap2 != '' -%]
+[%         INCLUDE $vhost.custom_vhost_template_ap2 -%]
+[%     ELSE -%]
+[%         INCLUDE $includes.ssl_vhost -%]
+[%     END -%]
+[% END -%]
+# END: HTTPS vhosts list
 
 [% ips_in_use.push("127.0.0.1") %]
 [% SET copy_of_ips_in_use = ips_in_use.slice(0) %]
