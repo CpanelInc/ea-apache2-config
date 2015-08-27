@@ -166,15 +166,15 @@ Listen [% default_apache_port %]
 
 <IfModule ssl_module>
     # cipher and protocol directives can be set in WHM under 'Apache Configuration' -> 'Global Configuration'
-    [% IF main.sslciphersuite.item.sslciphersuite.length %]SSLCipherSuite [% main.sslciphersuite.item.sslciphersuite %][% END %]
-    [% IF main.sslprotocol.item.sslprotocol.length %]SSLProtocol [% main.sslprotocol.item.sslprotocol %][% END %]
+[%  IF main.sslciphersuite.item.sslciphersuite.length %]    SSLCipherSuite [% main.sslciphersuite.item.sslciphersuite %][% END %]
+[%  IF main.sslprotocol.item.sslprotocol.length %]    SSLProtocol [% main.sslprotocol.item.sslprotocol %][% END %]
     SSLPassPhraseDialog  builtin
 
     <IfModule socache_shmcb_module>
-        [% IF supported.stapling -%]
+[%      IF supported.stapling -%]
         SSLUseStapling on
         SSLStaplingCache shmcb:[% paths.dir_run %]/stapling_cache_shmcb(256000)
-        [% END -%]
+[%      END -%]
         SSLSessionCache shmcb:[% paths.dir_run %]/ssl_gcache_data_shmcb(1024000)
     </IfModule>
     <IfModule !socache_shmcb_module>
@@ -186,14 +186,19 @@ Listen [% default_apache_port %]
     SSLRandomSeed startup builtin
     SSLRandomSeed connect builtin
 
-    [% IF configured.ip_listen_ssl -%]
-        [%- FOREACH ip IN configured.ip_listen_ssl -%]
-            Listen [% ip %]:[% configured.main_port_ssl %]
-        [% END -%]
-    [% ELSE -%]
-        # Defined in /var/cpanel/cpanel.config: apache_ssl_port
-        Listen [% main.ifdefinessl.listen.item.listen %]
-    [% END -%]
+[%  IF configured.ip_listen_ssl -%]
+    # The Listen port can be updated using 'Tweak Settings' -> 'System',
+    # However, if you have any Apache Reserved IPs, then this Tweak setting will
+    # be ignored. Instead, each IP on your system (excluding Apache Reserved IPs)
+    # will be listed here.
+[%     FOREACH ip IN configured.ip_listen_ssl -%]
+    Listen [% ip %]:[% configured.main_port_ssl %]
+[%     END -%]
+[%  ELSE -%]
+    # WARNING: This is the default value assigned during installation, and should
+    #          be updated in WHM.
+    Listen [% default_apache_ssl_port %]
+[%  END -%]
 
     AddType application/x-x509-ca-cert .crt
     AddType application/x-pkcs7-crl .crl
