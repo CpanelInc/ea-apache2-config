@@ -1,3 +1,16 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#   Direct modifications to the Apache configuration file WILL be lost upon subsequent
+#   regeneration of this configuration file, or an Apache update.
+#
+#   To have your modifications retained, you should create/edit administrator-specific
+#   include files:
+#       [% paths.dir_conf_includes %]/pre_main_global.conf
+#       [% paths.dir_conf_includes %]/pre_main_2.conf
+#       [% paths.dir_conf_includes %]/pre_virtualhost_global.conf
+#       [% paths.dir_conf_includes %]/pre_virtualhost_2.conf
+#
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 [%# NOTE: The IF variable.exists() method used throughout this template is to deal with
     migration from ea3 to ea4.  This should allow pre-existing distillation of variables
     when the user was on EA3 but didn't use the WHM interfaces to update their httpd.conf.
@@ -9,6 +22,18 @@
     there yet, so the exists() method is used to ensure easier migration.
 -%]
 Include "[% paths.dir_base %]/conf.modules.d/*.conf"
+
+# Administrator locations for safely altering httpd.conf
+[% IF file_test('f', paths.dir_conf_includes _ '/pre_main_global.conf') -%]
+Include "[% paths.dir_conf_includes %]/pre_main_global.conf"
+[% ELSE -%]
+# Missing "[% paths.dir_conf_includes %]/pre_main_global.conf".  Create it if you want to customize httpd.conf.
+[% END -%]
+[% IF file_test('f', paths.dir_conf_includes _ '/pre_main_2.conf') -%]
+Include "[% paths.dir_conf_includes %]/pre_main_2.conf"
+[% ELSE -%]
+# Missing "[% paths.dir_conf_includes %]/pre_main_2.conf".  Create it if you want to customize httpd.conf.
+[% END -%]
 
 # Hard-coded default values
 PidFile [% paths.dir_run %]/httpd.pid
@@ -240,6 +265,7 @@ Listen [% default_apache_port %]
 # SUEXEC is supported
 [% END -%]
 
+# Administrator locations for safely altering httpd.conf
 [% IF file_test('f', paths.dir_conf_includes _ '/account_suspensions.conf') -%]
 Include "[% paths.dir_conf_includes %]/account_suspensions.conf"
 [% END -%]
@@ -248,9 +274,13 @@ Include "[% paths.dir_conf_includes %]/errordocument.conf"
 [% END -%]
 [% IF file_test('f', paths.dir_conf_includes _ '/pre_virtualhost_global.conf') -%]
 Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
+[% ELSE -%]
+# Missing "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf".  Create it if you want to customize httpd.conf.
 [% END -%]
 [% IF file_test('f', paths.dir_conf_includes _ '/pre_virtualhost_2.conf') -%]
 Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
+[% ELSE -%]
+# Missing "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf".  Create it if you want to customize httpd.conf.
 [% END -%]
 
 # DO NOT EDIT. AUTOMATICALLY GENERATED.  IF YOU NEED TO MAKE A CHANGE PLEASE USE THE INCLUDE FILES.
