@@ -10,15 +10,9 @@
 #   To have your modifications retained, you should create/edit administrator-specific
 #   include files:
 #
-#       # Applies to all versions of Apache
 #       [% paths.dir_conf_includes %]/pre_main_global.conf
 #       [% paths.dir_conf_includes %]/pre_virtualhost_global.conf
 #       [% paths.dir_conf_includes %]/post_virtualhost_global.conf
-#
-#       # This applies to Apache 2.x
-#       [% paths.dir_conf_includes %]/pre_main_2.conf
-#       [% paths.dir_conf_includes %]/pre_virtualhost_2.conf
-#       [% paths.dir_conf_includes %]/post_virtualhost_2.conf
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -47,11 +41,6 @@ Include "[% paths.dir_base %]/conf.modules.d/*.conf"
 Include "[% paths.dir_conf_includes %]/pre_main_global.conf"
 [% ELSE -%]
 # Create "[% paths.dir_conf_includes %]/pre_main_global.conf" if you want to customize httpd.conf.
-[% END -%]
-[% IF file_test('f', paths.dir_conf_includes _ '/pre_main_2.conf') -%]
-Include "[% paths.dir_conf_includes %]/pre_main_2.conf"
-[% ELSE -%]
-# Create "[% paths.dir_conf_includes %]/pre_main_2.conf" if you want to customize httpd.conf.
 [% END -%]
 
 # These are hard-coded default values
@@ -530,11 +519,6 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 [% ELSE -%]
 # Create "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf" if you want to customize httpd.conf.
 [% END -%]
-[% IF file_test('f', paths.dir_conf_includes _ '/pre_virtualhost_2.conf') -%]
-Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
-[% ELSE -%]
-# Create "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf" if you want to customize httpd.conf.
-[% END -%]
 
 # BEGIN: HTTP vhosts list
 [%  FOREACH vhost IN vhosts -%]
@@ -561,11 +545,6 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
 Include "[% paths.dir_conf_includes %]/post_virtualhost_global.conf"
 [% ELSE -%]
 # Create "[% paths.dir_conf_includes %]/post_virtualhost_global.conf" if you want to customize httpd.conf.
-[% END -%]
-[% IF file_test('f', paths.dir_conf_includes _ '/post_virtualhost_2.conf') -%]
-Include "[% paths.dir_conf_includes %]/post_virtualhost_2.conf"
-[% ELSE -%]
-# Create "[% paths.dir_conf_includes %]/post_virtualhost_2.conf" if you want to customize httpd.conf.
 [% END -%]
 
 ##################################################
