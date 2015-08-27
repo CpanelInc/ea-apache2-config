@@ -127,28 +127,27 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
     </IfModule>
 </IfModule>
 
-Include "/etc/apache2/conf.d/*.conf"
-
-#---- no longer clean
-
-[% IF configured.ip_listen -%]
-[%- FOREACH ip IN configured.ip_listen -%]
-Listen [% ip %]:[% configured.main_port %]
-[% END -%]
-[% ELSE -%]
-# Defined in /var/cpanel/cpanel.config: apache_port
-Listen [% main.listen.item.listen %]
-[% END -%]
-
-
-<IfModule [% main.mainifmodulemodlogconfigc.item.ifmodule %]>
-[% FOREACH dir IN main.ifmodulemodlogconfigc.logformat.items -%]
+<IfModule log_config_module>
+[%  IF main.ifmodulemodlogconfigc.logformat.items.length -%]
+[%      FOREACH dir IN main.ifmodulemodlogconfigc.logformat.items -%]
     LogFormat [% dir.logformat %]
-[% END -%]
+[%      END -%]
+[%  ELSE -%]
+    LogFormat "%{Referer}i -> %U" referer
+    LogFormat "%{User-agent}i" agent
+    # NOTE: "combined" and "common" are required by WHM
+    LogFormat "%h %l %u %t \"%r\" %>s %b" common
+    LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+[%  END -%]
 
-[% FOREACH dir IN main.ifmodulemodlogconfigc.customlog.items -%]
+    # access_log format can be set in WHM under 'Basic cPanel & WHM Setup'
+[%  IF main.ifmodulemodlogconfigc.customlog.items.length -%]
+[%      FOREACH dir IN main.ifmodulemodlogconfigc.customlog.items -%]
     CustomLog [% dir.target %] [% dir.format %]
-[% END -%]
+[%      END -%]
+[%  ELSE -%]
+    CustomLog logs/access_log [% logstyle %]
+[%  END -%]
 </IfModule>
 
 [% IF main.rlimitcpu.item.softrlimitcpu -%]
