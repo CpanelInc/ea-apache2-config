@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       34%{?dist}
+Release:       35%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -99,12 +99,15 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/500-restartsrv_httpd.sh
 
 %changelog
-* Tue Sep 01 2015 Julian Brown <julian.brown@cpanel.net> 1.0-34
-- Have phpconf fix up happen earlier in the process.
+* Fri Sep 01 2015 S. Kurt Newman <kurt.newman@cpanel.net> 1.0-35
+- Fix for changelog to get OBS to publish correctly
 
-* Fri Aug 28 2015 S. Kurt Newman <kurt.newman@cpanel.net> 1.0-33
+* Fri Sep 01 2015 S. Kurt Newman <kurt.newman@cpanel.net> 1.0-34
 - Updated ea4_main.default with a host of fixes (ZC-913 for more info)
 - Changed package to noarch
+
+* Tue Sep 01 2015 Julian Brown <julian.brown@cpanel.net> 1.0-33
+- Have phpconf fix up happen earlier in the process.
 
 * Mon Aug 24 2015 Dan Muey <dan@cpanel.net> 1.0-32
 - Update template to work with errordocument.conf
