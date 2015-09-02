@@ -383,6 +383,10 @@ Include "[% paths.dir_conf_includes %]/errordocument.conf"
     RewriteRule ^[^?]*(\\?.*)? http://127.0.0.1/cgi-sys/autoconfig.cgi [P]
 [%          END %]
     UseCanonicalName Off
+
+    <IfModule security2_module>
+        SecRuleEngine On
+    </IfModule>
 </VirtualHost>
 [%      END %]
 [% END -%]
@@ -496,6 +500,10 @@ Include "[% paths.dir_conf_includes %]/errordocument.conf"
     RewriteRule ^[^?]*(\\?.*)? http://127.0.0.1/cgi-sys/autoconfig.cgi [P]
 [%          END %]
     UseCanonicalName Off
+
+    <IfModule security2_module>
+        SecRuleEngine On
+    </IfModule>
 </VirtualHost>
 [%      END -%]
 [% END -%]
