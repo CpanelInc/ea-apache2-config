@@ -25,6 +25,51 @@ use Cpanel::AdvConfig::apache::modules ();
 use Cpanel::ConfigFiles::Apache        ();
 use Cpanel::DataStore                  ();
 use Cpanel::Lang::PHP::Settings        ();
+use Cpanel::Notify                     ();
+use POSIX qw( :sys_wait_h );
+
+sub is_handler_supported {
+    my $handler   = shift;
+    my $supported = 0;
+
+    my %handler_map = (
+        'suphp' => [q{mod_suphp}],
+        'cgi'   => [ q{mod_cgi}, q{mod_cgid} ],
+        'dso'   => [q{libphp5}],                  # TODO: This is here until EA-3711 is complete
+    );
+
+    my $modules = Cpanel::AdvConfig::apache::modules::get_supported_modules();
+    for my $mod ( @{ $handler_map{$handler} } ) {
+        $supported = 1 if $modules->{$mod};
+    }
+
+    return $supported;
+}
+
+sub send_notification {
+    my ( $package, $language, $webserver, $missing_handler, $replacement_handler ) = @_;
+
+    my %args = (
+        class            => q{EasyApache::EA4_LangHandlerMissing},
+        application      => q{universal_hook_phpconf},
+        constructor_args => [
+            package             => $package,
+            language            => $language,
+            webserver           => $webserver,
+            missing_handler     => $missing_handler,
+            replacement_handler => $replacement_handler
+        ],
+    );
+
+    # No point in catching the failure since we can't do anything
+    # about here anyways.
+    try {
+        my $class = Cpanel::Notify::notification_class(%args);
+        waitpid( $class->{'_icontact_pid'}, WNOHANG );
+    };
+
+    return 1;
+}
 
 my $apacheconf = Cpanel::ConfigFiles::Apache->new();
 my ( $php, @phps );
@@ -47,11 +92,18 @@ my $yaml = Cpanel::DataStore::fetch_ref( $apacheconf->file_conf_php_conf() . '.y
 # use it if the module is there, but if not, we'll fall back to cgi.
 # Based on the way ea-php* packages install, we can guarantee that cgi
 # will always be available.
-my $handler = ( Cpanel::AdvConfig::apache::modules::is_supported('mod_suphp') ? 'suphp' : 'cgi' );
-
-my %php_settings = ( dryrun => 0 );
+my %php_settings = ( dryrun => 0, restart => 0 );
 for my $ver (@phps) {
-    $php_settings{$ver} = $yaml->{$ver} || $handler;
+    my $old_handler = $yaml->{$ver} || 'suphp';    # prefer suphp if no handler defined
+    my $new_handler = is_handler_supported($old_handler) ? $old_handler : 'cgi';
+
+    if ( $old_handler ne $new_handler ) {
+        print locale->maketext(q{WARNING: You removed a configured [asis,Apache] handler.}), "\n";
+        print locale->maketext( q{The “[_1]” package will revert to the “[_2]”[comment,the web server handler that will be used in its place (e.g. cgi)] “[_3]” handler.}, $ver, 'Apache', $new_handler ), "\n";
+        send_notification( $ver, 'PHP', 'Apache', $old_handler, $new_handler );
+    }
+
+    $php_settings{$ver} = $new_handler;
 }
 
 # Let's make sure that the system default version is still actually
@@ -78,5 +130,5 @@ try {
 }
 catch {
     logger->die("$_");    # copy $_ since it can be magical
-}
+};
 
