@@ -88,11 +88,7 @@
   </IfModule>
 [% END -%]
 [% IF vhost.user != 'nobody' -%]
-[% IF supported.mod_disable_suexec -%]
-  <IfModule !mod_disable_suexec.c>
-[% ELSE -%]
   <IfModule suexec_module>
-[% END -%]
     <IfModule !mod_ruid2.c>
       SuexecUserGroup [% vhost.user %] [% vhost.group %]
     </IfModule>

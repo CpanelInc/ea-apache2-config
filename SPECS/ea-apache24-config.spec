@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       35%{?dist}
+Release:       36%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -99,6 +99,9 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/500-restartsrv_httpd.sh
 
 %changelog
+* Wed Sep 30 2015 Dan Muey <dan@cpanel.net> 1.0.36
+- Remove legacy mod_disable_suexec logic
+
 * Fri Sep 01 2015 S. Kurt Newman <kurt.newman@cpanel.net> 1.0-35
 - Fix for changelog to get OBS to publish correctly
 
