@@ -112,7 +112,7 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
-* Wed Oct 01 2015 Dan Muey <dan@cpanel.net> 1.0.38
+* Thu Oct 01 2015 Dan Muey <dan@cpanel.net> 1.0.38
 - Remove legacy mod_disable_suexec logic from SSL
 
 * Thu Oct  1 2015 S. Kurt Newman <kurt.newman@cpanel.net> - 1.0-37
