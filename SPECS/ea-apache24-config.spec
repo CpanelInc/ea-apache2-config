@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       36%{?dist}
+Release:       37%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -30,10 +30,13 @@ Source8:       060-setup_apache_symlinks.pl
 Source9:       070-cloudlinux-cagefs.pl
 Source10:      ea4_main.default
 Source11:      009-phpconf.pl
+SOURCE12:      generate-errordoc-conf
 
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:      ea-webserver
 Requires:      %{pkg_name}-runtime = %{version}
+BuildRequires: perl-libwww-perl
+BuildRequires: ea-apache24-devel
 
 %description
 This is the main package for Apache 2.4 on CentOS 6 for cPanel & WHM.
@@ -47,6 +50,7 @@ Requires:  %{pkg_name} = %{version}
 Requires:  yum-plugin-universal-hooks
 AutoReq:   no
 BuildArch: noarch
+Requires:  perl-libwww-perl
 
 %description runtime
 Package shipping essential scripts/configurations to work with cPanel & WHM.
@@ -61,7 +65,6 @@ install %{SOURCE3} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/vhos
 install %{SOURCE4} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ssl_vhost.default
 install %{SOURCE10} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ea4_main.default
 
-#
 mkdir -p $RPM_BUILD_ROOT/etc/cpanel/ea4
 install -m 644 %{SOURCE0} $RPM_BUILD_ROOT/etc/cpanel/ea4/paths.conf
 
@@ -77,6 +80,14 @@ ln -sf /usr/local/cpanel/scripts/update_apachectl $RPM_BUILD_ROOT%{_sysconfdir}/
 install -m 755 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/060-setup_apache_symlinks.pl
 install -m 755 %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
 install -m 755 %{SOURCE11} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/009-phpconf.pl
+
+# Install apache utility
+%{__mkdir_p} %{buildroot}/%{_httpd_bindir}/
+install %{SOURCE12} %{buildroot}/%{_httpd_bindir}/
+
+# Create errordocument.conf for cpanel & whm product
+%{__mkdir_p} %{buildroot}/%{_httpd_confdir}/includes
+%{__perl} %{buildroot}/%{_httpd_bindir}/generate-errordoc-conf > %{buildroot}/%{_httpd_confdir}/includes/errordocument.conf
 
 %clean
 rm -rf %{buildroot}
@@ -97,8 +108,14 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/060-setup_apache_symlinks.pl
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/500-restartsrv_httpd.sh
+%attr(0755,root,root) %{_httpd_bindir}/generate-errordoc-conf
+%config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Thu Oct  1 2015 S. Kurt Newman <kurt.newman@cpanel.net> - 1.0-37
+- Now allows cpanel users to customize their error pages using
+  errordocument.conf (EA-3732)
+
 * Wed Sep 30 2015 Dan Muey <dan@cpanel.net> 1.0.36
 - Remove legacy mod_disable_suexec logic
 
