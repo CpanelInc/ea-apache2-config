@@ -29,22 +29,18 @@ use Cpanel::Notify                     ();
 use POSIX qw( :sys_wait_h );
 
 sub is_handler_supported {
-    my ( $handler, $ver ) = @_;
+    my $handler   = shift;
     my $supported = 0;
 
     my %handler_map = (
         'suphp' => [q{mod_suphp}],
         'cgi'   => [ q{mod_cgi}, q{mod_cgid} ],
-        'dso'   => [q{libphp5}],                  # if you update this also update ULC’s Cpanel/Lang/PHP/Utils.pm accordingly
+        'dso'   => [q{libphp5}],                  # TODO: This is here until EA-3711 is complete
     );
 
     my $modules = Cpanel::AdvConfig::apache::modules::get_supported_modules();
     for my $mod ( @{ $handler_map{$handler} } ) {
-        my $mod_copy = $mod;                      # break the alias or you will *change* $handler_map{$handler} in the if statement below
-        if ( $mod eq 'libphp5' ) {                # if you update this also update ULC’s Cpanel/Lang/PHP/Utils.pm accordingly
-            $mod_copy = "lib$ver-php5";
-        }
-        $supported = 1 if exists $modules->{$mod_copy};
+        $supported = 1 if $modules->{$mod};
     }
 
     return $supported;
@@ -99,7 +95,7 @@ my $yaml = Cpanel::DataStore::fetch_ref( $apacheconf->file_conf_php_conf() . '.y
 my %php_settings = ( dryrun => 0, restart => 0 );
 for my $ver (@phps) {
     my $old_handler = $yaml->{$ver} || 'suphp';    # prefer suphp if no handler defined
-    my $new_handler = is_handler_supported( $old_handler, $ver ) ? $old_handler : 'cgi';
+    my $new_handler = is_handler_supported($old_handler) ? $old_handler : 'cgi';
 
     if ( $old_handler ne $new_handler ) {
         print locale->maketext(q{WARNING: You removed a configured [asis,Apache] handler.}), "\n";

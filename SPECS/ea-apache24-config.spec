@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       39%{?dist}
+Release:       38%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -112,9 +112,6 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
-* Mon Oct 05 2015 Dan Muey <dan@cpanel.net> 1.0.39
-- Update libphp5 logic to fit with upstream logic (EA-3711)
-
 * Thu Oct 01 2015 Dan Muey <dan@cpanel.net> 1.0.38
 - Remove legacy mod_disable_suexec logic from SSL
 
