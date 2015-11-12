@@ -24,7 +24,6 @@ use Try::Tiny;
 use Cpanel::AdvConfig::apache::modules ();
 use Cpanel::ConfigFiles::Apache        ();
 use Cpanel::DataStore                  ();
-use Cpanel::Lang::PHP::Settings        ();
 use Cpanel::Notify                     ();
 use POSIX qw( :sys_wait_h );
 
@@ -72,12 +71,22 @@ sub send_notification {
 }
 
 my $apacheconf = Cpanel::ConfigFiles::Apache->new();
-my ( $php, @phps );
+my ( $php, @phps, $old_php_obj );
 
 # If there are no PHPs installed, we could get an exception.
 try {
-    $php = Cpanel::Lang::PHP::Settings->new();
-    @phps = @{ $php->php_get_installed_versions() } or die;
+    try {
+        require Cpanel::Lang;
+        $php = Cpanel::Lang->new( lang => "php" );
+        @phps = @{ $php->get_installed_packages() } or die;
+        $old_php_obj = 0;
+    }
+    catch {
+        require Cpanel::Lang::PHP::Settings;
+        $php         = Cpanel::Lang::PHP::Settings->new();
+        @phps        = @{ $php->php_get_installed_versions() } or die;
+        $old_php_obj = 1;
+    }
 }
 catch {
     unlink $apacheconf->file_conf_php_conf() . '.yaml';
@@ -92,7 +101,7 @@ my $yaml = Cpanel::DataStore::fetch_ref( $apacheconf->file_conf_php_conf() . '.y
 # use it if the module is there, but if not, we'll fall back to cgi.
 # Based on the way ea-php* packages install, we can guarantee that cgi
 # will always be available.
-my %php_settings = ( dryrun => 0, restart => 0 );
+my %php_settings;
 for my $ver (@phps) {
     my $old_handler = $yaml->{$ver} || 'suphp';    # prefer suphp if no handler defined
     my $new_handler = is_handler_supported($old_handler) ? $old_handler : 'cgi';
@@ -114,7 +123,7 @@ for my $ver (@phps) {
 # It is possible that the system default setting may not match what we
 # got from the YAML file, so let's make sure things are as we expect.
 # System default will take precedence.
-my $sys_default = eval { $php->php_get_system_default_version(); };
+my $sys_default = eval { $old_php_obj ? $php->php_get_system_default_version() : $php->get_system_default_package; };
 ($sys_default) = grep { $_ eq $sys_default } @phps if defined $sys_default;
 
 my $yaml_default = $yaml->{'phpversion'} || undef;
@@ -123,10 +132,30 @@ my $yaml_default = $yaml->{'phpversion'} || undef;
 # Both vars will be either an installed version, or undef.  Undef can
 # mean that the previously-set version is not installed, or there was
 # no setting in the first place, or there was some other error.
-$php_settings{version} = $sys_default || $yaml_default || $phps[-1];
+my $default = $sys_default || $yaml_default || $phps[-1];
 
 try {
-    $php->php_set_system_default_version(%php_settings);
+    if ($old_php_obj) {
+        $php_settings{restart} = 0;
+        $php_settings{dryrun}  = 0;
+        $php_settings{version} = $default;
+        $php->php_set_system_default_version(%php_settings);
+    }
+    else {
+        # no $apache->restart() afterward
+        # dryrun N/A
+        $php->set_system_default_package( package => $default );
+
+        require Cpanel::WebServer;
+        my $apache = Cpanel::WebServer->new->get_server( type => "apache" );
+        for my $pkg ( keys %php_settings ) {
+            $apache->set_package_handler(
+                type    => $php_settings{$pkg},
+                lang    => $php,
+                package => $pkg,
+            );
+        }
+    }
 }
 catch {
     logger->die("$_");    # copy $_ since it can be magical
