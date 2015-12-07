@@ -76,8 +76,8 @@ my ( $php, @phps, $old_php_obj );
 # If there are no PHPs installed, we could get an exception.
 try {
     try {
-        require Cpanel::Lang;
-        $php = Cpanel::Lang->new( lang => "php" );
+        require Cpanel::ProgLang;
+        $php = Cpanel::ProgLang->new( type => "php" );
         @phps = @{ $php->get_installed_packages() } or die;
         $old_php_obj = 0;
     }
