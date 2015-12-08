@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       39%{?dist}
+Release:       40%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -112,6 +112,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Mon Dec 07 2015 Dan Muey <dan@cpanel.net> 1.0.40
+- Update name space and attribute (ZC-1202)
+
 * Thu Nov 12 2015 Dan Muey <dan@cpanel.net> 1.0.39
 - Have 009-phpconf.pl work under the original and refactored MultiPHP modules
 
