@@ -30,6 +30,8 @@ use Cpanel::Notify                     ();
 use Getopt::Long                       ();
 use POSIX qw( :sys_wait_h );
 
+our @PreferredHandlers = qw( suphp dso cgi none );
+
 sub debug {
     my $cfg = shift;
     my $t   = localtime;
@@ -39,17 +41,28 @@ sub debug {
 # TODO: Update code to use new Cpanel::WebServer::Supported::apache::make_handler() interface
 sub is_handler_supported {
     my $handler   = shift;
+    my $package   = shift;
     my $supported = 0;
 
     my %handler_map = (
         'suphp' => [q{mod_suphp}],
         'cgi'   => [ q{mod_cgi}, q{mod_cgid} ],
         'dso'   => [q{libphp5}],
+        'none'  => [q{core}],
     );
 
     my $modules = Cpanel::AdvConfig::apache::modules::get_supported_modules();
     for my $mod ( @{ $handler_map{$handler} } ) {
-        $supported = 1 if $modules->{$mod};
+        if ( $modules->{$mod} ) {
+            if ( $package && $handler eq 'dso' ) {
+                system("/bin/rpm -q $package-php &>/dev/null");    # depends on rpm not allowing multiple dso to be installed
+                $supported = 1 if ( ( $? >> 8 ) == 0 );
+            }
+            else {
+                $supported = 1;
+            }
+        }
+        last if $supported;
     }
 
     return $supported;
@@ -65,7 +78,7 @@ sub send_notification {
             package             => $package,
             language            => $language,
             webserver           => $webserver,
-            missing_handler     => $missing_handler,
+            missing_handler     => $missing_handler || 'UNDEFINED',
             replacement_handler => $replacement_handler
         ],
     );
@@ -80,9 +93,79 @@ sub send_notification {
     return 1;
 }
 
+sub get_preferred_handler {
+    my $package = shift;
+    my $cfg     = shift;
+
+    my $old_handler = $cfg->{$package} || $PreferredHandlers[0];
+    my $new_handler;
+
+    if ( is_handler_supported( $old_handler, $package ) ) {
+        $new_handler = $old_handler;
+    }
+    else {
+        for my $handler (@PreferredHandlers) {
+            last if $new_handler;
+            $new_handler = $handler if is_handler_supported( $handler, $package );
+        }
+    }
+
+    if ( $new_handler eq 'dso' ) {
+    }
+
+    return $new_handler;
+}
+
+# EA-3819: The cpanel api calls depend on php.conf having all known packages
+# to be in php.conf.  This will update php.conf with some temporary
+# values just in case they're missing.  This will also remove entries
+# if they no longer installed.
+sub sanitize_php_config {
+    my $cfg  = shift;
+    my $prog = shift;
+
+    return 1 unless scalar @{ $cfg->{packages} };
+
+    # The %save hash is used to ensure cpanel has a basic php.conf that will
+    #   not break the MultiPHP EA4 code if a package or handler is removed
+    #   from the system while it's configured.  It will iterate over all
+    #   possible handler attempting to find a suitable (and supported)
+    #   handler.  It will resort to the 'none' handler if nothing else
+    #   is supported.
+    #
+    # Finally, the cfg_ref hash is what this applications uses to update
+    #   packages/handlers to a "preferred" one if the current is missing or
+    #   no longer installed.
+    my %save    = %{ $cfg->{cfg_ref} };
+    my $default = delete $cfg->{cfg_ref}{default};
+
+    # remove packages which are no longer installed
+    for my $pkg ( keys %{ $cfg->{cfg_ref} } ) {
+        unless ( grep( /\A\Q$pkg\E\z/, @{ $cfg->{packages} } ) ) {
+            delete $cfg->{cfg_ref}->{$pkg};
+            delete $save{$pkg};
+        }
+    }
+
+    # add packages which are newly installed and at least make sure it's a valid handler
+    for my $pkg ( @{ $cfg->{packages} } ) {
+        $save{$pkg} = get_preferred_handler( $pkg, \%save );
+    }
+
+    # make sure the default package has been assigned
+    $default = ( reverse sort @{ $cfg->{packages} } )[0] unless defined $default;
+    $save{default} = $default;
+
+    # and only allow a single dso handler, set the rest to cgi or none
+
+    !$cfg->{args}{dryrun} && $prog->set_conf( conf => \%save );
+
+    return 1;
+}
+
 # Retrieves current PHP
 sub get_php_config {
-    my $argv = shift;
+    my $argv = shift || [];
 
     my %cfg = ( packages => [], args => { dryrun => 0, debug => 0 } );
 
@@ -124,11 +207,12 @@ sub get_php_config {
 
         try {
             my $php = Cpanel::ProgLang->new( type => 'php' );     # this will die if PHP isn't installed
-
             $cfg{php}      = $php;
             $cfg{packages} = $php->get_installed_packages();
             $cfg{cfg_ref}  = $prog->get_conf();
         };
+
+        sanitize_php_config( \%cfg, $prog );
     }
 
     return \%cfg;
@@ -150,7 +234,7 @@ sub get_rebuild_settings {
 
     for my $package ( @{ $cfg->{packages} } ) {
         my $old_handler = $ref->{$package} || '';
-        my $new_handler = is_handler_supported($old_handler) ? $old_handler : ( is_handler_supported('suphp') ? 'suphp' : 'cgi' );    # prefer suphp if no handler defined
+        my $new_handler = get_preferred_handler( $package, $ref );
 
         if ( $old_handler ne $new_handler ) {
             print locale->maketext(q{WARNING: You removed a configured [asis,Apache] handler.}), "\n";

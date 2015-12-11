@@ -27,6 +27,7 @@ our $Conf;
 sub new { return bless( {}, __PACKAGE__ ) }
 sub get_file_path { return $Path }
 sub get_conf      { return $Conf }
+sub set_conf      { shift; my %args = @_; $Conf = $args{conf} }
 
 package Mock::Cpanel::ConfigFiles::Apache;
 
@@ -88,7 +89,7 @@ sub test_is_handler_supported : Tests(9) {
     }
 }
 
-sub test_get_php_config : Tests(5) {
+sub test_get_php_config : Tests(6) {
     require_ok('SOURCES/009-phpconf.pl');
     can_ok( 'ea_apache2_config::phpconf', 'get_php_config' );
 
@@ -99,14 +100,18 @@ sub test_get_php_config : Tests(5) {
     local *Cpanel::ProgLang::new            = sub { return Mock::Cpanel::ProgLang->new() };
     local *Cpanel::ProgLang::Conf::new      = sub { return Mock::Cpanel::ProgLang::Conf->new() };
 
-    use warnings qw( redefine );
+    no warnings qw( redefine once );
+    local *ea_apache2_config::phpconf::get_preferred_handler = sub { return "foobar$$" };
+
+    use warnings qw( redefine once );
     local $Mock::Cpanel::ProgLang::PHPInstalled    = 0;
     local $Mock::Cpanel::ConfigFiles::Apache::Path = "/path/to/apache/cfg$$";
     local $Mock::Cpanel::ProgLang::Conf::Path      = "/path/to/cpanel/cfg$$";
 
     my $ref = ea_apache2_config::phpconf::get_php_config();
+    delete $ref->{args};
     my %expect = ( api => 'new', apache_path => "/path/to/apache/cfg$$", cfg_path => "/path/to/cpanel/cfg$$", packages => [] );
-    is_deeply( $ref, \%expect, qq{get_php_config: Contains correct config structure when PHP not installed} );
+    is_deeply( $ref, \%expect, qq{get_php_config: Contains correct config structure when PHP not installed} ) or diag explain($ref);
 
     $Mock::Cpanel::ProgLang::PHPInstalled = 1;
     local $Mock::Cpanel::ProgLang::Packages = [qw( x y z )];
@@ -114,8 +119,10 @@ sub test_get_php_config : Tests(5) {
     $ref = ea_apache2_config::phpconf::get_php_config();
     isa_ok( $ref->{php}, q{Cpanel::ProgLang::Supported::php} );
     delete $ref->{php};
-    %expect = ( api => 'new', apache_path => "/path/to/apache/cfg$$", cfg_path => "/path/to/cpanel/cfg$$", packages => [qw( x y z )], cfg_ref => { brindle => 1, bovine => 2 } );
-    is_deeply( $ref, \%expect, qq{get_php_config: Contains correct config structure when PHP not installed} );
+    delete $ref->{args};
+    %expect = ( api => 'new', apache_path => "/path/to/apache/cfg$$", cfg_path => "/path/to/cpanel/cfg$$", packages => [qw( x y z )], cfg_ref => {} );
+    is_deeply( $ref, \%expect, qq{get_php_config: Returned correct config structure when old packages no longer installed} ) or diag explain $ref;
+    is_deeply( $Mock::Cpanel::ProgLang::Conf::Conf, { default => 'z', x => "foobar$$", y => "foobar$$", z => "foobar$$" }, qq{get_php_config: Saved a working php.conf when old packages are no longer installed} ) or diag explain $Mock::Cpanel::ProgLang::Conf::Conf;
 }
 
 sub test_get_rebuild_settings : Tests(11) {
@@ -226,6 +233,7 @@ sub test_apply_rebuild_settings : Tests(12) {
     $ret = trap { ea_apache2_config::phpconf::apply_rebuild_settings( { api => 'new', php => $php, packages => \@packages }, \%settings ) };
     $trap->return_ok( 0, qq{apply_rebuild_settings: Returned successfully after setting package handlers} );
     is( $Mock::Cpanel::ProgLang::DefaultPackage, q{x}, q{apply_rebuild_settings: Set the correct system default package} );
+    delete $settings{default};
     is_deeply( \%Mock::Cpanel::WebServer::Supported::apache::Package, \%settings, q{apply_rebuild_settings: Set each package to the correct handler} );
     ok( !$caught_error, q{apply_rebuild_settings: No errors detected} );
     %Mock::Cpanel::WebServer::Supported::apache::Package = ();
