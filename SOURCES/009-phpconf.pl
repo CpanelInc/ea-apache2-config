@@ -323,3 +323,71 @@ unless ( caller() ) {
 }
 
 1;
+
+__END__
+
+=encoding utf8
+
+=head1 NAME
+
+009-phpconf.pl -- universal YUM hook
+
+=head1 SYNOPSIS
+
+Typically lives in a sub-directory under /etc/yum/universal-hooks.  This
+is executed by the YUM plugin, universal-hooks.
+
+=head1 DESCRIPTION
+
+This scripts updates the cPanel and Apache MultiPHP configurations.  It's important
+for this script to run after packages have been added, removed, or updated via YUM because
+the cPanel MultiPHP system depends on the configuration (default: /etc/cpanel/ea4/php.conf)
+always being correct.
+
+Some of the things it does are as follows:
+
+=over 2
+
+=item * If no PHP packages are installed on the system, it will remove all cPanel and Apache configuration information related to PHP.
+
+=item * If a PHP package is removed using YUM, configuration for that package is removed.
+
+=item * If a PHP package is added using YUM, a default configuration is applied.
+
+=item * If an Apache handler for PHP is removed using YUM, a default Apache handler is used instead.
+
+=back
+
+=head1 DEFAULT SYSTEM PACKAGE
+
+If the default PHP package is removed, the latest (according to PHP version number) is used instead.
+
+=head1 APACHE HANDLER FOR PHP
+
+If the Apache handler assigned to a PHP package is missing, the following checks are performed.
+If a check succeeds, no further checks are performed.
+
+=over 2
+
+=item 1. Attempt to assign a package to the 'suphp' handler if the mod_suphp Apache module is installed.
+
+=item 2. Attempt to assign a package to the 'dso' handler if the correct package is installed.
+
+=over 2
+
+=item * IMPORTANT NOTE: Only one 'dso' handler can be assigned at a time.
+
+=back
+
+=item 3. Attempt to assign a package to the 'cgi' handler if the mod_cgi or mod_cgid Apache modules are installed.
+
+=item 4. Assign the package to the 'none' handler since Apache isn't configured to serve PHP applications.
+
+=head1 ADDITIONAL INFORMATION
+
+This script depends on the packages setting up the correct dependencies and conflicts.  For
+example, this script doesn't check the Apache configuration for MPM ITK when assigning PHP
+to the SuPHP handler since it assumes the package should already have a conflict detected
+by YUM during installation.
+
+=back
