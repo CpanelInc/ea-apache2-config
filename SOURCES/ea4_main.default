@@ -19,7 +19,7 @@
 ##################################################
 ##################################################
 #
-# BEGIN cPanel & WHM required Apache configuration
+# cPanel & WHM controlled Apache configuration
 #
 ##################################################
 ##################################################
@@ -43,20 +43,20 @@ Include "[% paths.dir_conf_includes %]/pre_main_global.conf"
 # Create "[% paths.dir_conf_includes %]/pre_main_global.conf" if you want to customize httpd.conf.
 [% END -%]
 
-# These are hard-coded default values
+# These are hard-coded values that are required by cPanel & WHM
 PidFile [% paths.dir_run %]/httpd.pid
 User nobody
 Group nobody
 ExtendedStatus [% IF main.exists('extendedstatus') %][% main.extendedstatus.item.extendedstatus %][% ELSE %]Off[% END %]
 LogLevel [% IF main.exists('loglevel') %][% main.loglevel.item.loglevel %][% ELSE %]warn[% END %]
 
-# Can be set in WHM under 'Basic cPanel & WHM Setup' -> 'Contact Information'
+# You can change this by using WHM, and navigating to the 'Basic cPanel & WHM Setup' -> 'Contact Information' interface.
 ServerAdmin [% main.serveradmin.item.serveradmin %]
 
-# Can be set in WHM under 'Networking Setup' => 'Change Hostname'
+# You can change this by using WHM, and navigating to the 'Networking Setup' => 'Change Hostname' interface.
 ServerName [% wildcard_safe(main.servername.item.servername) %]
 
-# These can be set in WHM under 'Apache Configuration' -> 'Global Configuration'
+# You can change this by using WHM, and navigating to the 'Apache Configuration' -> 'Global Configuration' interface.
 [% IF main.exists('traceenable') %]TraceEnable [% main.traceenable.item.traceenable %][% END %]
 [% IF main.exists('serversignature') %]ServerSignature [% main.serversignature.item.serversignature %][% END %]
 [% IF main.exists('servertokens') %]ServerTokens [% main.servertokens.item.servertokens %][% END %]
@@ -81,12 +81,12 @@ ServerName [% wildcard_safe(main.servername.item.servername) %]
 [% IF main.exists('maxkeepaliverequests') %]MaxKeepAliveRequests [% main.maxkeepaliverequests.item.maxkeepaliverequests || 0 %][% END %]
 [% IF main.exists('timeout') %]Timeout [% main.timeout.item.timeout %][% END %]
 
-# DirectoryIndex is set in WHM under 'Apache Configuration' -> 'DirectoryIndex Priority'
+# You can change this by using WHM, and navigating to the 'Apache Configuration' -> 'DirectoryIndex Priority' interface.
 <IfModule dir_module>
     DirectoryIndex [% main.directoryindex.item.directoryindex %]
 </IfModule>
 
-# Limits can be set in WHM under 'Apache Configuration' -> 'Memory Usage Restrictions'
+# You can change this by using WHM, and navigating to the 'Apache Configuration' -> 'Memory Usage Restrictions' interface.
 [%# NOTE: The maxrlimit* settings are currently hard-coded to off in WHM -%]
 [% IF main.rlimitcpu.item.softrlimitcpu -%]
 RLimitCPU [% main.rlimitcpu.item.softrlimitcpu %] [% mainrlimitcpu.item.maxrlimitcpu %]
@@ -95,14 +95,14 @@ RLimitCPU [% main.rlimitcpu.item.softrlimitcpu %] [% mainrlimitcpu.item.maxrlimi
 RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimitmem %]
 [% END -%]
 
-# Needed by cPanel & WHM to provide access to a default webpage when none exists
+# This setting is required by cPanel & WHM in order to provide access to a default webpage when none exists
 <Directory "[% paths.dir_docroot %]">
     Options All
     AllowOverride None
     Require all granted
 </Directory>
 
-# cPanel security policy: Disallow remote access to .htaccess and .htpasswd files
+# Required cPanel security policy: Disallow remote access to .htaccess and .htpasswd files
 <Files ".ht*">
     Require all denied
 </Files>
@@ -130,6 +130,7 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
     ScriptAlias /scgi-bin /usr/local/cpanel/cgi-sys/scgiwrap
 </IfModule>
 
+# This can be configured in the cPanel 'Leech Protection' interface.
 [% IF file_test('f', '/usr/local/cpanel/bin/leechprotect') -%]
 <IfModule rewrite_module>
     RewriteEngine on
@@ -158,7 +159,7 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
     AddHandler server-parsed .shtml
 </IfModule>
 
-# NOTE: You should update WHM under 'Tweak Settings' to add additional hosts
+# You can change this by using WHM, and updating the 'Tweak Settings' -> 'System' -> 'Allow server-info' option.
 <IfModule status_module>
     # This is used by the WHM 'Apache Status' application
     <Location /whm-server-status>
@@ -182,7 +183,7 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
 [%  END -%]
 </IfModule>
 
-# cPanel security policy: disable userdir when mod_ruid2 or mpm_itk are loaded
+# Required cPanel security policy: disable userdir when mod_ruid2 or mpm_itk are loaded
 <IfModule userdir_module>
     UserDir public_html
 
@@ -227,7 +228,7 @@ Listen [% ip %]:[% configured.main_port %]
 [%      END -%]
 [%  ELSE -%]
 # WARNING: This is the default value assigned during installation, and should
-#          be updated in WHM ('Tweak Settings' -> 'System')
+#          be updated using WHM ('Tweak Settings' -> 'System' -> 'Apache non-SSL IP/port')
 Listen [% default_apache_port %]
 [%  END -%]
 
@@ -263,7 +264,7 @@ Listen [% default_apache_port %]
 [%     END -%]
 [%  ELSE -%]
     # WARNING: This is the default value assigned during installation, and should
-    #          be updated in WHM.
+    #          be updated using WHM ('Tweak Settings' -> 'System' -> 'Apache SSL port')
     Listen [% default_apache_ssl_port %]
 [%  END -%]
 
@@ -280,7 +281,22 @@ Include "[% paths.dir_conf_includes %]/account_suspensions.conf"
 Include "[% paths.dir_conf_includes %]/errordocument.conf"
 [% END -%]
 
-[%- FOREACH vh IN sharedips -%]
+# Administrator locations for safely globally altering all virtualhost configurations
+[% IF file_test('f', paths.dir_conf_includes _ '/pre_virtualhost_global.conf') -%]
+Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
+[% ELSE -%]
+# Create "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf" if you want to customize httpd.conf.
+[% END -%]
+
+##################################################
+##################################################
+#
+# Define default vhosts for shared IPs
+#
+##################################################
+##################################################
+
+[% FOREACH vh IN sharedips -%]
 <VirtualHost [% vh %]>
     ServerName [% parsed_ip(vh) %]
     DocumentRoot [% paths.dir_docroot %]
@@ -299,8 +315,16 @@ Include "[% paths.dir_conf_includes %]/errordocument.conf"
 </VirtualHost>
 
 [% END -%]
+
+##################################################
+##################################################
+#
+# Define default vhosts for unbound IPs
+#
+##################################################
+##################################################
+
 <VirtualHost *>
-    # Default vhost for unbound IPs
     ServerName [% wildcard_safe(servername) %]
     DocumentRoot [% paths.dir_docroot %]
     ServerAdmin [% serveradmin %]
@@ -316,6 +340,42 @@ Include "[% paths.dir_conf_includes %]/errordocument.conf"
 [%-         END -%]
 [%-     END %]
 </VirtualHost>
+
+##################################################
+##################################################
+#
+# Define the virtual host configurtion for user domains
+#
+##################################################
+##################################################
+
+# BEGIN: HTTP vhosts list
+[%  FOREACH vhost IN vhosts -%]
+[%      IF vhost.custom_vhost_template_ap2 != '' -%]
+[%          INCLUDE $vhost.custom_vhost_template_ap2 -%]
+[%      ELSE -%]
+[%          INCLUDE $includes.vhost -%]
+[%      END -%]
+[%  END -%]
+# END: HTTP vhosts list
+
+# BEGIN: HTTPS vhosts list
+[% FOREACH vhost IN ssl_vhosts -%]
+[%     IF vhost.custom_vhost_template_ap2 != '' -%]
+[%         INCLUDE $vhost.custom_vhost_template_ap2 -%]
+[%     ELSE -%]
+[%         INCLUDE $includes.ssl_vhost -%]
+[%     END -%]
+[% END -%]
+# END: HTTPS vhosts list
+
+##################################################
+##################################################
+#
+# Define the main cPanel & WHM proxy subdomains
+#
+##################################################
+##################################################
 
 [% ips_in_use.push("127.0.0.1") -%]
 [% SET copy_of_ips_in_use = ips_in_use.slice(0) -%]
@@ -508,59 +568,7 @@ Include "[% paths.dir_conf_includes %]/errordocument.conf"
 [%      END -%]
 [% END -%]
 
-[% IF file_test('f', '/var/cpanel/domainfwdip') -%]
-<VirtualHost [% domainfwdip %]>
-    ServerName [% wildcard_safe(domainfwdip) %]
-    ServerAdmin root\@localhost
-    DocumentRoot /dev/null
-    ScriptAliasMatch .* /usr/local/cpanel/cgi-sys/domainredirect.cgi
-</VirtualHost>
-[% END %]
-
-##################################################
-##################################################
-#
-# END cPanel & WHM required Apache configuration
-#
-##################################################
-##################################################
-
-##################################################
-##################################################
-#
-# BEGIN Virtual Host configurtion for user domains
-#
-##################################################
-##################################################
-
-# Administrator locations for safely altering httpd.conf
-[% IF file_test('f', paths.dir_conf_includes _ '/pre_virtualhost_global.conf') -%]
-Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
-[% ELSE -%]
-# Create "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf" if you want to customize httpd.conf.
-[% END -%]
-
-# BEGIN: HTTP vhosts list
-[%  FOREACH vhost IN vhosts -%]
-[%      IF vhost.custom_vhost_template_ap2 != '' -%]
-[%          INCLUDE $vhost.custom_vhost_template_ap2 -%]
-[%      ELSE -%]
-[%          INCLUDE $includes.vhost -%]
-[%      END -%]
-[%  END -%]
-# END: HTTP vhosts list
-
-# BEGIN: HTTPS vhosts list
-[% FOREACH vhost IN ssl_vhosts -%]
-[%     IF vhost.custom_vhost_template_ap2 != '' -%]
-[%         INCLUDE $vhost.custom_vhost_template_ap2 -%]
-[%     ELSE -%]
-[%         INCLUDE $includes.ssl_vhost -%]
-[%     END -%]
-[% END -%]
-# END: HTTPS vhosts list
-
-# Administrator locations for safely altering httpd.conf
+# Administrator locations for safely altering virtualhost configuration
 [% IF file_test('f', paths.dir_conf_includes _ '/post_virtualhost_global.conf') -%]
 Include "[% paths.dir_conf_includes %]/post_virtualhost_global.conf"
 [% ELSE -%]
@@ -570,10 +578,22 @@ Include "[% paths.dir_conf_includes %]/post_virtualhost_global.conf"
 ##################################################
 ##################################################
 #
-# END Virtual Host configurtion for user domains
+# Define the Domain Forwarding virtual hosts
 #
 ##################################################
 ##################################################
+
+[% IF file_test('f', '/var/cpanel/domainfwdip') -%]
+<VirtualHost [% domainfwdip %]>
+    ServerName [% wildcard_safe(domainfwdip) %]
+    ServerAdmin root\@localhost
+    DocumentRoot /dev/null
+    ScriptAliasMatch .* /usr/local/cpanel/cgi-sys/domainredirect.cgi
+</VirtualHost>
+[% ELSE -%]
+# Domain forwarding is currently disabled.
+# You can set this by logging into WHM, and navigating to the 'DNS Functions' => 'Setup/Edit Domain Forwarding' interface.
+[% END %]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
