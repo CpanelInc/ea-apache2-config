@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       42%{?dist}
+Release:       43%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -112,6 +112,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Wed Dec 17 2015 Dan Muey <dan@cpanel.net> 1.0.43
+- configure split logs when its enabled
+
 * Thu Dec 17 2015 S. Kurt Newman <kurt.newman@cpanel.net> - 1.0.42
 - Fixed virtual host definition ordering httpd.conf so users
   can override cpanel & whm proxy subdomains (EA-3865)
