@@ -40,7 +40,7 @@ if ( -x '/usr/local/cpanel/bin/packman' ) {
 
 sub purge_cached_commands {
 
-    print "Purging all relavant cached command results\n";
+    print "Purging all relevant cached command results\n";
 
     # Get the directory where the CachedCommand cache files live
     my $cache_dir = Cpanel::CachedCommand::Utils::_get_datastore_dir();
