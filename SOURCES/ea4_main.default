@@ -195,7 +195,8 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
     </IfModule>
 </IfModule>
 
-[% IF enable_piped_logs -%]
+[% SET have_splitlogs_bin = file_test('x', '/usr/local/cpanel/bin/splitlogs') %]
+[% IF enable_piped_logs && have_splitlogs_bin -%]
 <IfModule mod_log_config.c>
     LogFormat "%v:%p %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combinedvhost
     <IfModule logio_module>
@@ -212,6 +213,9 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
     CustomLog "|/usr/local/cpanel/bin/splitlogs --main=[% wildcard_safe(servername) %] --mainout=[% paths.file_access_log %]" combinedvhost
 </IfModule>
 [% ELSE %]
+[% IF enable_piped_logs && !have_splitlogs_bin -%]
+# The splitlogs program could not be executed, so piped logging is not being used.
+[% END %]
 <IfModule log_config_module>
 [%  IF main.ifmodulemodlogconfigc.logformat.items.length -%]
 [%      FOREACH dir IN main.ifmodulemodlogconfigc.logformat.items -%]
