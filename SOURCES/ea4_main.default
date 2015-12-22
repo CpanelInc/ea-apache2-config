@@ -206,10 +206,19 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
     LogFormat "%{Referer}i -> %U" referer
     LogFormat "%{User-agent}i" agent
 
+    [%- SET splitlogsextra = '' -%]
+    [%- TRY -%]
+        [%- SET splitlogsconf = load_conf('/var/cpanel/conf/splitlogs.conf') -%]
+        [%- IF splitlogsconf.maxopen.length %][% splitlogsextra = splitlogsextra _ " --maxopen=" _ splitlogsconf.maxopen %][% END -%]
+        [%- IF splitlogsconf.buffer.length %][% splitlogsextra = splitlogsextra _ " --buffer=" _ splitlogsconf.buffer %][% END -%]
+        [%- IF configured.main_port_ssl.length && configured.main_port_ssl != '443' %][% splitlogsextra = splitlogsextra _ " --sslport=" _ configured.main_port_ssl %][% END -%]
+    [%- CATCH -%]
+        [%# noop but catch is required or it dies %]
+    [%- END -%]
     <IfModule logio_module>
-        CustomLog "|/usr/local/cpanel/bin/splitlogs --main=[% wildcard_safe(servername) %] --suffix=-bytes_log" bytesvhost
+        CustomLog "|/usr/local/cpanel/bin/splitlogs --main=[% wildcard_safe(servername) %] --suffix=-bytes_log[% splitlogsextra %]" bytesvhost
     </IfModule>
-    CustomLog "|/usr/local/cpanel/bin/splitlogs --main=[% wildcard_safe(servername) %] --mainout=[% paths.file_access_log %]" combinedvhost
+    CustomLog "|/usr/local/cpanel/bin/splitlogs --main=[% wildcard_safe(servername) %] --mainout=[% paths.file_access_log %][% splitlogsextra %]" combinedvhost
 </IfModule>
 [% ELSE %]
 <IfModule log_config_module>
