@@ -33,11 +33,6 @@ purge_cached_commands();
 print "Rebuilding global cache\n";
 system('/usr/local/cpanel/bin/build_global_cache');
 
-if ( -x '/usr/local/cpanel/bin/packman' ) {
-    print "Rebuilding PackMan caches\n";
-    system('/usr/local/cpanel/bin/packman cache');
-}
-
 sub purge_cached_commands {
 
     print "Purging all relevant cached command results\n";
