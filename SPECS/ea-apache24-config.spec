@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       45%{?dist}
+Release:       46%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -112,6 +112,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Wed Apr 20 2016 Jacob Perkins <jacob.perkins@cpanel.net> 1.0.46
+- Disable stabling errors from being sent to the HTTP client.
+
 * Fri Feb 12 2016  Darren Mobley <darren@cpanel.net> 1.0.45
 - Removed call to clear packman cache
 
