@@ -170,6 +170,11 @@
         [%- END %]
     [%- END %]
 [%- END %]
+[%- IF vhost.php_fpm %]
+    <IfModule proxy_fcgi_module>
+        ProxyPassMatch "\.(phtml|php[0-9]*)$" "[% vhost.php_fpm_proxy %]"
+    </IfModule>
+[%- END %]
 [%- IF !added_include %]
     [%- IF apache_target_version %]
         [%- SET vhost_include_base = paths.dir_conf_userdata _ "/std/$apache_target_version/" %]
