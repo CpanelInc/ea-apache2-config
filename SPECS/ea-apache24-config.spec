@@ -14,7 +14,7 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       47%{?dist}
+Release:       48%{?dist}
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -112,6 +112,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Fri Jun 3 2016 David Nielson <david.nielson@cpanel.net> 1.0-48
+- Recognize libphp7.so as a valid PHP handler
+
 * Mon May 16 2016 Julian Brown <julian.brown@cpanel.net> 1.0.47
 - Add templates to vhost for PHP-FPM.
 

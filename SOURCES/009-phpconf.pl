@@ -46,8 +46,8 @@ sub is_handler_supported {
 
     my %handler_map = (
         'suphp' => [q{mod_suphp}],
-        'cgi'   => [ q{mod_cgi}, q{mod_cgid} ],
-        'dso'   => [q{libphp5}],
+        'cgi'   => [qw{mod_cgi mod_cgid}],
+        'dso'   => [qw{libphp5 libphp7}],
         'none'  => [q{core}],
     );
 
@@ -108,9 +108,6 @@ sub get_preferred_handler {
             last if $new_handler;
             $new_handler = $handler if is_handler_supported( $handler, $package );
         }
-    }
-
-    if ( $new_handler eq 'dso' ) {
     }
 
     return $new_handler;
