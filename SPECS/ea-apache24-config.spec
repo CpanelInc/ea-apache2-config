@@ -14,7 +14,9 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       48%{?dist}
+# Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
+%define release_prefix 59
+Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
@@ -112,6 +114,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Mon Jun 20 2016 Dan Muey <dan@cpanel.net> - 1.0-59
+- EA-4383: Update Release value to OBS-proof versioning
+
 * Fri Jun 3 2016 David Nielson <david.nielson@cpanel.net> 1.0-48
 - Recognize libphp7.so as a valid PHP handler
 
