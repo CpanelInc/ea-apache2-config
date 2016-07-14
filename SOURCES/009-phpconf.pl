@@ -30,7 +30,8 @@ use Cpanel::Notify                     ();
 use Getopt::Long                       ();
 use POSIX qw( :sys_wait_h );
 
-our @PreferredHandlers = qw( suphp dso cgi none );
+our @PreferredHandlers      = qw( suphp dso cgi none );
+our $cpanel_default_php_pkg = "ea-php56";                 # UPDATE ME UPDATE THE POD!!!
 
 sub debug {
     my $cfg = shift;
@@ -150,7 +151,13 @@ sub sanitize_php_config {
     }
 
     # make sure the default package has been assigned
-    $default = ( reverse sort @{ $cfg->{packages} } )[0] unless defined $default;
+    if ( !defined $default ) {
+        my @packages = sort @{ $cfg->{packages} };
+
+        # if we have $cpanel_default_php_pkg use that, otherwise use the latest that is installed
+        $default = grep( { $_ eq $cpanel_default_php_pkg } @packages ) ? $cpanel_default_php_pkg : $packages[-1];
+    }
+
     $save{default} = $default;
 
     # and only allow a single dso handler, set the rest to cgi or none
@@ -357,7 +364,7 @@ Some of the things it does are as follows:
 
 =head1 DEFAULT SYSTEM PACKAGE
 
-If the default PHP package is removed, the latest (according to PHP version number) is used instead.
+If the default PHP package is removed, C<$cpanel_default_php_pkg> (currently ea-php56) is used if its installed. Otherwise the latest (according to PHP version number) is used.
 
 =head1 APACHE HANDLER FOR PHP
 
