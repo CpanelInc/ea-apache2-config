@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 62
+%define release_prefix 63
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -122,6 +122,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Thu Jul 14 2016 Dan Muey <dan@cpanel.net> - 1.0-63
+- ZC-1972: Have 009 script default PHP to 5.6
+
 * Tue Jul 05 2016 Edwin Buck <e.buck@cpanel.net> - 1.0-62
 - EA-4673: Rollback modsec2 location change until WHM can support it.
 
