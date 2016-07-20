@@ -14,16 +14,20 @@
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
-Release:       47%{?dist}
+# Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
+%define release_prefix 63
+Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
+BuildArch:     noarch
 
 Source0:       paths.conf
 # Source1: reuse this as needed
-# Source2: reuse this as needed
+Source2:       300-fixmailman.pl
 Source3:       vhost.default
 Source4:       ssl_vhost.default
+Source5:       400-patch_mod_security2.pl
 Source6:       010-purge_cache.pl
 Source7:       500-restartsrv_httpd.sh
 Source8:       060-setup_apache_symlinks.pl
@@ -72,14 +76,17 @@ mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/apache2/domlogs
 
 # Install the cache purge trigger
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__
-install -m 755 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/010-purge_cache.pl
+install %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/010-purge_cache.pl
 ln -sf /usr/local/cpanel/scripts/rebuildhttpdconf $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/020-rebuild-httpdconf
 ln -sf /usr/local/cpanel/scripts/update_apachectl $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/030-update-apachectl
-install -m 755 %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/500-restartsrv_httpd.sh
+install %{SOURCE5} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/400-patch_mod_security2.pl
+install %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/500-restartsrv_httpd.sh
 ln -sf /usr/local/cpanel/scripts/update_apachectl $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/510-update-apachectl
-install -m 755 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/060-setup_apache_symlinks.pl
-install -m 755 %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
-install -m 755 %{SOURCE11} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/009-phpconf.pl
+install %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/060-setup_apache_symlinks.pl
+install %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
+install %{SOURCE11} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/009-phpconf.pl
+ln -sf /usr/local/cpanel/bin/modsec_cpanel_conf_init $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/011-modsec_cpanel_conf_init
+%{__install} %{SOURCE2} %{buildroot}%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/
 
 # Install apache utility
 %{__mkdir_p} %{buildroot}/%{_httpd_bindir}/
@@ -102,16 +109,37 @@ rm -rf %{buildroot}
 %dir %{_localstatedir}/log/apache2/domlogs
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/009-phpconf.pl
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/010-purge_cache.pl
+%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/011-modsec_cpanel_conf_init
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/020-rebuild-httpdconf
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/030-update-apachectl
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/510-update-apachectl
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/060-setup_apache_symlinks.pl
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
+%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/300-fixmailman.pl
+%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/400-patch_mod_security2.pl
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/500-restartsrv_httpd.sh
 %attr(0755,root,root) %{_httpd_bindir}/generate-errordoc-conf
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Thu Jul 14 2016 Dan Muey <dan@cpanel.net> - 1.0-63
+- ZC-1972: Have 009 script default PHP to 5.6
+
+* Tue Jul 05 2016 Edwin Buck <e.buck@cpanel.net> - 1.0-62
+- EA-4673: Rollback modsec2 location change until WHM can support it.
+
+* Tue Jul 05 2016 S. Kurt Newman <kurt.newman@cpanel.net> - 1.0-61
+- Now fixes permissions on mailman dir in case Apache env changes (ZC-2011)
+
+* Thu Jun 30 2016 Dan Muey <dan@cpanel.net> - 1.0-60
+- ZC-2014: Make sure modsec conf is initialized via universal hook
+
+* Mon Jun 20 2016 Dan Muey <dan@cpanel.net> - 1.0-59
+- EA-4383: Update Release value to OBS-proof versioning
+
+* Fri Jun 3 2016 David Nielson <david.nielson@cpanel.net> 1.0-48
+- Recognize libphp7.so as a valid PHP handler
+
 * Mon May 16 2016 Julian Brown <julian.brown@cpanel.net> 1.0.47
 - Add templates to vhost for PHP-FPM.
 

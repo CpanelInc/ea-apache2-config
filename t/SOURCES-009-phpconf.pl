@@ -148,38 +148,38 @@ sub test_get_rebuild_settings : Tests(11) {
 
     my @tests = (
         {
-            mods     => { mod_cgi => 1 },
+            mods => { mod_cgi => 1 },
             packages => [qw( x y z )],
-            conf     => { default => 'x',                                                    x => 'cgi', y => 'cgi', z => 'cgi' },
-            default  => 'x',      # NOTE: In practice, this will be the same as conf variable
+            conf     => { default => 'x', x => 'cgi', y => 'cgi', z => 'cgi' },
+            default  => 'x',                                                                                    # NOTE: In practice, this will be the same as conf variable
             note     => qq{Happy path: all packages and handlers installed and accounted for in config file},
-            expected => { default => 'x',                                                    x => 'cgi', y => 'cgi', z => 'cgi' },
+            expected => { default => 'x', x => 'cgi', y => 'cgi', z => 'cgi' },
             output   => qr/\A\z/,
         },
         {
-            mods     => { mod_cgi => 1 },
+            mods => { mod_cgi => 1 },
             packages => [qw( x y z )],
             conf     => { default => 'x' },
-            default  => 'x',      # NOTE: In practice, this will be the same as conf variable
+            default  => 'x',                                                                                    # NOTE: In practice, this will be the same as conf variable
             note     => qq{All packages installed, but no handlers defined in config -- default to cgi},
             expected => { default => 'x', x => 'cgi', y => 'cgi', z => 'cgi' },
             output   => qr/revert/,
         },
         {
-            mods     => { mod_cgi => 1, mod_suphp => 1 },
+            mods => { mod_cgi => 1, mod_suphp => 1 },
             packages => [qw( x y z )],
-            conf    => { default => 'x' },
-            default => 'x',      # NOTE: In practice, this will be the same as conf variable
-            note    => qq{All packages installed, but no handlers defined in config -- default to suphp},
+            conf     => { default => 'x' },
+            default  => 'x',                                                                                    # NOTE: In practice, this will be the same as conf variable
+            note     => qq{All packages installed, but no handlers defined in config -- default to suphp},
             expected => { default => 'x', x => 'suphp', y => 'suphp', z => 'suphp' },
             output   => qr/revert/,
         },
         {
-            mods     => { mod_cgi => 1, mod_suphp => 1 },
+            mods => { mod_cgi => 1, mod_suphp => 1 },
             packages => [qw( y z )],
-            conf    => { default => 'x' },
-            default => 'x',      # NOTE: In practice, this will be the same as conf variable
-            note    => qq{The system default package is missing -- default to latest package},
+            conf     => { default => 'x' },
+            default  => 'x',                                                                                    # NOTE: In practice, this will be the same as conf variable
+            note     => qq{The system default package is missing -- default to latest package},
             expected => { default => 'z', y => 'suphp', z => 'suphp' },
             output   => qr/revert/,
         },
@@ -237,6 +237,41 @@ sub test_apply_rebuild_settings : Tests(12) {
     is_deeply( \%Mock::Cpanel::WebServer::Supported::apache::Package, \%settings, q{apply_rebuild_settings: Set each package to the correct handler} );
     ok( !$caught_error, q{apply_rebuild_settings: No errors detected} );
     %Mock::Cpanel::WebServer::Supported::apache::Package = ();
+}
+
+sub test_sanitize_php_config : Tests(6) {
+    require_ok('SOURCES/009-phpconf.pl');
+    can_ok( 'ea_apache2_config::phpconf', 'sanitize_php_config' );
+    is( $ea_apache2_config::phpconf::cpanel_default_php_pkg, "ea-php56", '$cpanel_default_php_pkg is what we expect' );
+
+    my $php     = Mock::Cpanel::ProgLang::Conf->new();
+    my @non_def = qw(ea-php42 ea-php99 ea-php01);
+    ea_apache2_config::phpconf::sanitize_php_config(
+        {
+            cfg_ref => { default => "ea-php42" },
+            packages => [ @non_def, $ea_apache2_config::phpconf::cpanel_default_php_pkg ],
+        },
+        $php
+    );
+    is( $Mock::Cpanel::ProgLang::Conf::Conf->{default}, "ea-php42", "sanitize_php_config(): given default is kept" );
+
+    ea_apache2_config::phpconf::sanitize_php_config(
+        {
+            cfg_ref => {},
+            packages => [ @non_def, $ea_apache2_config::phpconf::cpanel_default_php_pkg ],
+        },
+        $php
+    );
+    is( $Mock::Cpanel::ProgLang::Conf::Conf->{default}, $ea_apache2_config::phpconf::cpanel_default_php_pkg, "sanitize_php_config(): uses \$cpanel_default_php_pkg when default is not given and \$cpanel_default_php_pkg is installed" );
+
+    ea_apache2_config::phpconf::sanitize_php_config(
+        {
+            cfg_ref  => {},
+            packages => \@non_def,
+        },
+        $php
+    );
+    is( $Mock::Cpanel::ProgLang::Conf::Conf->{default}, "ea-php99", "sanitize_php_config(): uses newest when default is not given and \$cpanel_default_php_pkg is not installed" );
 }
 
 #TODO: Update SOURCES/009-phpconf.pl to actually execute as a script (its all in functions right now)
