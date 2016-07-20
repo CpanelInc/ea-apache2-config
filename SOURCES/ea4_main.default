@@ -428,9 +428,11 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
     <IfModule suphp_module>
         suPHP_UserGroup nobody nobody
     </IfModule>
-    <IfModule security2_module>
-        SecRuleEngine Off
-    </IfModule>
+    <Proxy "*">
+        <IfModule security2_module>
+            SecRuleEngine Off
+        </IfModule>
+    </Proxy>
 
 [%          IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' -%]
     UserDir disabled
@@ -499,9 +501,11 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
     <IfModule suphp_module>
         suPHP_UserGroup nobody nobody
     </IfModule>
-    <IfModule security2_module>
-        SecRuleEngine Off
-    </IfModule>
+    <Proxy "*">
+        <IfModule security2_module>
+            SecRuleEngine Off
+        </IfModule>
+    </Proxy>
 
 [%          IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' -%]
     UserDir disabled
