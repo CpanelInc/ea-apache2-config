@@ -172,7 +172,9 @@
 [%- END %]
 [%- IF vhost.php_fpm %]
     <IfModule proxy_fcgi_module>
-        ProxyPassMatch "\.(phtml|php[0-9]*)$" "[% vhost.php_fpm_proxy %]"
+        <FilesMatch \.(phtml|php[0-9]*)$>
+            SetHandler proxy:unix:[% vhost.php_fpm_socket %]|fcgi://[% wildcard_safe(vhost.servername) %]/
+        </FilesMatch>
     </IfModule>
 [%- END %]
 [%- IF !added_include %]
