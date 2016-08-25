@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 65
+%define release_prefix 66
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -122,6 +122,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Tue Aug 23 2016 Edwin Buck <e.buck@cpanel.net> 1.0-66
+- EA-4914: Fix PHP installations to not report module removals.
+
 * Mon Aug 08 2016 Matt Dees <matt.dees@cpanel.net> 1.0-65
 - CPANEL-7006: Make fpm pools use SetHandler rather than ProxyPassMatch
 
