@@ -240,7 +240,7 @@ sub get_rebuild_settings {
         my $old_handler = $ref->{$package} || '';
         my $new_handler = get_preferred_handler( $package, $ref );
 
-        if ( $old_handler ne $new_handler ) {
+        if ( $old_handler ne '' && $old_handler ne $new_handler ) {
             print locale->maketext(q{WARNING: You removed a configured [asis,Apache] handler.}), "\n";
             print locale->maketext( q{The “[_1]” package will revert to the “[_2]”[comment,the web server handler that will be used in its place (e.g. cgi)] “[_3]” handler.}, $package, 'Apache', $new_handler ), "\n";
             $cfg->{args}->{dryrun} && send_notification( $package, 'PHP', 'Apache', $old_handler, $new_handler );
