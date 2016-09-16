@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 67
+%define release_prefix 68
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -34,7 +34,12 @@ Source8:       060-setup_apache_symlinks.pl
 Source9:       070-cloudlinux-cagefs.pl
 Source10:      ea4_main.default
 Source11:      009-phpconf.pl
-SOURCE12:      generate-errordoc-conf
+Source12:      generate-errordoc-conf
+Source13:      011-modsec_cpanel_conf_init
+Source14:      020-rebuild-httpdconf
+Source15:      030-update-apachectl
+Source16:      510-update-apachectl
+Source17:      100-phpfpm_cleanup.pl
 
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:      ea-webserver
@@ -76,17 +81,22 @@ mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/apache2/domlogs
 
 # Install the cache purge trigger
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__
-install %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/010-purge_cache.pl
-ln -sf /usr/local/cpanel/scripts/rebuildhttpdconf $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/020-rebuild-httpdconf
-ln -sf /usr/local/cpanel/scripts/update_apachectl $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/030-update-apachectl
-install %{SOURCE5} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/400-patch_mod_security2.pl
-install %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/500-restartsrv_httpd.sh
-ln -sf /usr/local/cpanel/scripts/update_apachectl $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/510-update-apachectl
-install %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/060-setup_apache_symlinks.pl
-install %{SOURCE9} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
+install %{SOURCE2}  $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/300-fixmailman.pl
+install %{SOURCE6}  $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/010-purge_cache.pl
+install %{SOURCE5}  $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/400-patch_mod_security2.pl
+install %{SOURCE7}  $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/500-restartsrv_httpd.sh
+install %{SOURCE8}  $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/060-setup_apache_symlinks.pl
+install %{SOURCE9}  $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
 install %{SOURCE11} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/009-phpconf.pl
-ln -sf /usr/local/cpanel/bin/modsec_cpanel_conf_init $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/011-modsec_cpanel_conf_init
-%{__install} %{SOURCE2} %{buildroot}%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/
+install %{SOURCE13} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/011-modsec_cpanel_conf_init
+install %{SOURCE14} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/020-rebuild-httpdconf
+install %{SOURCE15} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/030-update-apachectl
+install %{SOURCE16} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/510-update-apachectl
+
+# For the PHP-FPM specific cleanup script
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-php__WILDCARD__-php-fpm
+install %{SOURCE17} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-php__WILDCARD__-php-fpm/100-phpfpm_cleanup.pl
+
 
 # Install apache utility
 %{__mkdir_p} %{buildroot}/%{_httpd_bindir}/
@@ -118,10 +128,15 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/300-fixmailman.pl
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/400-patch_mod_security2.pl
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/500-restartsrv_httpd.sh
+%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-php__WILDCARD__-php-fpm/100-phpfpm_cleanup.pl
 %attr(0755,root,root) %{_httpd_bindir}/generate-errordoc-conf
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Fri Sep 16 2016 Darren Mobley <darren@cpanel.net> - 1.0-68
+- HB-1952: Add posttrans script to clean upand reset to default the PHP
+  configurations for users using FPM when the packages are removed.
+
 * Tue Sep 13 2016 Dan Muey <dan@cpanel.net> - 1.0-67
 - EA-5227: improve output of symlink setup script
 
