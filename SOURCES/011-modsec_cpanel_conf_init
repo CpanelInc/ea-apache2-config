@@ -1,0 +1,3 @@
+#!/usr/local/cpanel/3rdparty/bin/perl
+exec '/usr/local/cpanel/bin/modsec_cpanel_conf_init';
+
