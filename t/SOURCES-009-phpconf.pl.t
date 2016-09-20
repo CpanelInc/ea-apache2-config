@@ -1,5 +1,10 @@
 #!/usr/local/cpanel/3rdparty/bin/perl
 
+# cpanel - t/SOURCES-009-phpconf.pl.t             Copyright(c) 2016 cPanel, Inc.
+#                                                           All Rights Reserved.
+# copyright@cpanel.net                                         http://cpanel.net
+# This code is subject to the cPanel license. Unauthorized copying is prohibited
+
 package Mock::Cpanel::ProgLang;
 
 use strict;
@@ -59,6 +64,7 @@ package t::SOURCES::009_phpconf;
 use strict;
 use warnings;
 use parent qw( Test::Class );
+use FindBin ();
 use Test::More;
 use Test::NoWarnings;
 use Test::Trap;
@@ -66,8 +72,13 @@ use File::Temp ();
 use lib qw( /usr/local/cpanel/t/lib );
 use Test::Filesys ();
 
+sub init : Test(startup => 1) {
+    require_ok("$FindBin::Bin/../SOURCES/009-phpconf.pl");
+    return;
+}
+
 sub test_is_handler_supported : Tests(9) {
-    require_ok('SOURCES/009-phpconf.pl');
+    note "Testing is_handler_supported()";
     can_ok( 'ea_apache2_config::phpconf', 'is_handler_supported' );
 
     my @tests = (
@@ -87,10 +98,12 @@ sub test_is_handler_supported : Tests(9) {
         use warnings qw( redefine );
         is( ea_apache2_config::phpconf::is_handler_supported( $test->{handler} ), $test->{result}, qq{is_handler_supported: $test->{note}} );
     }
+
+    return;
 }
 
-sub test_get_php_config : Tests(6) {
-    require_ok('SOURCES/009-phpconf.pl');
+sub test_get_php_config : Tests(5) {
+    note "Testing get_php_config()";
     can_ok( 'ea_apache2_config::phpconf', 'get_php_config' );
 
     no warnings qw( redefine );
@@ -123,10 +136,12 @@ sub test_get_php_config : Tests(6) {
     %expect = ( api => 'new', apache_path => "/path/to/apache/cfg$$", cfg_path => "/path/to/cpanel/cfg$$", packages => [qw( x y z )], cfg_ref => {} );
     is_deeply( $ref, \%expect, qq{get_php_config: Returned correct config structure when old packages no longer installed} ) or diag explain $ref;
     is_deeply( $Mock::Cpanel::ProgLang::Conf::Conf, { default => 'z', x => "foobar$$", y => "foobar$$", z => "foobar$$" }, qq{get_php_config: Saved a working php.conf when old packages are no longer installed} ) or diag explain $Mock::Cpanel::ProgLang::Conf::Conf;
+
+    return;
 }
 
 sub test_get_rebuild_settings : Tests(11) {
-    require_ok('SOURCES/009-phpconf.pl');
+    note "Testing get_rebuild_settings()";
     can_ok( 'ea_apache2_config::phpconf', 'get_rebuild_settings' );
 
     no warnings qw( redefine );
@@ -160,28 +175,28 @@ sub test_get_rebuild_settings : Tests(11) {
             mods => { mod_cgi => 1 },
             packages => [qw( x y z )],
             conf     => { default => 'x' },
-            default  => 'x',                                                                                    # NOTE: In practice, this will be the same as conf variable
-            note     => qq{All packages installed, but no handlers defined in config -- default to cgi},
+            default  => 'x',                                                                                            # NOTE: In practice, this will be the same as conf variable
+            note     => qq{All packages installed, handlers undefined in config, assign to preferred default -- cgi},
             expected => { default => 'x', x => 'cgi', y => 'cgi', z => 'cgi' },
-            output   => qr/revert/,
+            output   => qr/\A\z/,
         },
         {
             mods => { mod_cgi => 1, mod_suphp => 1 },
             packages => [qw( x y z )],
             conf     => { default => 'x' },
-            default  => 'x',                                                                                    # NOTE: In practice, this will be the same as conf variable
-            note     => qq{All packages installed, but no handlers defined in config -- default to suphp},
+            default  => 'x',                                                                                              # NOTE: In practice, this will be the same as conf variable
+            note     => qq{All packages installed, handlers undefined in config, assign to preferred default -- suphp},
             expected => { default => 'x', x => 'suphp', y => 'suphp', z => 'suphp' },
-            output   => qr/revert/,
+            output   => qr/\A\z/,
         },
         {
             mods => { mod_cgi => 1, mod_suphp => 1 },
             packages => [qw( y z )],
             conf     => { default => 'x' },
-            default  => 'x',                                                                                    # NOTE: In practice, this will be the same as conf variable
-            note     => qq{The system default package is missing -- default to latest package},
+            default  => 'x',                                                                                                                 # NOTE: In practice, this will be the same as conf variable
+            note     => qq{The system default package is missing -- default to latest package and use preferred default handler -- suphp},
             expected => { default => 'z', y => 'suphp', z => 'suphp' },
-            output   => qr/revert/,
+            output   => qr/\A\z/,
         },
     );
 
@@ -201,10 +216,12 @@ sub test_get_rebuild_settings : Tests(11) {
         is_deeply( $settings, $test->{expected}, qq{get_rebuild_settings: $test->{note} (settings)} ) or diag explain $test->{expected};
         like( $trap->stdout, $test->{output}, qq{get_rebuild_settings: $test->{note} (output)} );
     }
+
+    return;
 }
 
-sub test_apply_rebuild_settings : Tests(12) {
-    require_ok('SOURCES/009-phpconf.pl');
+sub test_apply_rebuild_settings : Tests(11) {
+    note "Testing apply_rebuild_settings()";
     can_ok( 'ea_apache2_config::phpconf', 'apply_rebuild_settings' );
     %Mock::Cpanel::WebServer::Supported::apache::Package = ();
 
@@ -237,10 +254,12 @@ sub test_apply_rebuild_settings : Tests(12) {
     is_deeply( \%Mock::Cpanel::WebServer::Supported::apache::Package, \%settings, q{apply_rebuild_settings: Set each package to the correct handler} );
     ok( !$caught_error, q{apply_rebuild_settings: No errors detected} );
     %Mock::Cpanel::WebServer::Supported::apache::Package = ();
+
+    return;
 }
 
-sub test_sanitize_php_config : Tests(6) {
-    require_ok('SOURCES/009-phpconf.pl');
+sub test_sanitize_php_config : Tests(5) {
+    note "Testing sanitize_php_config()";
     can_ok( 'ea_apache2_config::phpconf', 'sanitize_php_config' );
     is( $ea_apache2_config::phpconf::cpanel_default_php_pkg, "ea-php56", '$cpanel_default_php_pkg is what we expect' );
 
@@ -272,6 +291,8 @@ sub test_sanitize_php_config : Tests(6) {
         $php
     );
     is( $Mock::Cpanel::ProgLang::Conf::Conf->{default}, "ea-php99", "sanitize_php_config(): uses newest when default is not given and \$cpanel_default_php_pkg is not installed" );
+
+    return;
 }
 
 #TODO: Update SOURCES/009-phpconf.pl to actually execute as a script (its all in functions right now)

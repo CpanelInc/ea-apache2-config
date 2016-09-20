@@ -56,32 +56,34 @@ for my $dir ( $ea3_basedir, $ea3_bindir, $ea3_confdir ) {
     }
 }
 
-eval {
-    # Make a symlink from all the old ea3 paths to the new folders
-    foreach my $key ( keys %ea3_paths ) {
+# Make a symlink from all the old ea3 paths to the new folders
+my $verbose = grep /^--verbose/, @ARGV;
+my $had_errors = 0;
+foreach my $key ( keys %ea3_paths ) {
+    eval {
 
         # If the old and the new are the same, no symlink required
         if ( $apacheconf->{$key} eq $ea3_paths{$key} ) {
-            print "Source and destination same, $ea3_paths{$key}, no need to link\n";
-            next;
+            print "Source and destination same, $ea3_paths{$key}, no need to link\n" if $verbose;
+            return;
         }
 
         # No sense in trying to link to something that doesn't exist
         if ( !-e $apacheconf->{$key} ) {
-            print "Target $apacheconf->{$key} doesn't exist, can't link to it\n";
-            next;
+            print "Target $apacheconf->{$key} doesn't exist, can't link to it\n" if $verbose;
+            return;
         }
 
         # If a symlink already exists, it may be old/wrong, remake it
         if ( -l $ea3_paths{$key} ) {
             if ( readlink( $ea3_paths{$key} ) ne $apacheconf->{$key} ) {
-                print "Previous symlink at $ea3_paths{$key}, unlinking\n";
+                print "Previous symlink at $ea3_paths{$key}, unlinking\n" if $verbose;
                 unlink( $ea3_paths{$key} )
-                  or die("Unable to unlink $ea3_paths{$key}:  $!");
+                  or die("Unable to unlink $ea3_paths{$key}:  $!\n");
             }
             else {
-                print "Link already exists:  $ea3_paths{$key} -> $apacheconf->{$key}\n";
-                next;
+                print "Link already exists:  $ea3_paths{$key} -> $apacheconf->{$key}\n" if $verbose;
+                return;
             }
         }
 
@@ -89,19 +91,21 @@ eval {
         # due to its parent being linked.
         # In any case, don't link on top of an existing file
         if ( -e $ea3_paths{$key} ) {
-            print "$ea3_paths{$key} already visible, no need to link\n";
-            next;
+            print "$ea3_paths{$key} already visible, no need to link\n" if $verbose;
+            return;
         }
 
-        print "Linking $ea3_paths{$key} -> $apacheconf->{$key}\n";
+        print "Linking $ea3_paths{$key} -> $apacheconf->{$key}\n" if $verbose;
 
         symlink( $apacheconf->{$key}, $ea3_paths{$key} )
-          or die("Unable to symlink $ea3_paths{$key} to $apacheconf->{$key}:  $!");
+          or die("Unable to symlink $ea3_paths{$key} to $apacheconf->{$key}:  $!\n");
+    };
+    if ($@) {
+        warn "Error: $@";
+        $had_errors++;
     }
-};
-if ($@) {
-    print "$@\n";
-
-    exit 1;
 }
 
+if ($had_errors) {
+    exit 1;
+}
