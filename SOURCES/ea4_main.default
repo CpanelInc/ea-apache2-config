@@ -412,13 +412,14 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 [% SET copy_of_ips_in_use = ips_in_use.slice(0) -%]
 [% WHILE (ip_block = copy_of_ips_in_use.splice(0, 50)) AND ip_block.size -%]
 [%      IF proxysubdomains && supported.mod_proxy && supported.mod_rewrite -%]
+
+[%-# These comments are used internally as parsing tokens, for better or worse, so don't chnage them -%]
+# [% IF autodiscover_proxy_subdomains %]CPANEL/WHM/WEBMAIL/WEBDISK/AUTOCONFIG PROXY SUBDOMAINS[% ELSE %]CPANEL/WHM/WEBMAIL/WEBDISK PROXY SUBDOMAINS[% END %]
 <VirtualHost[% FOREACH server_ip IN ip_block -%] [% "${server_ip}:${configured.main_port}" %][% END -%]>
     ServerName [% wildcard_safe(servername) %]
 [%          IF autodiscover_proxy_subdomains -%]
-    # CPANEL/WHM/WEBMAIL/WEBDISK/AUTOCONFIG PROXY SUBDOMAINS
     ServerAlias cpanel.* whm.* webmail.* webdisk.* cpcalendars.* cpcontacts.* autodiscover.* autoconfig.*
 [%          ELSE -%]
-    # CPANEL/WHM/WEBMAIL/WEBDISK PROXY SUBDOMAINS
     ServerAlias cpanel.* whm.* webmail.* webdisk.* cpcalendars.* cpcontacts.*
 [%          END -%]
 
@@ -486,13 +487,14 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 
 [% WHILE (ip_block = ips_in_use.splice(0, 50)) AND ip_block.size -%]
 [%      IF proxysubdomains && supported.mod_proxy && supported.mod_rewrite -%]
+
+[%-# These comments are used internally as parsing tokens, for better or worse, so don't chnage them -%]
+# [% IF autodiscover_proxy_subdomains %]CPANEL/WHM/WEBMAIL/WEBDISK/AUTOCONFIG PROXY SUBDOMAINS[% ELSE %]CPANEL/WHM/WEBMAIL/WEBDISK PROXY SUBDOMAINS[% END %]
 <VirtualHost[% FOREACH server_ip IN ip_block -%] [% "${server_ip}:${configured.main_port_ssl}" %][% END -%]>
     ServerName [% wildcard_safe(servername) %]
 [%          IF autodiscover_proxy_subdomains %]
-    # CPANEL/WHM/WEBMAIL/WEBDISK/AUTOCONFIG PROXY SUBDOMAINS
     ServerAlias cpanel.* whm.* webmail.* webdisk.* cpcalendars.* cpcontacts.* autodiscover.* autoconfig.*
 [%          ELSE %]
-    # CPANEL/WHM/WEBMAIL/WEBDISK PROXY SUBDOMAINS
     ServerAlias cpanel.* whm.* webmail.* webdisk.* cpcalendars.* cpcontacts.*
 [%          END %]
     DocumentRoot [% paths.dir_docroot %]

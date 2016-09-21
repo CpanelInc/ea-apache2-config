@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 68
+%define release_prefix 69
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -133,6 +133,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Wed Sep 21 2016 Dan Muey <dan@cpanel.net> - 1.0-69
+- ZC-2149: restore the proxy subdomain comments to where the parser needs them to be
+
 * Fri Sep 16 2016 Darren Mobley <darren@cpanel.net> - 1.0-68
 - HB-1952: Add posttrans script to clean upand reset to default the PHP
   configurations for users using FPM when the packages are removed.
