@@ -23,15 +23,17 @@ package ea_apache2_config::phpconf;
 use strict;
 use Cpanel::Imports;
 use Try::Tiny;
-use Cpanel::ConfigFiles::Apache        ();
-use Cpanel::AdvConfig::apache::modules ();
-use Cpanel::DataStore                  ();
-use Cpanel::Notify                     ();
-use Getopt::Long                       ();
+use Cpanel::ConfigFiles::Apache ();
+use Cpanel::DataStore           ();
+use Cpanel::Notify              ();
+use Cpanel::ProgLang            ();
+use Cpanel::WebServer           ();
+use Getopt::Long                ();
 use POSIX qw( :sys_wait_h );
 
 our @PreferredHandlers      = qw( suphp dso cgi none );
 our $cpanel_default_php_pkg = "ea-php56";                 # UPDATE ME UPDATE THE POD!!!
+my ($php, $server);
 
 sub debug {
     my $cfg = shift;
@@ -39,34 +41,15 @@ sub debug {
     print "[$t] DEBUG: @_\n" if $cfg->{args}->{debug};
 }
 
-# TODO: Update code to use new Cpanel::WebServer::Supported::apache::make_handler() interface
 sub is_handler_supported {
-    my $handler   = shift;
-    my $package   = shift;
-    my $supported = 0;
+    my ( $handler, $package ) = @_;
 
-    my %handler_map = (
-        'suphp' => [q{mod_suphp}],
-        'cgi'   => [qw{mod_cgi mod_cgid}],
-        'dso'   => [qw{libphp5 libphp7}],
-        'none'  => [q{core}],
-    );
+    $php ||= Cpanel::ProgLang->new( type => 'php' );
+    $server ||= Cpanel::WebServer->new()->get_server( type => 'apache' );
 
-    my $modules = Cpanel::AdvConfig::apache::modules::get_supported_modules();
-    for my $mod ( @{ $handler_map{$handler} } ) {
-        if ( $modules->{$mod} ) {
-            if ( $package && $handler eq 'dso' ) {
-                system("/bin/rpm -q $package-php &>/dev/null");    # depends on rpm not allowing multiple dso to be installed
-                $supported = 1 if ( ( $? >> 8 ) == 0 );
-            }
-            else {
-                $supported = 1;
-            }
-        }
-        last if $supported;
-    }
-
-    return $supported;
+    my $ref = $server->get_available_handlers( lang => $php, package => $package );
+    return 1 if $ref->{$handler};
+    return 0;
 }
 
 sub send_notification {
@@ -322,6 +305,7 @@ sub apply_rebuild_settings {
 
 unless ( caller() ) {
     my $cfg      = get_php_config( \@ARGV );
+
     my $settings = get_rebuild_settings($cfg);
     apply_rebuild_settings( $cfg, $settings );
 }
@@ -387,11 +371,11 @@ If a check succeeds, no further checks are performed.
 
 =item 4. Assign the package to the 'none' handler since Apache isn't configured to serve PHP applications.
 
+=back
+
 =head1 ADDITIONAL INFORMATION
 
 This script depends on the packages setting up the correct dependencies and conflicts.  For
 example, this script doesn't check the Apache configuration for MPM ITK when assigning PHP
 to the SuPHP handler since it assumes the package should already have a conflict detected
 by YUM during installation.
-
-=back

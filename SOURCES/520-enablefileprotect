@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 if [[ -e /var/cpanel/fileprotect ]]
 then /usr/local/cpanel/scripts/enablefileprotect
 else /usr/local/cpanel/scripts/disablefileprotect
