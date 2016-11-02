@@ -49,6 +49,10 @@ User nobody
 Group nobody
 ExtendedStatus [% IF main.exists('extendedstatus') %][% main.extendedstatus.item.extendedstatus %][% ELSE %]Off[% END %]
 LogLevel [% IF main.exists('loglevel') %][% main.loglevel.item.loglevel %][% ELSE %]warn[% END %]
+[%- IF main.exists('symlink_protect') %]
+SymlinkProtect [% main.symlink_protect.item.symlink_protect %]
+SymlinkProtectRoot [% paths.dir_docroot %]
+[% END -%]
 
 # You can change this by using WHM, and navigating to the 'Basic cPanel & WHM Setup' -> 'Contact Information' interface.
 ServerAdmin [% main.serveradmin.item.serveradmin %]
