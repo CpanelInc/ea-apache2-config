@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 72
+%define release_prefix 73
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -136,6 +136,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Tue Nov 01 2016 Edwin Buck <e.buck@cpanel.net> - 1.0-73
+- EA-5484: Add support for SymlinkProtect in httpd.conf templates.
+
 * Wed Oct 26 2016 Darren Mobley <darren@cpanel.net> - 1.0-72
 - HB-2037: Fix shebang in fileprotect script
 
