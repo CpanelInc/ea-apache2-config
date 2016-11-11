@@ -121,6 +121,10 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
     ScriptAliasMatch ^/?webmail$ /usr/local/cpanel/cgi-sys/wredirect.cgi
     ScriptAliasMatch ^/?webmail/ /usr/local/cpanel/cgi-sys/wredirect.cgi
     ScriptAliasMatch ^/?whm/?$ /usr/local/cpanel/cgi-sys/whmredirect.cgi
+[% IF autodiscover_proxy_subdomains -%]
+    ScriptAliasMatch ^/Autodiscover/Autodiscover.xml /usr/local/cpanel/cgi-sys/autodiscover.cgi
+    ScriptAliasMatch ^/autodiscover/autodiscover.xml /usr/local/cpanel/cgi-sys/autodiscover.cgi
+[% END -%]
 
     Alias /bandwidth /usr/local/bandmin/htdocs/
     Alias /img-sys /usr/local/cpanel/img-sys/
