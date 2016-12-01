@@ -15,15 +15,15 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 74
+%define release_prefix 75
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
 Vendor:        cPanel, Inc.
 BuildArch:     noarch
 
-Source0:       paths.conf
-# Source1: reuse this as needed
+Source0:       centos7_paths.conf
+Source1:       centos6_paths.conf
 Source2:       300-fixmailman.pl
 Source3:       vhost.default
 Source4:       ssl_vhost.default
@@ -76,7 +76,11 @@ install %{SOURCE4} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ssl_
 install %{SOURCE10} %{buildroot}%{_localstatedir}/cpanel/templates/apache2_4/ea4_main.default
 
 mkdir -p $RPM_BUILD_ROOT/etc/cpanel/ea4
-install -m 644 %{SOURCE0} $RPM_BUILD_ROOT/etc/cpanel/ea4/paths.conf
+%if 0%{?rhel} >= 7
+  install -m 644 %{SOURCE0} $RPM_BUILD_ROOT/etc/cpanel/ea4/paths.conf
+%else
+  install -m 644 %{SOURCE1} $RPM_BUILD_ROOT/etc/cpanel/ea4/paths.conf
+%endif
 
 mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/apache2/domlogs
 
@@ -136,6 +140,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Tue Dec 01 2016 Edwin Buck <e.buck@cpanel.net> - 1.0-75
+- EA-5533: Avoid crossing filesystems in location of pid file.
+
 * Wed Nov 30 2016 Dan Muey <dan@cpanel.net> - 1.0-74
 - EA-5658: Do hard restart of apache when mod_fcgid is involved in a transaction
 
