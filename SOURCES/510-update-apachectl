@@ -1,3 +1,0 @@
-#!/usr/local/cpanel/3rdparty/bin/perl
-exec '/usr/local/cpanel/scripts/update_apachectl';
-
