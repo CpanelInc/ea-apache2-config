@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 77
+%define release_prefix 78
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -137,6 +137,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Wed Dec 07 2016 Dan Muey <dan@cpanel.net> - 1.0-78
+- EA-5613: Remove ScriptAlias for no longer existing scgiwrap
+
 * Tue Dec 06 2016 Dan Muey <dan@cpanel.net> - 1.0-77
 - EA-5724: Allow splitlogs.conf to override the configured SSL port
 
