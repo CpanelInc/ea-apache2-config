@@ -135,7 +135,7 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
 
     ScriptAlias /cgi-sys /usr/local/cpanel/cgi-sys/
     ScriptAlias /mailman /usr/local/cpanel/3rdparty/mailman/cgi-bin/
-    ScriptAlias /scgi-bin /usr/local/cpanel/cgi-sys/scgiwrap
+    [% IF file_test('f', '/usr/local/cpanel/cgi-sys/scgiwrap') %]ScriptAlias /scgi-bin /usr/local/cpanel/cgi-sys/scgiwrap[% END %]
 </IfModule>
 
 # This can be configured in the cPanel 'Leech Protection' interface.
@@ -219,7 +219,11 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
         [%- SET splitlogsconf = load_conf('/var/cpanel/conf/splitlogs.conf') -%]
         [%- IF splitlogsconf.maxopen.length %][% splitlogsextra = splitlogsextra _ " --maxopen=" _ splitlogsconf.maxopen %][% END -%]
         [%- IF splitlogsconf.buffer.length %][% splitlogsextra = splitlogsextra _ " --buffer=" _ splitlogsconf.buffer %][% END -%]
-        [%- IF configured.main_port_ssl.length && configured.main_port_ssl != '443' %][% splitlogsextra = splitlogsextra _ " --sslport=" _ configured.main_port_ssl %][% END -%]
+        [%- IF splitlogsconf.sslport.length %]
+            [% splitlogsextra = splitlogsextra _ " --sslport=" _ splitlogsconf.sslport %]
+        [%- ELSIF configured.main_port_ssl.length && configured.main_port_ssl != '443' %]
+            [% splitlogsextra = splitlogsextra _ " --sslport=" _ configured.main_port_ssl %]
+        [% END -%]
     [%- CATCH -%]
         [%# noop but catch is required or it dies %]
     [%- END -%]
