@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 78
+%define release_prefix 79
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -40,6 +40,7 @@ Source14:      020-rebuild-httpdconf
 Source15:      030-update-apachectl
 Source17:      100-phpfpm_cleanup.pl
 Source18:      520-enablefileprotect
+Source19:      490-restartsrv_apache_php_fpm
 
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:      ea-webserver
@@ -85,6 +86,7 @@ mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/apache2/domlogs
 
 # Install the cache purge trigger
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-php__WILDCARD__
 install %{SOURCE2}  $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/300-fixmailman.pl
 install %{SOURCE6}  $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/010-purge_cache.pl
 install %{SOURCE5}  $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/400-patch_mod_security2.pl
@@ -96,6 +98,7 @@ install %{SOURCE13} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs
 install %{SOURCE14} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/020-rebuild-httpdconf
 install %{SOURCE15} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/030-update-apachectl
 install %{SOURCE18} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/520-enablefileprotect
+install %{SOURCE19} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-php__WILDCARD__/490-restartsrv_apache_php_fpm
 
 # For the PHP-FPM specific cleanup script
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-php__WILDCARD__-php-fpm
@@ -131,12 +134,16 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/300-fixmailman.pl
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/400-patch_mod_security2.pl
+%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-php__WILDCARD__/490-restartsrv_apache_php_fpm
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/500-restartsrv_httpd
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-php__WILDCARD__-php-fpm/100-phpfpm_cleanup.pl
 %attr(0755,root,root) %{_httpd_bindir}/generate-errordoc-conf
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Wed Dec 14 2016 Dan Muey <dan@cpanel.net> - 1.0-79
+- EA-5783: Reload PHP-FPM after PHP modules are updated
+
 * Wed Dec 07 2016 Dan Muey <dan@cpanel.net> - 1.0-78
 - EA-5613: Remove ScriptAlias for no longer existing scgiwrap
 
