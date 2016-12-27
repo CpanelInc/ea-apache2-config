@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 80
+%define release_prefix 81
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -141,6 +141,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Tue Dec 27 2016 Jacob Perkins <jacob.perkins@cpanel.net> - 1.0-81
+- Send SSL traffic to only the SSL log
+
 * Wed Dec 21 2016 Dan Muey <dan@cpanel.net> - 1.0-80
 - EA-5783: Reload PHP-FPM after PHP modules are updated
 

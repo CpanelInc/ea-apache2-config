@@ -25,10 +25,10 @@
 [% END -%]
 [% IF logstyle == 'combined' -%]
     [%- IF !enable_piped_logs || !supported.mod_log_config -%]
-  CustomLog [% paths.dir_domlogs %]/[% wildcard_safe(vhost.log_servername) %] combined
+  CustomLog [% paths.dir_domlogs %]/[% wildcard_safe(vhost.log_servername) %]-ssl_log combined
     [%- END %]
 [% ELSE %]
-  TransferLog [% paths.dir_domlogs %]/[% wildcard_safe(vhost.log_servername) %]
+  TransferLog [% paths.dir_domlogs %]/[% wildcard_safe(vhost.log_servername) %]-ssl_log
 [% END -%]
 [% IF !enable_piped_logs -%]
   <IfModule log_config_module>
@@ -126,9 +126,6 @@
 [% END -%]
 [% IF supported.stapling && !has_ocsp(vhost.sslcertificatefile) -%]
     SSLUseStapling off
-[% END -%]
-[% IF !enable_piped_logs -%]
-    CustomLog [% paths.dir_domlogs %]/[% wildcard_safe(vhost.log_servername) %]-ssl_log combined
 [% END -%]
     SetEnvIf User-Agent ".*MSIE.*" nokeepalive ssl-unclean-shutdown
     <Directory "[% vhost.documentroot %]/cgi-bin">
