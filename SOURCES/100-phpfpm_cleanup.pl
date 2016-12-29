@@ -22,12 +22,16 @@
 ##############################################################################################
 
 use strict;
+use warnings;
+use Cpanel::Version::Tiny    ();
+use Cpanel::Version::Compare ();
 
-#use warnings;
+# The libraries needed to run this script weren't introduced until this release.
+exit 0 if Cpanel::Version::Compare::compare( $Cpanel::Version::Tiny::VERSION_BUILD, '<', '11.60.0.1' );
 
-use Cpanel::PHP::Config;
-use Cpanel::PHPFPM;
-use Cpanel::HttpUtils::ApRestart::BgSafe;
+require Cpanel::PHP::Config;
+require Cpanel::PHPFPM;
+require Cpanel::HttpUtils::ApRestart::BgSafe;
 
 ##############################################################################################
 
@@ -41,10 +45,9 @@ foreach my $arg (@ARGV) {
     if ( $arg =~ m/^--pkg_list=(.+)$/ ) {
         my $pkgs_path = $1;
         if ( open( my $pkgs_list_fh, '<', $pkgs_path ) ) {
-            foreach my $line (<$pkgs_list_fh>) {
-                chomp($line);
-                push( @pkgs, $line );
-            }
+            @pkgs = <$pkgs_list_fh>;
+            chomp @pkgs;
+            close $pkgs_list_fh;
         }
         else {
             die "Found path to packages “$pkgs_path” but could not read from it : $!\n";
@@ -109,7 +112,7 @@ if ($restart_needed) {
 
     # Finally, restart apache with the updated config
     msglog( 0, "Restarting Apache" );
-    Cpanel::HttpUtils::ApRestart::BgSafe::restart;
+    Cpanel::HttpUtils::ApRestart::BgSafe::restart();
 }
 
 exit;
@@ -122,7 +125,12 @@ sub get_users_on_fpm_version {
     my ($version) = @_;
     my @users;
 
-    my $conf_dir_path = ${Cpanel::PHPFPM::Constants::opt_cpanel} . '/ea-php' . $version . '/root/etc/php-fpm.d/';
+    require Cpanel::PHPFPM::Constants;
+
+    no warnings qw( once );
+    my $conf_dir_path = "$Cpanel::PHPFPM::Constants::opt_cpanel/ea-php$version/root/etc/php-fpm.d/";
+    use warnings qw( once );
+
     if ( opendir( my $user_confs_dir, $conf_dir_path ) ) {
         foreach my $file ( readdir($user_confs_dir) ) {
             if ( $file =~ m/.+\.conf$/ ) {
@@ -135,10 +143,11 @@ sub get_users_on_fpm_version {
                             push( @users, $username );
                         }
                     }
+                    close $cnf_fh;
                 }
             }
         }
-        close($user_confs_dir);
+        close $user_confs_dir;
     }
     return \@users;
 }
