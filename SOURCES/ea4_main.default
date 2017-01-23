@@ -454,30 +454,72 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 [%              END -%]
 [%          END -%]
 
+[%  IF dcv_rewrite_patterns -%]
+    ScriptAlias /.cpanel/dcv /usr/local/cpanel/cgi-priv/get_local.cgi
+[%  END -%]
+
     RewriteEngine On
+
+[%  IF dcv_rewrite_patterns -%]
+        [% FOR pattern = dcv_rewrite_patterns -%]
+            RewriteCond %{REQUEST_URI} [% mod_rewrite_string_escape(pattern) %] [% !loop.last && '[OR]' %]
+        [% END -%]
+        RewriteRule ^ /.cpanel/dcv [passthrough]
+[%  END -%]
+
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^cpanel\.
+[% IF proxypass_for_proxysubdomains %]
+    RewriteRule ^/(.*) /___proxy_subdomain_cpanel/$1 [PT]
+    ProxyPass "/___proxy_subdomain_cpanel" "http://127.0.0.1:2082/" max=1 retry=0
+[% ELSE %]
     RewriteRule ^/(.*) http://127.0.0.1:2082/$1 [P]
+[% END %]
 
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^webmail\.
+[% IF proxypass_for_proxysubdomains %]
+    RewriteRule ^/(.*) /___proxy_subdomain_webmail/$1 [PT]
+    ProxyPass "/___proxy_subdomain_webmail" "http://127.0.0.1:2095/" max=1 retry=0
+[% ELSE %]
     RewriteRule ^/(.*) http://127.0.0.1:2095/$1 [P]
+[% END %]
 
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^whm\.
+[% IF proxypass_for_proxysubdomains %]
+    RewriteRule ^/(.*) /___proxy_subdomain_whm/$1 [PT]
+    ProxyPass "/___proxy_subdomain_whm" "http://127.0.0.1:2086/" max=1 retry=0
+[% ELSE %]
     RewriteRule ^/(.*) http://127.0.0.1:2086/$1 [P]
+[% END %]
 
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^webdisk\.
+[% IF proxypass_for_proxysubdomains %]
+    RewriteRule ^/(.*) /___proxy_subdomain_webdisk/$1 [PT]
+    ProxyPass "/___proxy_subdomain_webdisk" "http://127.0.0.1:2077/" max=1 retry=0
+[% ELSE %]
     RewriteRule ^/(.*) http://127.0.0.1:2077/$1 [P]
+[% END %]
 
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^cpcalendars\.
+[% IF proxypass_for_proxysubdomains %]
+    RewriteRule ^/(.*) /___proxy_subdomain_cpcalendars/$1 [PT]
+    ProxyPass "/___proxy_subdomain_cpcalendars" "http://127.0.0.1:2079/" max=1 retry=0
+[% ELSE %]
     RewriteRule ^/(.*) http://127.0.0.1:2079/$1 [P]
+[% END %]
 
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^cpcontacts\.
+[% IF proxypass_for_proxysubdomains %]
+    RewriteRule ^/(.*) /___proxy_subdomain_cpcontacts/$1 [PT]
+    ProxyPass "/___proxy_subdomain_cpcontacts" "http://127.0.0.1:2079/" max=1 retry=0
+[% ELSE %]
     RewriteRule ^/(.*) http://127.0.0.1:2079/$1 [P]
+[% END %]
 
 [%          IF autodiscover_proxy_subdomains %]
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
@@ -532,15 +574,19 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 
     <IfModule ssl_module>
         SSLEngine on
-        SSLProxyEngine On
-        SSLProxyVerify none
-        # Setting to Off for backwards-compatibility
-        # Read for more info: http://httpd.apache.org/docs/2.4/mod/mod_ssl.html#sslproxycheckpeercn
-        SSLProxyCheckPeerCN Off
-[%          IF options_support.split_version.2 >= 5 -%]
-        SSLProxyCheckPeerName Off
-[%          END -%]
-        SSLProxyCheckPeerExpire Off
+
+[%         IF !ssl_proxy_to_non_ssl -%]
+            SSLProxyEngine On
+            SSLProxyVerify none
+            # Setting to Off for backwards-compatibility
+            # Read for more info: http://httpd.apache.org/docs/2.4/mod/mod_ssl.html#sslproxycheckpeercn
+            SSLProxyCheckPeerCN Off
+            [% IF options_support.split_version.2 >= 5 -%]
+                SSLProxyCheckPeerName Off
+            [% END -%]
+            SSLProxyCheckPeerExpire Off
+[%         END -%]
+
 [%          IF file_test('f', '/var/cpanel/ssl/cpanel/mycpanel.pem') -%]
         SSLCertificateFile /var/cpanel/ssl/cpanel/mycpanel.pem
         SSLCertificateKeyFile /var/cpanel/ssl/cpanel/mycpanel.pem
@@ -569,44 +615,75 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 [%          END -%]
     </IfModule>
 
+    [% SET proxy_prot = ssl_proxy_to_non_ssl ? 'http' : 'https' %]
+
+    <IfModule headers_module>
+    RequestHeader set X-HTTPS 1
+    </IfModule>
+
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^cpanel\.
-    RewriteCond %{HTTPS} on
-    RewriteRule ^/(.*) https://127.0.0.1:2083/$1 [P]
+[% IF proxypass_for_proxysubdomains %]
+    RewriteRule ^/(.*) /___proxy_subdomain_cpanel/$1 [PT]
+    ProxyPass "/___proxy_subdomain_cpanel" "http://127.0.0.1:2082/" max=1 retry=0
+[% ELSE %]
+    RewriteRule ^/(.*) [% proxy_prot %]://127.0.0.1:[% ssl_proxy_to_non_ssl ? 2082 : 2083 %]/$1 [P]
+[% END %]
 
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^webmail\.
-    RewriteCond %{HTTPS} on
-    RewriteRule ^/(.*) https://127.0.0.1:2096/$1 [P]
+[% IF proxypass_for_proxysubdomains %]
+    RewriteRule ^/(.*) /___proxy_subdomain_webmail/$1 [PT]
+    ProxyPass "/___proxy_subdomain_webmail" "http://127.0.0.1:2095/" max=1 retry=0
+[% ELSE %]
+    RewriteRule ^/(.*) [% proxy_prot %]://127.0.0.1:[% ssl_proxy_to_non_ssl ? 2095 : 2096 %]/$1 [P]
+[% END %]
 
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^whm\.
-    RewriteCond %{HTTPS} on
-    RewriteRule ^/(.*) https://127.0.0.1:2087/$1 [P]
+[% IF proxypass_for_proxysubdomains %]
+    RewriteRule ^/(.*) /___proxy_subdomain_whm/$1 [PT]
+    ProxyPass "/___proxy_subdomain_whm" "http://127.0.0.1:2086/" max=1 retry=0
+[% ELSE %]
+    RewriteRule ^/(.*) [% proxy_prot %]://127.0.0.1:[% ssl_proxy_to_non_ssl ? 2086 : 2087 %]/$1 [P]
+[% END %]
 
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^webdisk\.
-    RewriteCond %{HTTPS} on
-    RewriteRule ^/(.*) https://127.0.0.1:2078/$1 [P]
+[% IF proxypass_for_proxysubdomains %]
+    RewriteRule ^/(.*) /___proxy_subdomain_webdisk/$1 [PT]
+    ProxyPass "/___proxy_subdomain_webdisk" "http://127.0.0.1:2077/" max=1 retry=0
+[% ELSE %]
+    RewriteRule ^/(.*) [% proxy_prot %]://127.0.0.1:[% ssl_proxy_to_non_ssl ? 2077 : 2078 %]/$1 [P]
+[% END %]
 
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^cpcontacts\.
-    RewriteCond %{HTTPS} on
-    RewriteRule ^/(.*) https://127.0.0.1:2078/$1 [P]
+[% IF proxypass_for_proxysubdomains %]
+    RewriteRule ^/(.*) /___proxy_subdomain_cpcontacts/$1 [PT]
+    ProxyPass "/___proxy_subdomain_cpcontacts" "http://127.0.0.1:2079/" max=1 retry=0
+[% ELSE %]
+    RewriteRule ^/(.*) [% proxy_prot %]://127.0.0.1:[% ssl_proxy_to_non_ssl ? 2079 : 2080 %]/$1 [P]
+[% END %]
 
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^cpcalendars\.
-    RewriteCond %{HTTPS} on
-    RewriteRule ^/(.*) https://127.0.0.1:2078/$1 [P]
+[% IF proxypass_for_proxysubdomains %]
+    RewriteRule ^/(.*) /___proxy_subdomain_cpcalendars/$1 [PT]
+    ProxyPass "/___proxy_subdomain_cpcalendars" "http://127.0.0.1:2079/" max=1 retry=0
+[% ELSE %]
+    RewriteRule ^/(.*) [% proxy_prot %]://127.0.0.1:[% ssl_proxy_to_non_ssl ? 2079 : 2080 %]/$1 [P]
+[% END %]
 
 [%          IF autodiscover_proxy_subdomains %]
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^autodiscover\.
-    RewriteRule ^[^?]*(\\?.*)? http://127.0.0.1/cgi-sys/autodiscover.cgi [P]
+    RewriteRule ^[^?]*(\\?.*)? [% proxy_prot %]://127.0.0.1/cgi-sys/autodiscover.cgi [P]
 
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^autoconfig\.
-    RewriteRule ^[^?]*(\\?.*)? http://127.0.0.1/cgi-sys/autoconfig.cgi [P]
+    RewriteRule ^[^?]*(\\?.*)? [% proxy_prot %]://127.0.0.1/cgi-sys/autoconfig.cgi [P]
+
 [%          END %]
     UseCanonicalName Off
 

@@ -205,4 +205,22 @@
     # To customize this VirtualHost use an include file at the following location
     # Include "[% vhost_include_base %][% vhost.user %]/[% domain %]/*.conf"
 [%- END %]
+
+[%- IF vhost.proxy_subdomains && vhost.proxy_subdomains.size %]
+    <IfModule headers_module>
+    RequestHeader set X-HTTPS 1
+    </IfModule>
+
+    RewriteEngine On
+    [%- FOR label__zones = vhost.proxy_subdomains %]
+        [%- IF vhost.proxy_subdomains_regexp_ok.${label__zones.key} %]
+            RewriteCond %{HTTP_HOST} ^[% label__zones.key %]\.
+        [%- ELSE %]
+            [%- FOR domain = label__zones.value %]
+                RewriteCond %{HTTP_HOST} =[% label__zones.key _ ".$domain" %][% !loop.last && ' [OR]' %]
+            [%- END %]
+        [%- END %]
+        [% proxy_subdomain_redirect_rule(label__zones.key) %]
+    [%- END %]
+[%- END %]
 </VirtualHost>

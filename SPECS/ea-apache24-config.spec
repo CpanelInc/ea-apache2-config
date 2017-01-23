@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 81
+%define release_prefix 83
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -141,6 +141,12 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Thu Jan 19 2017 Nick Koston <nick@cpanel.net> - 1.0-83
+- Update EA4 templates to support faster ProxyPass subdomains (EA-5860)
+
+* Thu Jan 19 2017 Nick Koston <nick@cpanel.net> - 1.0-82
+- Update EA4 templates for proxy subdomain AutoSSL support (EA-5859)
+
 * Tue Dec 27 2016 Jacob Perkins <jacob.perkins@cpanel.net> - 1.0-81
 - Send SSL traffic to only the SSL log
 
