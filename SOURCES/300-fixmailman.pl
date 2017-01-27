@@ -9,8 +9,9 @@ package ea_apache24_config_runtime::SOURCES::300_fixmailman;
 
 use strict;
 use warnings;
-use Cpanel::Mailman::Perms  ();
-use Cpanel::SafeRun::Simple ();
+use Cpanel::Mailman::Perms   ();
+use Cpanel::SafeRun::Simple  ();
+use Cpanel::Daemonizer::Tiny ();
 
 our @Steps = (
     {
@@ -42,8 +43,15 @@ sub main {
     my $argv = shift;
 
     for my $step (@Steps) {
-        print "$step->{name}\n";
-        $step->{code}->($argv);
+        print "$step->{name} …\n";
+        my $pid = Cpanel::Daemonizer::Tiny::run_as_daemon(
+            sub {
+                $0 = $step->{name};
+                $step->{code}->($argv);
+                return;    # nobody is listening
+            }
+        );
+        print " … PID $pid\n";
     }
 
     return 0;
