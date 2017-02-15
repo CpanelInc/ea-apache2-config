@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 85
+%define release_prefix 86
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -141,6 +141,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Mon Feb 13 2017 Dan Muey <dan@cpanel.net> - 1.0-86
+- EA-5864: Do not call restartsrv_apache_php_fpm on systems that do not have restartsrv_apache_php_fpm
+
 * Tue Jan 21 2017 Dan Muey <dan@cpanel.net> - 1.0-85
 - EA-5855: spork off fixmailman since it can take a while
 

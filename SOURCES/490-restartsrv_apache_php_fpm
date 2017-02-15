@@ -21,4 +21,5 @@
 use strict;
 use warnings;
 
-system('/usr/local/cpanel/scripts/restartsrv_apache_php_fpm');
+my $fpm_restart = '/usr/local/cpanel/scripts/restartsrv_apache_php_fpm';
+system($fpm_restart) if -x $fpm_restart;
