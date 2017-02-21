@@ -342,6 +342,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 [% FOREACH vh IN sharedips -%]
 <VirtualHost [% vh %]>
     ServerName [% parsed_ip(vh) %]
+    ServerAlias [% wildcard_safe(servername) %]
     DocumentRoot [% paths.dir_docroot %]
     ServerAdmin [% serveradmin %]
 
