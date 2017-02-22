@@ -85,6 +85,23 @@ ServerName [% wildcard_safe(main.servername.item.servername) %]
 [% IF main.exists('maxkeepaliverequests') %]MaxKeepAliveRequests [% main.maxkeepaliverequests.item.maxkeepaliverequests || 0 %][% END %]
 [% IF main.exists('timeout') %]Timeout [% main.timeout.item.timeout %][% END %]
 
+
+[% IF global_dcv_rewrite_exclude && dcv_rewrite_patterns -%]
+<IfModule rewrite_module>
+# Global DCV Exclude
+RewriteEngine on
+[% FOR pattern = dcv_rewrite_patterns -%]
+RewriteCond %{REQUEST_URI} [% mod_rewrite_string_escape(pattern) %] [% !loop.last && '[OR]' %]
+[% END -%]
+[% IF all_possible_proxy_subdomains_regex %]
+# Exclude proxy subdomains as we need rewrites to capture the DCV requests
+RewriteCond %{HTTP_HOST} !^(?:[% all_possible_proxy_subdomains_regex %])\.
+[% END -%]
+RewriteRule ^ - [END]
+</IfModule>
+[% END %]
+
+
 # You can change this by using WHM, and navigating to the 'Apache Configuration' -> 'DirectoryIndex Priority' interface.
 <IfModule dir_module>
     DirectoryIndex [% main.directoryindex.item.directoryindex %]

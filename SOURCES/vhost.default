@@ -177,6 +177,13 @@
         </FilesMatch>
     </IfModule>
 [%- END %]
+[%- IF global_dcv_rewrite_exclude && dcv_rewrite_patterns %]
+    # Global DCV Rewrite Exclude
+    <IfModule rewrite_module>
+        RewriteOptions Inherit
+    </IfModule>
+[%- END %]
+
 [%- IF !added_include %]
     [%- IF apache_target_version %]
         [%- SET vhost_include_base = paths.dir_conf_userdata _ "/std/$apache_target_version/" %]
