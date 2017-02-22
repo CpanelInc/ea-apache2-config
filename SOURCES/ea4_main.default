@@ -285,6 +285,7 @@ Listen [% default_apache_port %]
         # Prevent browsers from failing if an OCSP server is temporarily broken.
         SSLStaplingReturnResponderErrors off
         SSLStaplingErrorCacheTimeout 60
+        SSLStaplingFakeTryLater off
 [%      END -%]
         SSLSessionCache shmcb:[% paths.dir_run %]/ssl_gcache_data_shmcb(1024000)
     </IfModule>
