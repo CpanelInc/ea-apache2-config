@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 88
+%define release_prefix 89
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -123,7 +123,7 @@ rm -rf %{buildroot}
 %attr(0644,root,root) /etc/cpanel/ea4/paths.conf
 %dir %{_localstatedir}/cpanel/templates/apache2_4
 %{_localstatedir}/cpanel/templates/apache2_4/*
-%dir %{_localstatedir}/log/apache2/domlogs
+%attr(0711,root,root) %dir %{_localstatedir}/log/apache2/domlogs
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/009-phpconf.pl
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/010-purge_cache.pl
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/011-modsec_cpanel_conf_init
@@ -141,6 +141,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Fri Mar 3 2017 Jacob Perkins <jacob.perkins@cpanel.net> - 1.0.89
+- Hardened permissions for domlogs
+
 * Wed Feb 22 2017 Nick Koston <nick@cpanel.net> - 1.0-88
 - Add global DCV exclude to EA4 templates
 
