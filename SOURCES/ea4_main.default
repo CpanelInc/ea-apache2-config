@@ -123,10 +123,10 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
     Require all granted
 </Directory>
 
-# Required cPanel security policy: Disallow remote access to .htaccess and .htpasswd files
-<Files ".ht*">
+# Required cPanel security policy: Disallow remote access to .htaccess, .htpasswd, .user.ini, and php.ini files
+<FilesMatch "(.ht[access|passwd]|.user.ini|php.ini)">
     Require all denied
-</Files>
+</FilesMatch>
 
 <IfModule alias_module>
     ScriptAliasMatch ^/?controlpanel/?$ /usr/local/cpanel/cgi-sys/redirect.cgi
