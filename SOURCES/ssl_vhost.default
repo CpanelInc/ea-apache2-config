@@ -67,6 +67,26 @@
     </Directory>
   </IfModule>
 
+  [% IF vhost.optimize_htaccess && vhost.optimize_htaccess != "search_full_path" %]
+    [% IF vhost.optimize_htaccess == "search_homedir_below" %]
+      <Directory "[% vhost.homedir %]">
+        AllowOverride All
+      </Directory>
+    [% ELSIF vhost.optimize_htaccess == "search_documentroot_below" %]
+      <Directory "[% vhost.documentroot %]">
+        AllowOverride All
+      </Directory>
+    [% ELSIF vhost.optimize_htaccess == "disable_htaccess" %]
+      <Directory "/">
+       AllowOverride None
+      </Directory>
+    [% ELSE %]
+      <Directory "/">
+        AllowOverride All
+      </Directory>
+    [% END %]
+  [% END %]
+
   <IfModule mod_suphp.c>
     suPHP_UserGroup [% vhost.user %] [% vhost.group %]
   </IfModule>
