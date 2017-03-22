@@ -98,7 +98,7 @@ RewriteEngine on
 RewriteCond %{REQUEST_URI} [% mod_rewrite_string_escape(pattern) %] [% !loop.last && '[OR]' %]
 [% END -%]
 [% IF all_possible_proxy_subdomains_regex %]
-# Exclude proxy subdomains as we need rewrites to capture the DCV requests
+# Exclude proxy subdomains as we eed rewrites to capture the DCV requests
 RewriteCond %{HTTP_HOST} !^(?:[% all_possible_proxy_subdomains_regex %])\.
 [% END -%]
 RewriteRule ^ - [END]
@@ -128,7 +128,7 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
 </Directory>
 
 # Required cPanel security policy: Disallow remote access to .htaccess, .htpasswd, .user.ini, and php.ini files
-<FilesMatch "^(\.ht(access|passwds?)|\.user\.ini|php\.ini)$">
+<FilesMatch "\/(\.ht(access|passwds?)|\.user\.ini|php\.ini)$">
     Require all denied
 </FilesMatch>
 
