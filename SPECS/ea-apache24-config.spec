@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 90
+%define release_prefix 92
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -141,6 +141,12 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Wed Mar 22 2017 Cory McIntire <cory@cpanel.net> - 1.0-92
+- EA-6088: Bad regex in cPanel security policy httpd.conf addition
+
+* Mon Mar 20 2017 J. Nick Koston <nick@cpanel.net> - 1.0-91
+- EA-6082: Allow optimizing AllowOveride
+
 * Sat Mar 11 2017 Cory McIntire <cory@cpanel.net> - 1.0.90
 - EA-6026: Block exposure to .user.ini and php.ini in public_html
 

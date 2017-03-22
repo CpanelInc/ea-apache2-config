@@ -67,7 +67,11 @@ ServerName [% wildcard_safe(main.servername.item.servername) %]
 [% IF main.exists('fileetag') %]FileETag [% main.fileetag.item.fileetag %][% END %]
 
 <Directory "/">
-    AllowOverride All
+    [% IF main.exists('optimize_htaccess') && main.optimize_htaccess.item.optimize_htaccess && main.optimize_htaccess.item.optimize_htaccess != "search_full_path" %]
+      AllowOverride None
+    [% ELSE %]
+      AllowOverride All
+    [% END %]
     Options [% main.directory.options.item.options %]
 </Directory>
 
@@ -124,7 +128,7 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
 </Directory>
 
 # Required cPanel security policy: Disallow remote access to .htaccess, .htpasswd, .user.ini, and php.ini files
-<FilesMatch "(.ht[access|passwd]|.user.ini|php.ini)">
+<FilesMatch "^(\.ht(access|passwds?)|\.user\.ini|php\.ini)$">
     Require all denied
 </FilesMatch>
 
@@ -364,6 +368,10 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
     DocumentRoot [% paths.dir_docroot %]
     ServerAdmin [% serveradmin %]
 
+    <Directory "[% paths.dir_docroot %]">
+      AllowOverride All
+    </Directory>
+
     <IfModule suphp_module>
         suPHP_UserGroup nobody nobody
     </IfModule>
@@ -390,6 +398,10 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
     ServerName [% wildcard_safe(servername) %]
     DocumentRoot [% paths.dir_docroot %]
     ServerAdmin [% serveradmin %]
+
+    <Directory "[% paths.dir_docroot %]">
+      AllowOverride All
+    </Directory>
 
     <IfModule suphp_module>
         suPHP_UserGroup nobody nobody
