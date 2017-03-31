@@ -226,7 +226,7 @@
     # Include "[% vhost_include_base %][% vhost.user %]/[% domain %]/*.conf"
 [%- END %]
 
-[%- IF vhost.proxy_subdomains && vhost.proxy_subdomains.size %]
+[%- IF proxysubdomains && vhost.proxy_subdomains && supported.mod_proxy && supported.mod_rewrite && vhost.proxy_subdomains.size %]
     <IfModule headers_module>
     RequestHeader set X-HTTPS 1
     </IfModule>
