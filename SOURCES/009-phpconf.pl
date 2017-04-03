@@ -33,7 +33,7 @@ use POSIX qw( :sys_wait_h );
 
 our @PreferredHandlers      = qw( suphp dso cgi none );
 our $cpanel_default_php_pkg = "ea-php56";                 # UPDATE ME UPDATE THE POD!!!
-my ($php, $server);
+my ( $php, $server );
 
 sub debug {
     my $cfg = shift;
@@ -303,11 +303,18 @@ sub apply_rebuild_settings {
     return 1;
 }
 
+sub setup_session_save_path {
+    if ( Cpanel::ProgLang::Supported::php::Ini->can('setup_session_save_path') ) {
+        Cpanel::ProgLang::Supported::php::Ini::setup_session_save_path();
+    }
+}
+
 unless ( caller() ) {
-    my $cfg      = get_php_config( \@ARGV );
+    my $cfg = get_php_config( \@ARGV );
 
     my $settings = get_rebuild_settings($cfg);
     apply_rebuild_settings( $cfg, $settings );
+    setup_session_save_path();
 }
 
 1;
