@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 92
+%define release_prefix 94
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -141,6 +141,12 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Mon Apr 03 2017 Jared Wright <jared.wright@cpanel.net> 1.0-94
+- STS-549: Setup php session directory after install of php.
+
+* Thu Mar 30 2017 J. Nick Koston <nick@cpanel.net> - 1.0-93
+- EA-6122: Ensure new style proxy subs are disabled if mod_proxy is not installed or proxy subdomains disabled
+
 * Wed Mar 22 2017 Cory McIntire <cory@cpanel.net> - 1.0-92
 - EA-6088: Bad regex in cPanel security policy httpd.conf addition
 
