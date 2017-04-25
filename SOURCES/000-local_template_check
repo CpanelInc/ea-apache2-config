@@ -1,0 +1,122 @@
+#!/usr/local/cpanel/3rdparty/bin/perl
+
+# cpanel - SOURCES/000-local_template_check          Copyright 2017 cPanel, Inc.
+#                                                           All Rights Reserved.
+# copyright@cpanel.net                                         http://cpanel.net
+# This code is subject to the cPanel license. Unauthorized copying is prohibited
+
+package ea_apache24_config_runtime::SOURCES::000_local_template_check;
+
+use strict;
+use warnings;
+
+use Cpanel::MD5  ();
+use Cpanel::JSON ();
+
+our $tt_dir    = "/var/cpanel/templates/apache2_4";
+our %templates = (
+    'ea4_main.default'  => 'ea4_main.local',
+    'ssl_vhost.default' => 'ssl_vhost.local',
+    'vhost.default'     => 'vhost.local',
+);
+
+exit( run(@ARGV) ) unless caller;
+
+sub run {
+    my @args = @_;
+
+    print "Checking ea4 templates …\n";
+    my @notify;
+    my $had_local = 0;
+    my $tt_data   = _get_tt_data($tt_dir);
+
+    for my $tt ( sort keys %templates ) {
+        next if !-f "$tt_dir/$templates{$tt}";
+        $had_local++;
+        push( @notify, $tt ) if $tt_data->{_}{just_created} || $tt_data->{$tt}{previous} ne $tt_data->{$tt}{current};
+    }
+
+    if (@notify) {
+        if ( $tt_data->{_}{just_created} ) {
+            _send( 'Cpanel::iContact::Class::EasyApache::EA4_TemplateCheckNew', \@notify );
+        }
+        else {
+            _regen_tt_data($tt_dir);
+            _send( 'Cpanel::iContact::Class::EasyApache::EA4_TemplateCheckUpdated', \@notify );
+        }
+    }
+    else {
+        if ($had_local) {
+            print "\tNo updates to ea4 templates, local templates should still be fine.\n";
+        }
+        else {
+            print "\tNo local templates; nothing to do.\n";
+        }
+    }
+
+    print " … done!\n";
+    return 0;    # exit clean
+}
+
+###############
+#### helpers ##
+###############
+
+sub _get_tt_data {
+    my ($dir) = @_;
+
+    my $just_created = 0;
+    if ( !-f "$dir/000-local_template_check.json" || -z _ ) {
+        _regen_tt_data($dir);
+        $just_created = 1;
+    }
+
+    my $hr = Cpanel::JSON::LoadFile("$dir/000-local_template_check.json");
+    $hr->{_}{just_created} = $just_created;
+
+    for my $tt ( sort keys %templates ) {
+        $hr->{$tt}{current} = Cpanel::MD5::getmd5sum("$dir/$tt");
+    }
+
+    return $hr;
+}
+
+sub _regen_tt_data {
+    my ($dir) = @_;
+    my $hr = {};
+
+    for my $tt ( sort keys %templates ) {
+        $hr->{$tt}{previous} = Cpanel::MD5::getmd5sum("$dir/$tt");
+    }
+
+    Cpanel::JSON::DumpFile( "$dir/000-local_template_check.json", $hr );
+
+    return;
+}
+
+sub _send {
+    my ( $class, @has_local ) = @_;
+
+    if ( eval "require $class;1" ) {
+        print "\tSending iContact ($class)\n";
+
+        my @templates_aoh;
+        for my $tt (@has_local) {
+            push @templates_aoh, {
+                name            => $tt,
+                name_full_path  => "$tt_dir/$tt",
+                local           => $templates{$tt},
+                local_full_path => " $tt_dir/$templates{$tt}"
+            };
+        }
+
+        $class->new( templates => \@templates_aoh );    # yes, new() actually results in message delivery <facepalm>
+    }
+    else {
+        print "\tiContact N/A: System does not have $class\n";
+    }
+
+    return;
+}
+
+1;
