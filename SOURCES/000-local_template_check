@@ -38,11 +38,11 @@ sub run {
 
     if (@notify) {
         if ( $tt_data->{_}{just_created} ) {
-            _send( 'Cpanel::iContact::Class::EasyApache::EA4_TemplateCheckNew', \@notify );
+            _send( 'Cpanel::iContact::Class::EasyApache::EA4_TemplateCheckNew', @notify );
         }
         else {
             _regen_tt_data($tt_dir);
-            _send( 'Cpanel::iContact::Class::EasyApache::EA4_TemplateCheckUpdated', \@notify );
+            _send( 'Cpanel::iContact::Class::EasyApache::EA4_TemplateCheckUpdated', @notify );
         }
     }
     else {
