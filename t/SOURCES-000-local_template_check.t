@@ -26,25 +26,25 @@ local $ea_apache24_config_runtime::SOURCES::000_local_template_check::tt_dir = $
 my $_send_new     = 0;
 my $_send_updated = 0;
 my $_send_unknown = 0;
-local *ea_apache24_config_runtime::SOURCES::000_local_template_check::_send = sub { $_[0] =~ m/Updated$/ ? $_send_updated++ : $_[0] =~ m/New$/ ? $_send_new++ : $_send_unknown++ };
+local *ea_apache24_config_runtime::SOURCES::000_local_template_check::_send = sub { $_[0] ? $_send_new++ : $_[0] == 0 ? $_send_updated++ : $_send_unknown++ };
 use warnings "redefine", "once";
 
 my %tts = _setup($dir);
 
 # no .local, no data
 trap { ea_apache24_config_runtime::SOURCES::000_local_template_check::run(); };
-is_deeply( [ $_send_new, $_send_updated, $_send_unknown ], [ 0, 0, 0 ], "no .local, no data: no notificaiton sent" );
+is_deeply( [ $_send_new, $_send_updated, $_send_unknown ], [ 0, 0, 0 ], "no .local, no data: no notification sent" );
 ok( -e $json_file, "no .local, no data: data created" );
 
 # no .local, w/ data
 trap { ea_apache24_config_runtime::SOURCES::000_local_template_check::run(); };
-is_deeply( [ $_send_new, $_send_updated, $_send_unknown ], [ 0, 0, 0 ], "no .local, w/ data: no notificaiton sent" );
+is_deeply( [ $_send_new, $_send_updated, $_send_unknown ], [ 0, 0, 0 ], "no .local, w/ data: no notification sent" );
 
 # .local, no data
 write_file( "$dir/$tts{'ea4_main.default'}", "# oh hai LOCAL GUY" );
 unlink($json_file);
 trap { ea_apache24_config_runtime::SOURCES::000_local_template_check::run(); };
-is_deeply( [ $_send_new, $_send_updated, $_send_unknown ], [ 1, 0, 0 ], ".local, no data: new notificaiton sent" );
+is_deeply( [ $_send_new, $_send_updated, $_send_unknown ], [ 1, 0, 0 ], ".local, no data: new notification sent" );
 ok( -e $json_file, ".local, no data: data created" );
 
 # .local, w/ data (matches)

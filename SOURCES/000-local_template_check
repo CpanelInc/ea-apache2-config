@@ -38,11 +38,11 @@ sub run {
 
     if (@notify) {
         if ( $tt_data->{_}{just_created} ) {
-            _send( 'Cpanel::iContact::Class::EasyApache::EA4_TemplateCheckNew', @notify );
+            _send( 1, @notify );
         }
         else {
             _regen_tt_data($tt_dir);
-            _send( 'Cpanel::iContact::Class::EasyApache::EA4_TemplateCheckUpdated', @notify );
+            _send( 0, @notify );
         }
     }
     else {
@@ -95,10 +95,10 @@ sub _regen_tt_data {
 }
 
 sub _send {
-    my ( $class, @has_local ) = @_;
+    my ( $first_time, @has_local ) = @_;
 
-    if ( eval "require $class;1" ) {
-        print "\tSending iContact ($class)\n";
+    if ( eval "require Cpanel::iContact::Class::EasyApache::EA4_TemplateCheckUpdated;1" ) {
+        print "\tSending iContact (EA4_TemplateCheckUpdated)\n";
 
         my @templates_aoh;
         for my $tt (@has_local) {
@@ -110,10 +110,10 @@ sub _send {
             };
         }
 
-        $class->new( templates => \@templates_aoh );    # yes, new() actually results in message delivery <facepalm>
+        Cpanel::iContact::Class::EasyApache::EA4_TemplateCheckUpdated->new( templates => \@templates_aoh, first_time => $first_time );    # yes, new() actually results in message delivery <facepalm>
     }
     else {
-        print "\tiContact N/A: System does not have $class\n";
+        print "\tiContact N/A: System does not have EA4_TemplateCheckUpdated\n";
     }
 
     return;
