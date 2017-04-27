@@ -113,7 +113,7 @@ sub _send {
         Cpanel::iContact::Class::EasyApache::EA4_TemplateCheckUpdated->new( templates => \@templates_aoh, first_time => $first_time );    # yes, new() actually results in message delivery <facepalm>
     }
     else {
-        print "\tiContact N/A: System does not have EA4_TemplateCheckUpdated\n";
+        print "\tN/A: System does not have the iContact module “EA4_TemplateCheckUpdated”\n";
     }
 
     return;
