@@ -307,6 +307,7 @@ Listen [% default_apache_port %]
         SSLStaplingReturnResponderErrors off
         SSLStaplingErrorCacheTimeout 60
         SSLStaplingFakeTryLater off
+        SSLStaplingResponderTimeout 3
 [%      END -%]
         SSLSessionCache shmcb:[% paths.dir_run %]/ssl_gcache_data_shmcb(1024000)
     </IfModule>
