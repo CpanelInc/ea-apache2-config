@@ -37,7 +37,7 @@ if ( !-e '/usr/local/bin/ea_convert_php_ini' ) {
 }
 
 diag "Testing w/ /usr/local/bin/ea_convert_php_ini in place\n";
-plan tests => 16 + 1;
+plan tests => 18 + 1;
 
 require_ok "$FindBin::Bin/../SOURCES/010-suphpconf.pl";
 
@@ -74,22 +74,24 @@ require_ok "$FindBin::Bin/../SOURCES/010-suphpconf.pl";
     write_file( $suphpconf::suphpconf, "; oh hai\n[handlers]\n$handlers" );
     trap { suphpconf::run() };
 
-    like $trap->stdout, qr/Removing current entry for “ea-php54” …/,            "entries no longer on system are removed";
+    like $trap->stdout, qr/Ignoring current entry for “ea-php54” …/,            "entries no longer on system are ignored";
     like $trap->stdout, qr/Ensuring current entry for “ea-php42” is correct …/, "current entries are updated";
     like $trap->stdout, qr/Adding entry for “alt-php23” …/,                     "new entries are added";
 
     my @suphpconf = read_file($suphpconf::suphpconf);
-    ok !grep( m{application/x-httpd-ea-php54}, @suphpconf ), "old entry is removed from file";
+    ok grep( m{application/x-httpd-ea-php54},  @suphpconf ), "old entry is left in file";
     ok grep( m{application/x-httpd-ea-php42},  @suphpconf ), "current entry is written to file";
     ok grep( m{application/x-httpd-alt-php23}, @suphpconf ), "new entry is written to file";
 
     # w/ handlers that do not need updating
     trap { suphpconf::run() };
 
+    like $trap->stdout, qr/Ignoring current entry for “ea-php54” …/,             "handlers are already ok: entries no longer on system are ignored";
     like $trap->stdout, qr/Ensuring current entry for “ea-php42” is correct …/,  "handlers are already ok: current entries are updated - 1";
     like $trap->stdout, qr/Ensuring current entry for “alt-php23” is correct …/, "handlers are already ok: current entries are updated - 2";
 
     @suphpconf = read_file($suphpconf::suphpconf);
+    ok grep( m{application/x-httpd-ea-php54},  @suphpconf ), "handlers are already ok: old entry is left in file";
     ok grep( m{application/x-httpd-ea-php42},  @suphpconf ), "handlers are already ok: current entry is written to file - 1";
     ok grep( m{application/x-httpd-alt-php23}, @suphpconf ), "handlers are already ok: current entry is written to file - 2";
 }
