@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 99
+%define release_prefix 100
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -149,6 +149,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Tue Jun 06 2017 Dan Muey <dan@cpanel.net> 1.0-100
+- EA-6356: leave unknown suphp handlers in place
+
 * Mon Jun 05 2017 Dan Muey <dan@cpanel.net> 1.0-99
 - EA-6344: Add yum hook to ensure suphp.conf handlers are correct
 

@@ -33,7 +33,6 @@ sub run {
             @packages{ @{ Cpanel::SysPkgs::SCL::get_scl_versions(qr/\w+-php/) } } = ();
 
             # update/cleanout existing entries
-            my @remove_daughters;
             for my $daughter ( @{ $handlers->{daughters} } ) {
                 if ( $daughter->{name} =~ m{application/x-httpd-(.*)} ) {
                     my $pkg = $1;
@@ -47,13 +46,11 @@ sub run {
                         $packages{$pkg} = "update";
                     }
                     else {
-                        push @remove_daughters, $daughter;
-                        print "Removing current entry for “$pkg” …\n";
-                        $packages{$pkg} = "remove";
+                        print "Ignoring current entry for “$pkg” …\n";
+                        $packages{$pkg} = "ignore";
                     }
                 }
             }
-            $handlers->remove_daughter(@remove_daughters) if @remove_daughters;
 
             # add entries reflecting the actual state
             for my $pkg ( keys %packages ) {
