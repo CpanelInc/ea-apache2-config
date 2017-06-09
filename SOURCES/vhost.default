@@ -41,18 +41,20 @@
   <IfModule userdir_module>
     <IfModule !mpm_itk.c>
       <IfModule !ruid2_module>
+        <IfModule !mod_passenger.c>
 [%- IF userdirprotect_enabled %]
 [%- IF vhost.userdirprotect == '-1' %]
-        UserDir enabled
+          UserDir enabled
 [%- ELSE %]
-        UserDir disabled
-        UserDir enabled [% vhost.user %] [% vhost.userdirprotect %]
+          UserDir disabled
+          UserDir enabled [% vhost.user %] [% vhost.userdirprotect %]
 [%- END %]
 [%- ELSE %]
 [%- IF vhost.user != 'nobody' %]
-        UserDir enabled [% vhost.user %]
+          UserDir enabled [% vhost.user %]
 [%- END %]
 [%- END %]
+        </IfModule>
       </IfModule>
     </IfModule>
   </IfModule>
