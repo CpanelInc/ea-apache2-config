@@ -21,44 +21,8 @@
 use strict;
 use Cpanel::Imports;
 use Cpanel::CloudLinux ();
-use Cpanel::PackMan    ();
-use Cpanel::FileUtils  ();
 
-if ( Cpanel::CloudLinux::installed() ) {
-    my $changed_line     = 0;
-    my $map_path         = '/etc/cagefs/cagefs.mp';
-    my $user_secdata_str = '%/var/cpanel/secdatadir/users';
-    my $match_line_qr    = qr/^\s*\Q$user_secdata_str\E\s*$/;    #\s*$ will get the newline if it is there or not (e.g. it is at the end of the file w/ no newline)
-
-    if ( Cpanel::PackMan->new->is_installed("ea-apache24-mod_security2") ) {
-        if ( !_has_lines_matching( $map_path, $match_line_qr ) ) {
-            print locale->maketext( 'Adding “[_1]” to “[_2]” …', $user_secdata_str, $map_path ) . "\n";
-
-            if ( open my $fh, '>>', $map_path ) {
-                print {$fh} "\n$user_secdata_str\n";
-                close $fh;
-                $changed_line++;
-            }
-            else {
-                warn locale->maketext(" … failed: $!"), "\n";
-            }
-        }
-    }
-    else {
-
-        if ( _has_lines_matching( $map_path, $match_line_qr ) ) {
-            print locale->maketext( 'Removing “[_1]” from “[_2]” …', $user_secdata_str, $map_path ) . "\n";
-
-            if ( Cpanel::FileUtils::regex_rep_file( $map_path, { $match_line_qr => "" } ) ) {
-                $changed_line++;
-            }
-            else {
-                logger->warn( locale->maketext(" … failed: $!") . "\n" );
-            }
-        }
-    }
-
-    if ( $changed_line || _has_lines_matching( $map_path, qr{^\s*[!@#%]?/\w+} ) ) {
+if ( Cpanel::CloudLinux::installed() && _has_lines_matching( '/etc/cagefs/cagefs.mp', qr{^\s*[!@#]?/\w+} ) ) {
         print locale->maketext('Updating the [asis,CloudLinux CageFS] virtual filesystem …') . "\n";
 
         system('/usr/sbin/cagefsctl --update --force-update')
@@ -67,7 +31,6 @@ if ( Cpanel::CloudLinux::installed() ) {
         print "\n";
         print locale->maketext(' … done.') . "\n";
     }
-}
 
 sub _has_lines_matching {
     my ( $file, $regexp ) = @_;
