@@ -212,7 +212,7 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
 [%  END -%]
 </IfModule>
 
-# Required cPanel security policy: disable userdir when mod_ruid2 or mpm_itk are loaded
+# Required cPanel security policy: disable userdir when mod_ruid2 or mpm_itk or mod_passenger are loaded
 <IfModule userdir_module>
     UserDir public_html
 
@@ -220,6 +220,9 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
         UserDir disabled
     </IfModule>
     <IfModule mpm_itk.c>
+        UserDir disabled
+    </IfModule>
+    <IfModule mod_passenger.c>
         UserDir disabled
     </IfModule>
 </IfModule>
@@ -379,7 +382,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 
 [%-     IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' %]
     UserDir disabled
-[%-         IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 %]
+[%-         IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 && !supported.mod_passenger %]
     UserDir enabled [% defaultvhost.userdirprotect %]
 [%-         END -%]
 [%-     END %]
@@ -410,7 +413,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 
 [%-     IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' %]
     UserDir disabled
-[%-         IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 %]
+[%-         IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 && !supported.mod_passenger %]
     UserDir enabled [% defaultvhost.userdirprotect %]
 [%-         END -%]
 [%-     END %]
@@ -481,7 +484,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 
 [%          IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' -%]
     UserDir disabled
-[%              IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 -%]
+[%              IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 && !supported.mod_passenger -%]
     UserDir enabled [% defaultvhost.userdirprotect %]
 [%              END -%]
 [%          END -%]
@@ -597,7 +600,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 
 [%          IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' -%]
     UserDir disabled
-[%              IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 -%]
+[%              IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 && !supported.mod_passenger -%]
     UserDir enabled [% defaultvhost.userdirprotect %]
 [%              END -%]
 [%          END -%]
