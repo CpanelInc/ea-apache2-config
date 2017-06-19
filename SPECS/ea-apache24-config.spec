@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 103
+%define release_prefix 105
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -153,6 +153,13 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Fri Jun 16 2017 Rishwanth Yeddula <rish@cpanel.net> 1.0-105
+- PIG-3252: Block userdir requests on mod_passenger
+
+* Thu Jun 15 2017 Rishwanth Yeddula <rish@cpanel.net> 1.0-104
+- PIG-3244: Set the proper PassengerUser and PassengerGroup per vhost to
+  ensure that Passenger runs the applications as the right user.
+
 * Tue Jun 13 2017 Dan Muey <dan@cpanel.net> 1.0-103
 - EA-6414: Call PHP hook scripts for *-php* transactions
 
