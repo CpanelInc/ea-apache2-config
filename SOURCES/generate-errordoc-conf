@@ -38,15 +38,7 @@ sub generate_errordoc {
     for my $code_num (@DefaultErrorCodes) {
         my $code_type = HTTP::Status::status_message($code_num);
         printf( "# %d - %s\n", $code_num, $code_type || '<Unknown HTTP Error Code>' );
-        print <<"END_ENTRY";
-<If "-f '%{DOCUMENT_ROOT}/$code_num.shtml'">
-    ErrorDocument $code_num /$code_num.shtml
-</If>
-<Else>
-    ErrorDocument $code_num default
-</Else>
-
-END_ENTRY
+        printf( "ErrorDocument %d /%d.shtml\n\n", $code_num, $code_num );
     }
 }
 
