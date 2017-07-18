@@ -357,6 +357,35 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 # Create "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf" if you want to customize httpd.conf.
 [% END -%]
 
+[% IF proxypass_for_proxysubdomains -%]
+ProxyPass /___proxy_subdomain_ws_cpanel  ws://127.0.0.1:2082 max=1 retry=0
+ProxyPass /___proxy_subdomain_ws_whm     ws://127.0.0.1:2086 max=1 retry=0
+ProxyPass /___proxy_subdomain_ws_webmail ws://127.0.0.1:2095 max=1 retry=0
+[% END -%]
+
+[% MACRO websocket_proxies (servername) BLOCK -%]
+    [% IF servername.match('^cpanel\\.') -%]
+        RewriteCond %{HTTP_HOST} !=[% servername %]
+    [% END -%]
+    RewriteCond %{HTTP_HOST} ^cpanel\.
+    RewriteCond %{HTTP:Upgrade} websocket   [nocase]
+    RewriteRule ^/(.*) /___proxy_subdomain_ws_cpanel/$1 [PT]
+
+    [% IF servername.match('^webmail\\.') -%]
+        RewriteCond %{HTTP_HOST} !=[% servername %]
+    [% END -%]
+    RewriteCond %{HTTP_HOST} ^webmail\.
+    RewriteCond %{HTTP:Upgrade} websocket   [nocase]
+    RewriteRule ^/(.*) /___proxy_subdomain_ws_webmail/$1 [PT]
+
+    [% IF servername.match('^whm\\.') -%]
+        RewriteCond %{HTTP_HOST} !=[% servername %]
+    [% END -%]
+    RewriteCond %{HTTP_HOST} ^whm\.
+    RewriteCond %{HTTP:Upgrade} websocket   [nocase]
+    RewriteRule ^/(.*) /___proxy_subdomain_ws_whm/$1 [PT]
+[% END -%]
+
 ##################################################
 ##################################################
 #
@@ -504,6 +533,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^cpanel\.
+    RewriteCond %{HTTP:Upgrade} !websocket   [nocase]
 [% IF proxypass_for_proxysubdomains %]
     RewriteRule ^/(.*) /___proxy_subdomain_cpanel/$1 [PT]
     ProxyPass "/___proxy_subdomain_cpanel" "http://127.0.0.1:2082" max=1 retry=0
@@ -513,6 +543,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^webmail\.
+    RewriteCond %{HTTP:Upgrade} !websocket   [nocase]
 [% IF proxypass_for_proxysubdomains %]
     RewriteRule ^/(.*) /___proxy_subdomain_webmail/$1 [PT]
     ProxyPass "/___proxy_subdomain_webmail" "http://127.0.0.1:2095" max=1 retry=0
@@ -522,6 +553,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^whm\.
+    RewriteCond %{HTTP:Upgrade} !websocket   [nocase]
 [% IF proxypass_for_proxysubdomains %]
     RewriteRule ^/(.*) /___proxy_subdomain_whm/$1 [PT]
     ProxyPass "/___proxy_subdomain_whm" "http://127.0.0.1:2086" max=1 retry=0
@@ -565,6 +597,11 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
     RewriteCond %{HTTP_HOST} ^autoconfig\.
     RewriteRule ^[^?]*(\\?.*)? http://127.0.0.1/cgi-sys/autoconfig.cgi [P]
 [%          END %]
+
+    [% IF proxypass_for_proxysubdomains -%]
+        [% websocket_proxies(servername) -%]
+    [% END %]
+
     UseCanonicalName Off
 
     <IfModule security2_module>
@@ -651,6 +688,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
     </IfModule>
 
     [% SET proxy_prot = ssl_proxy_to_non_ssl ? 'http' : 'https' %]
+    [% SET wsproxy_prot = ssl_proxy_to_non_ssl ? 'ws' : 'wss' %]
 
     <IfModule headers_module>
     RequestHeader set X-HTTPS 1
@@ -658,6 +696,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^cpanel\.
+    RewriteCond %{HTTP:Upgrade} !websocket   [nocase]
 [% IF proxypass_for_proxysubdomains %]
     RewriteRule ^/(.*) /___proxy_subdomain_cpanel/$1 [PT]
     ProxyPass "/___proxy_subdomain_cpanel" "http://127.0.0.1:2082" max=1 retry=0
@@ -667,6 +706,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^webmail\.
+    RewriteCond %{HTTP:Upgrade} !websocket   [nocase]
 [% IF proxypass_for_proxysubdomains %]
     RewriteRule ^/(.*) /___proxy_subdomain_webmail/$1 [PT]
     ProxyPass "/___proxy_subdomain_webmail" "http://127.0.0.1:2095" max=1 retry=0
@@ -676,6 +716,7 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 
     RewriteCond %{HTTP_HOST} !^[% wildcard_safe(servername) %]$
     RewriteCond %{HTTP_HOST} ^whm\.
+    RewriteCond %{HTTP:Upgrade} !websocket   [nocase]
 [% IF proxypass_for_proxysubdomains %]
     RewriteRule ^/(.*) /___proxy_subdomain_whm/$1 [PT]
     ProxyPass "/___proxy_subdomain_whm" "http://127.0.0.1:2086" max=1 retry=0
@@ -720,6 +761,11 @@ Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
     RewriteRule ^[^?]*(\\?.*)? [% proxy_prot %]://127.0.0.1/cgi-sys/autoconfig.cgi [P]
 
 [%          END %]
+
+    [% IF proxypass_for_proxysubdomains -%]
+        [% websocket_proxies(servername) -%]
+    [% END %]
+
     UseCanonicalName Off
 
     <IfModule security2_module>
