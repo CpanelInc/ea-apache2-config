@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 110
+%define release_prefix 109
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -153,9 +153,6 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
-* Thu Aug 10 2017 Felipe Gasper <felipe@cpanel.net> 1.0-110
-- COBRA-5343: Don't include SSLCertificateKeyFile line if it isn't needed.
-
 * Thu Aug 3 2017 Felipe Gasper <felipe@cpanel.net> 1.0-109
 - EA-6548: Create directives for WebSocket over proxy subdomains.
 
