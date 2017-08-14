@@ -146,9 +146,7 @@
     SSLEngine on
     [% IF vhost.sslciphersuite.length %]SSLCipherSuite [% vhost.sslciphersuite %][% END %]
     SSLCertificateFile [% vhost.sslcertificatefile %]
-[% IF vhost.sslcertificatekeyfile -%]
     SSLCertificateKeyFile [% vhost.sslcertificatekeyfile %]
-[% END -%]
 [% IF vhost.sslcacertificatefile -%]
     SSLCACertificateFile [% vhost.sslcacertificatefile %]
 [% END -%]
