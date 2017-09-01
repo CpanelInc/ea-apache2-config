@@ -401,9 +401,15 @@ ProxyPass /___proxy_subdomain_ws_webmail ws://127.0.0.1:2095 max=1 retry=0
     DocumentRoot [% paths.dir_docroot %]
     ServerAdmin [% serveradmin %]
 
+[%- IF supported.mod_userdir && !supported.mpm_itk && !supported.mod_ruid2 && !supported.mod_passenger %]
+    <Directory "/">
+      AllowOverride All
+    </Directory>
+[% ELSE %]
     <Directory "[% paths.dir_docroot %]">
       AllowOverride All
     </Directory>
+[% END %]
 
     <IfModule suphp_module>
         suPHP_UserGroup nobody nobody
@@ -432,9 +438,15 @@ ProxyPass /___proxy_subdomain_ws_webmail ws://127.0.0.1:2095 max=1 retry=0
     DocumentRoot [% paths.dir_docroot %]
     ServerAdmin [% serveradmin %]
 
+[%- IF supported.mod_userdir && !supported.mpm_itk && !supported.mod_ruid2 && !supported.mod_passenger %]
+    <Directory "/">
+      AllowOverride All
+    </Directory>
+[% ELSE %]
     <Directory "[% paths.dir_docroot %]">
       AllowOverride All
     </Directory>
+[% END %]
 
     <IfModule suphp_module>
         suPHP_UserGroup nobody nobody
@@ -510,6 +522,17 @@ ProxyPass /___proxy_subdomain_ws_webmail ws://127.0.0.1:2095 max=1 retry=0
             SecRuleEngine Off
         </IfModule>
     </Proxy>
+
+[%- IF supported.mod_userdir && !supported.mpm_itk && !supported.mod_ruid2 && !supported.mod_passenger %]
+    <Directory "/">
+      AllowOverride All
+    </Directory>
+[% ELSE %]
+    <Directory "[% paths.dir_docroot %]">
+      AllowOverride All
+    </Directory>
+[% END %]
+
 
 [%          IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' -%]
     UserDir disabled
@@ -634,6 +657,17 @@ ProxyPass /___proxy_subdomain_ws_webmail ws://127.0.0.1:2095 max=1 retry=0
             SecRuleEngine Off
         </IfModule>
     </Proxy>
+
+[%- IF supported.mod_userdir && !supported.mpm_itk && !supported.mod_ruid2 && !supported.mod_passenger %]
+    <Directory "/">
+      AllowOverride All
+    </Directory>
+[% ELSE %]
+    <Directory "[% paths.dir_docroot %]">
+      AllowOverride All
+    </Directory>
+[% END %]
+
 
 [%          IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' -%]
     UserDir disabled
