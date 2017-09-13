@@ -151,6 +151,13 @@
     SSLEngine on
     [% IF vhost.sslciphersuite.length %]SSLCipherSuite [% vhost.sslciphersuite %][% END %]
     SSLCertificateFile [% vhost.sslcertificatefile %]
+[%# The below IF block is matched
+    in "Cpanel::AdvConfig::apache::LocalTemplate" and
+    must not be changed to avoid breakage.  If you must
+    remove it please leave it inside a comment so the system
+    accepts the template file and test to ensure
+    that /scripts/buildhttpdconf accepts it without
+    error %]
 [% IF vhost.sslcertificatekeyfile -%]
     SSLCertificateKeyFile [% vhost.sslcertificatekeyfile %]
 [% END -%]
