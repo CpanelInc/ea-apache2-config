@@ -44,6 +44,8 @@ sub run {
         }
     }
 
+    $hard_restart = 1 if $0 =~ m{glibc-restartsrv_httpd$};
+
     if ($hard_restart) {
         system('/usr/local/cpanel/scripts/restartsrv_httpd --stop');
         system('/usr/local/cpanel/scripts/restartsrv_httpd');

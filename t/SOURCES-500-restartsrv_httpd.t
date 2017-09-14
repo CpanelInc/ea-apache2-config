@@ -13,7 +13,7 @@ my $script = "$FindBin::Bin/../SOURCES/500-restartsrv_httpd";
 our $current_system = sub { goto &Test::Mock::Cmd::orig_system; };
 use Test::Mock::Cmd 'system' => sub { $current_system->(@_) };
 
-use Test::More tests => 10 + 1;    # +1 is NoWarnings
+use Test::More tests => 11 + 1;    # +1 is NoWarnings
 use Test::NoWarnings;
 
 use File::Temp;
@@ -36,6 +36,11 @@ is( _run("--pkg_list=$dir/exists-without-pkg"),     1, "--pkg_list w/out pkg in 
 is( _run("--pkg_list=$dir/exists-with-pkg"),        2, "--pkg_list w/ apache pkg in list does hard restart" );
 is( _run("--pkg_list=$dir/exists-with-pkg-fcgid"),  2, "--pkg_list w/ fcgid pkg in list does hard restart" );
 is( _run("--pkg_list=$dir/exists-with-pkg-anymod"), 2, "--pkg_list w/ any httpd module pkg in list does hard restart" );
+
+{
+    local $0 = "whatevs/100-glibc-restartsrv_httpd";
+    is( _run(), 2, "glibc symlink will trigger hard restart" );
+}
 
 sub _run {
     my @args = @_;
