@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 111
+%define release_prefix 113
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -153,6 +153,12 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Wed Sep 13 2017 J. Nick Koston <nick@cpanel.net> 1.0-113
+- EA-6778: Add warings to ssl_vhost.default about sslcertificatekeyfile
+
+* Tue Sep 12 2017 Cory McIntire <cory@cpanel.net> 1.0-112
+- EA-6240: Whitelist proxy subdomains in ModSec for SSL vhosts
+
 * Fri Sep 1 2017 J. Nick Koston <nick@cpanel.net> 1.0-111
 - EA-6733: Ensure .htaccess is read with mod_userdir and htaccess optimizations
 

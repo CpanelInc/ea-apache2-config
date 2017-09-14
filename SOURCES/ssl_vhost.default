@@ -88,6 +88,11 @@
       </Directory>
     [% END %]
   [% END %]
+  <Proxymatch ^https?://127\.0\.0\.1:(2082|2083|2077|2078|2079|2080|2086|2087|2095|2096)/>
+       <IfModule security2_module>
+          SecRuleEngine Off
+       </IfModule>
+  </Proxymatch>
 
   <IfModule mod_suphp.c>
     suPHP_UserGroup [% vhost.user %] [% vhost.group %]
@@ -146,6 +151,13 @@
     SSLEngine on
     [% IF vhost.sslciphersuite.length %]SSLCipherSuite [% vhost.sslciphersuite %][% END %]
     SSLCertificateFile [% vhost.sslcertificatefile %]
+[%# The below IF block is matched
+    in "Cpanel::AdvConfig::apache::LocalTemplate" and
+    must not be changed to avoid breakage.  If you must
+    remove it please leave it inside a comment so the system
+    accepts the template file and test to ensure
+    that /scripts/buildhttpdconf accepts it without
+    error %]
 [% IF vhost.sslcertificatekeyfile -%]
     SSLCertificateKeyFile [% vhost.sslcertificatekeyfile %]
 [% END -%]
