@@ -156,6 +156,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Tue Sep 19 2017 Felipe Gasper <felipe@cpanel.net> 1.0-116
+- Undo change from 1.0-115.
+
 * Mon Sep 18 2017 Felipe Gasper <felipe@cpanel.net> 1.0-115
 - COBRA-5581: Always use regexp to match SSL proxy subdomains in vhost.
 
