@@ -253,14 +253,10 @@
 
     RewriteEngine On
     [%- FOR label__zones = vhost.proxy_subdomains %]
-        [%- IF vhost.proxy_subdomains_regexp_ok.${label__zones.key} %]
-            RewriteCond %{HTTP_HOST} ^[% label__zones.key %]\.
-        [%- ELSE %]
-            [%- FOR domain = label__zones.value %]
-                RewriteCond %{HTTP_HOST} =[% label__zones.key _ ".$domain" %][% !loop.last && ' [OR]' %]
-            [%- END %]
+        [%- FOR basezone = label__zones.value %]
+            RewriteCond %{HTTP_HOST} =[% label__zones.key %].[% basezone %] [OR]
+            RewriteCond %{HTTP_HOST} =[% label__zones.key %].[% basezone %]:[% vhost.port %][% !loop.last && ' [OR]' %]
         [%- END %]
-
         RewriteCond %{HTTP:Upgrade} !websocket   [nocase]
 
         [% proxy_subdomain_redirect_rule(label__zones.key) %]
@@ -269,15 +265,12 @@
     [%- FOR label__zones = vhost.proxy_subdomains %]
         [%- ws_redirect = proxy_subdomain_websocket_redirect_rule_if_exists(label__zones.key) %]
         [%- IF ws_redirect %]
-            [%- IF vhost.proxy_subdomains_regexp_ok.${label__zones.key} %]
-                RewriteCond %{HTTP_HOST} ^[% label__zones.key %]\.
-            [%- ELSE %]
-                [%- FOR domain = label__zones.value %]
-                    RewriteCond %{HTTP_HOST} =[% label__zones.key _ ".$domain" %][% !loop.last && ' [OR]' %]
-                [%- END %]
+            RewriteCond %{HTTP:Upgrade} websocket   [nocase]
+            [%- FOR basezone = label__zones.value %]
+                RewriteCond %{HTTP_HOST} =[% label__zones.key %].[% basezone %] [OR]
+                RewriteCond %{HTTP_HOST} =[% label__zones.key %].[% basezone %]:[% vhost.port %][% !loop.last && ' [OR]' %]
             [%- END %]
 
-            RewriteCond %{HTTP:Upgrade} websocket   [nocase]
             [% ws_redirect %]
         [%- END %]
     [%- END %]

@@ -77,7 +77,7 @@ sub init : Test(startup => 1) {
     return;
 }
 
-sub test_is_handler_supported : Tests(9) {
+sub test_is_handler_supported : Tests(8) {
     note "Testing is_handler_supported()";
     can_ok( 'ea_apache2_config::phpconf', 'is_handler_supported' );
 
@@ -85,15 +85,15 @@ sub test_is_handler_supported : Tests(9) {
         { handler => 'suphp', mods => {}, result => 0, note => "The 'suphp' handler isn't supported when no Apache modules installed" },
         { handler => 'cgi',   mods => {}, result => 0, note => "The 'cgi' handler isn't supported when no Apache modules installed" },
         { handler => 'dso',   mods => {}, result => 0, note => "The 'dso' handler isn't supported when no Apache modules installed" },
-        { handler => 'suphp', mods => { mod_suphp => 1 }, result => 1, note => "The 'suphp' handler is supported when the Apache mod_suphp module is installed" },
-        { handler => 'dso',   mods => { libphp5   => 1 }, result => 1, note => "The 'dso' handler is supported when the Apache libphp5 module is installed" },
-        { handler => 'cgi',   mods => { mod_cgi   => 1 }, result => 1, note => "The 'cgi' handler is supported when the Apache mod_cgi module is installed" },
-        { handler => 'cgi',   mods => { mod_cgid  => 1 }, result => 1, note => "The 'cgi' handler is supported when the Apache mod_cgid module is installed" },
+        { handler => 'suphp', mods => { suphp => 1 }, result => 1, note => "The 'suphp' handler is supported when the Apache mod_suphp module is installed" },
+        { handler => 'dso',   mods => { dso   => 1 }, result => 1, note => "The 'dso' handler is supported when the Apache libphp5 module is installed" },
+        { handler => 'cgi',   mods => { cgi   => 1 }, result => 1, note => "The 'cgi' handler is supported when the Apache mod_cgi module is installed" },
+        { handler => 'cgi',   mods => { cgi   => 1 }, result => 1, note => "The 'cgi' handler is supported when the Apache mod_cgid module is installed" },
     );
 
     for my $test (@tests) {
         no warnings qw( redefine );
-        local *Cpanel::AdvConfig::apache::modules::get_supported_modules = sub { return $test->{mods} };
+        local *Cpanel::WebServer::Supported::apache::get_available_handlers = sub { return $test->{mods} };
 
         use warnings qw( redefine );
         is( ea_apache2_config::phpconf::is_handler_supported( $test->{handler} ), $test->{result}, qq{is_handler_supported: $test->{note}} );
@@ -140,7 +140,7 @@ sub test_get_php_config : Tests(5) {
     return;
 }
 
-sub test_get_rebuild_settings : Tests(11) {
+sub test_get_rebuild_settings : Tests(10) {
     note "Testing get_rebuild_settings()";
     can_ok( 'ea_apache2_config::phpconf', 'get_rebuild_settings' );
 
@@ -163,16 +163,16 @@ sub test_get_rebuild_settings : Tests(11) {
 
     my @tests = (
         {
-            mods => { mod_cgi => 1 },
+            mods     => { mod_cgi => 1 },
             packages => [qw( x y z )],
-            conf     => { default => 'x', x => 'cgi', y => 'cgi', z => 'cgi' },
+            conf => { default => 'x', x => 'cgi', y => 'cgi', z => 'cgi' },
             default  => 'x',                                                                                    # NOTE: In practice, this will be the same as conf variable
             note     => qq{Happy path: all packages and handlers installed and accounted for in config file},
             expected => { default => 'x', x => 'cgi', y => 'cgi', z => 'cgi' },
             output   => qr/\A\z/,
         },
         {
-            mods => { mod_cgi => 1 },
+            mods     => { mod_cgi => 1 },
             packages => [qw( x y z )],
             conf     => { default => 'x' },
             default  => 'x',                                                                                            # NOTE: In practice, this will be the same as conf variable
@@ -181,18 +181,18 @@ sub test_get_rebuild_settings : Tests(11) {
             output   => qr/\A\z/,
         },
         {
-            mods => { mod_cgi => 1, mod_suphp => 1 },
+            mods     => { mod_cgi => 1, mod_suphp => 1 },
             packages => [qw( x y z )],
-            conf     => { default => 'x' },
+            conf => { default => 'x' },
             default  => 'x',                                                                                              # NOTE: In practice, this will be the same as conf variable
             note     => qq{All packages installed, handlers undefined in config, assign to preferred default -- suphp},
             expected => { default => 'x', x => 'suphp', y => 'suphp', z => 'suphp' },
             output   => qr/\A\z/,
         },
         {
-            mods => { mod_cgi => 1, mod_suphp => 1 },
+            mods     => { mod_cgi => 1, mod_suphp => 1 },
             packages => [qw( y z )],
-            conf     => { default => 'x' },
+            conf => { default => 'x' },
             default  => 'x',                                                                                                                 # NOTE: In practice, this will be the same as conf variable
             note     => qq{The system default package is missing -- default to latest package and use preferred default handler -- suphp},
             expected => { default => 'z', y => 'suphp', z => 'suphp' },
@@ -204,8 +204,13 @@ sub test_get_rebuild_settings : Tests(11) {
         my $handler_changed = 0;
 
         no warnings qw( redefine once );
+        my %supported_handlers = map { $_ => 1 } map { substr( $_, 0, 4 ) eq 'mod_' ? substr( $_, 4 ) : $_ } keys %{ $test->{mods} };
         local *Cpanel::AdvConfig::apache::modules::get_supported_modules = sub { return $test->{mods} };
         local *ea_apache2_config::phpconf::send_notification             = sub { };
+        local *ea_apache2_config::phpconf::is_handler_supported          = sub {
+            my ($handler) = @_;
+            return ( $supported_handlers{$handler} || 0 );
+        };
 
         use warnings qw( redefine once );
         local $Mock::Cpanel::ProgLang::Packages       = $test->{packages};
@@ -213,8 +218,8 @@ sub test_get_rebuild_settings : Tests(11) {
         local $Mock::Cpanel::ProgLang::DefaultPackage = $test->{default};
 
         my $settings = trap { ea_apache2_config::phpconf::get_rebuild_settings( ea_apache2_config::phpconf::get_php_config() ) };
-        is_deeply( $settings, $test->{expected}, qq{get_rebuild_settings: $test->{note} (settings)} ) or diag explain $test->{expected};
-        like( $trap->stdout, $test->{output}, qq{get_rebuild_settings: $test->{note} (output)} );
+        is_deeply( $settings, $test->{expected}, qq{get_rebuild_settings: $test->{note} (settings)} ) or diag explain { expected => $test->{expected}, got => $settings };
+        like( $trap->stdout, $test->{output}, qq{get_rebuild_settings: $test->{note} (output)} ) or diag explain { stdout => $trap->stdout(), stderr => $trap->stderr() };
     }
 
     return;
@@ -263,6 +268,9 @@ sub test_sanitize_php_config : Tests(5) {
     can_ok( 'ea_apache2_config::phpconf', 'sanitize_php_config' );
     is( $ea_apache2_config::phpconf::cpanel_default_php_pkg, "ea-php56", '$cpanel_default_php_pkg is what we expect' );
 
+    no warnings 'redefine';
+    local *Cpanel::WebServer::Supported::apache::get_available_handlers = sub { return { suphp => 1 } };
+
     my $php     = Mock::Cpanel::ProgLang::Conf->new();
     my @non_def = qw(ea-php42 ea-php99 ea-php01);
     ea_apache2_config::phpconf::sanitize_php_config(
@@ -276,7 +284,7 @@ sub test_sanitize_php_config : Tests(5) {
 
     ea_apache2_config::phpconf::sanitize_php_config(
         {
-            cfg_ref => {},
+            cfg_ref  => {},
             packages => [ @non_def, $ea_apache2_config::phpconf::cpanel_default_php_pkg ],
         },
         $php
