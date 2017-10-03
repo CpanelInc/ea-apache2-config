@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 117
+%define release_prefix 118
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -156,6 +156,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Tue Oct 3 2017 Dan Muey <dan@cpanel.net> 1.0-118
+- ZC-2930: Update ea4 vhost template for new ea4 WHM config options
+
 * Fri Sep 22 2017 Jason Kiniry <jason@cpanel.net> 1.0-117
 - Add an updated proxy subdomain vhost rewrite condition and a test for the conditions.
 
