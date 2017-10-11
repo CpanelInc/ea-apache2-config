@@ -200,6 +200,9 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
 [%  ELSE -%]
         Allow from 127.0.0.1
 [%  END -%]
+        <IfModule security2_module>
+            SecRuleEngine Off
+        </IfModule>
     </Location>
 
 [%  IF serve_server_status -%]
