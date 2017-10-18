@@ -8,7 +8,6 @@ properties([
     // separate job).  Other jobs can still run concurrently, but if they use
     // the same OBS project, they will have the extra wait.
     disableConcurrentBuilds(),
-
     pipelineTriggers([
         // Enable SCM triggering of builds via a webhook, so BitBucket can tell
         // us when we need to check for new commits.
@@ -25,13 +24,15 @@ if ( !env.BRANCH_NAME.equals('master') && !env.BRANCH_NAME.equals('production') 
     ])
 }
 
-node('tool:OBS && project:EA4') {
-    def ea4 = fileLoader.fromGit([
-        'jenkins/ea4-lib',
-        'ssh://git@enterprise.cpanel.net:7999/ea4/ea-tools.git',
-        params.EA_TOOLS_BRANCH ?: 'master',
-        env.CREDENTIALS_ID_FOR_MAIN_REPOSITORY_HOST,
-        ''
-    ])
-    ea4.modulino()
-}
+// fileLoader implicitly uses an executor, so ensure this invocation is outside
+// the 'node' block; otherwise, you risk resource starvation
+def ea4 = fileLoader.fromGit([
+    'jenkins/ea4-lib',
+    'ssh://git@enterprise.cpanel.net:7999/ea4/ea-tools.git',
+    params.EA_TOOLS_BRANCH ?: 'master',
+    env.CREDENTIALS_ID_FOR_MAIN_REPOSITORY_HOST,
+    ''
+])
+
+node('tool:OBS && project:EA4') { ea4.modulino() }
+
