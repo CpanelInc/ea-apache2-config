@@ -1,0 +1,72 @@
+#!/usr/local/cpanel/3rdparty/bin/perl
+##############################################################################################
+#
+# Copyright (c) 2017, cPanel, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+##############################################################################################
+
+use strict;
+use warnings;
+use Cpanel::Version::Tiny    ();
+use Cpanel::Version::Compare ();
+use File::Slurp              ();    # because we are not sure if older versions all have the same Cpanel:: modules/functions/behavior
+
+# The libraries needed to run this script weren't introduced until this release.
+exit 0 unless Cpanel::Version::Compare::compare( $Cpanel::Version::Tiny::VERSION_BUILD, '>=', '11.66' );
+
+require Cpanel::ProgLang;           # oooold versions do not have this so require it after the version check
+my $php = Cpanel::ProgLang->new( type => 'php' );
+my $installed_phps = $php->get_installed_packages();    # this always returns an array ref
+
+for my $php_pkg ( @{$installed_phps} ) {
+    print "Processing $php_pkg …\n";
+    my $source = $php->get_ini( package => $php_pkg )->get_default_system_ini();
+
+    my $pecl = $source;
+    $pecl =~ s{/php\.ini$}{/php.d/02-pecl.ini};
+
+    print "\t… moving zend_extension and extension directives from php.ini to php.d/02-pecl.ini …\n";
+    _migrate_extension_directives( $source, $pecl );
+}
+
+###############
+#### helpers ##
+###############
+
+sub _migrate_extension_directives {
+    my ( $from, $to ) = @_;
+
+    # 1. grab all extension directives from $from
+    my @from_cont = File::Slurp::read_file($from);
+    $from_cont[-1] .= "\n" if substr( $from_cont[-1], -1, 1 ) ne "\n";    # ensure trailing newline on last line
+
+    my @extensions = grep { m/^\s*(?:zend_)?extension\s*=/ } @from_cont;
+
+    if (@extensions) {
+
+        # 2. write them to $to
+        my @to_cont = -e $to ? File::Slurp::read_file($to) : ();
+        File::Slurp::write_file( $to, ( @extensions, @to_cont ) );
+
+        # 3. remove them from $from
+        File::Slurp::write_file( $from, grep( !m/\s*(?:zend_)?extension\s*=/, @from_cont ) );
+    }
+
+    return 1;
+}
