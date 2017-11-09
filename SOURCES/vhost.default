@@ -143,6 +143,13 @@
   </IfModule>
 [% END -%]
 
+[%- IF global_dcv_rewrite_exclude && dcv_rewrite_patterns %]
+    # Global DCV Rewrite Exclude
+    <IfModule rewrite_module>
+        RewriteOptions Inherit
+    </IfModule>
+[%- END %]
+
 [%- IF file_test('d', paths.dir_conf_userdata) %]
     [%- IF cachedfglob(paths.dir_conf_userdata _ '/*.conf') %]
   Include "[% paths.dir_conf_userdata %]/*.conf"
@@ -203,12 +210,7 @@
         </FilesMatch>
     </IfModule>
 [%- END %]
-[%- IF global_dcv_rewrite_exclude && dcv_rewrite_patterns %]
-    # Global DCV Rewrite Exclude
-    <IfModule rewrite_module>
-        RewriteOptions Inherit
-    </IfModule>
-[%- END %]
+
 
 [%- IF !added_include %]
     [%- IF apache_target_version %]
