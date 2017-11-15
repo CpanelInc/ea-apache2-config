@@ -143,6 +143,7 @@
   </IfModule>
 [% END -%]
 
+[%# This must be BEFORE the inserts. -%]
 [%- IF global_dcv_rewrite_exclude && dcv_rewrite_patterns %]
     # Global DCV Rewrite Exclude
     <IfModule rewrite_module>
