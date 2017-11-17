@@ -512,7 +512,7 @@ ProxyPass /___proxy_subdomain_ws_webmail ws://127.0.0.1:2095 max=1 retry=0
 [%-# These comments are used internally as parsing tokens, for better or worse, so don't chnage them -%]
 # [% IF autodiscover_proxy_subdomains %]CPANEL/WHM/WEBMAIL/WEBDISK/AUTOCONFIG PROXY SUBDOMAINS[% ELSE %]CPANEL/WHM/WEBMAIL/WEBDISK PROXY SUBDOMAINS[% END %]
 <VirtualHost[% FOREACH server_ip IN ip_block -%] [% "${server_ip}:${configured.main_port}" %][% END -%]>
-    ServerName [% wildcard_safe(servername) %]
+    ServerName proxy-subdomains-vhost.localhost
 [%          IF autodiscover_proxy_subdomains -%]
     ServerAlias cpanel.* whm.* webmail.* webdisk.* cpcalendars.* cpcontacts.* autodiscover.* autoconfig.*
 [%          ELSE -%]
@@ -648,7 +648,7 @@ ProxyPass /___proxy_subdomain_ws_webmail ws://127.0.0.1:2095 max=1 retry=0
 [%-# These comments are used internally as parsing tokens, for better or worse, so don't chnage them -%]
 # [% IF autodiscover_proxy_subdomains %]CPANEL/WHM/WEBMAIL/WEBDISK/AUTOCONFIG PROXY SUBDOMAINS[% ELSE %]CPANEL/WHM/WEBMAIL/WEBDISK PROXY SUBDOMAINS[% END %]
 <VirtualHost[% FOREACH server_ip IN ip_block -%] [% "${server_ip}:${configured.main_port_ssl}" %][% END -%]>
-    ServerName [% wildcard_safe(servername) %]
+    ServerName proxy-subdomains-ssl-default-vhost.localhost
 [%          IF autodiscover_proxy_subdomains %]
     ServerAlias cpanel.* whm.* webmail.* webdisk.* cpcalendars.* cpcontacts.* autodiscover.* autoconfig.*
 [%          ELSE %]
