@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 120
+%define release_prefix 121
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -159,6 +159,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Thu Nov 16 2017  J. Nick Koston <nick@cpanel.net> - 1.0-121
+- EA-6962: Move global rewrite option 'inherit' definition before includes so that Global DCV rewrite isn't overridden by includes.
+
 * Thu Nov 02 2017  Dan Muey <dan@cpanel.net> - 1.0-120
 - EA-6910: move extension directives from php.ini to php.d/02-pecl.ini so it loads after 01-ioncube.ini
 
