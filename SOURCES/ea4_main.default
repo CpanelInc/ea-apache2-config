@@ -99,6 +99,13 @@ RewriteEngine on
 [% FOR pattern = dcv_rewrite_patterns -%]
 RewriteCond %{REQUEST_URI} [% mod_rewrite_string_escape(pattern) %] [% !loop.last && '[OR]' %]
 [% END -%]
+[% IF all_possible_proxy_subdomains_regex %]
+# Exclude proxy subdomains as we need rewrites to capture the DCV requests
+RewriteCond %{HTTP_HOST} !^(?:[% all_possible_proxy_subdomains_regex %])\.
+[% END -%]
+RewriteRule ^ - [END]
+</IfModule>
+[% END %]
 
 [% IF dcv_location_regex -%]
 # Global DCV Exclude - Location
@@ -110,15 +117,6 @@ Allow from all
 [% END -%]
 
 [% END -%]
-
-[% IF all_possible_proxy_subdomains_regex %]
-# Exclude proxy subdomains as we need rewrites to capture the DCV requests
-RewriteCond %{HTTP_HOST} !^(?:[% all_possible_proxy_subdomains_regex %])\.
-[% END -%]
-RewriteRule ^ - [END]
-</IfModule>
-[% END %]
-
 
 # You can change this by using WHM, and navigating to the 'Apache Configuration' -> 'DirectoryIndex Priority' interface.
 <IfModule dir_module>
