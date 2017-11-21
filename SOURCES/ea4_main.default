@@ -94,7 +94,7 @@ ServerName [% wildcard_safe(main.servername.item.servername) %]
 
 [% IF dcv_rewrite_patterns -%]
 <IfModule rewrite_module>
-# Global DCV Exclude
+# Global DCV Exclude - Rewrites
 RewriteEngine on
 [% FOR pattern = dcv_rewrite_patterns -%]
 RewriteCond %{REQUEST_URI} [% mod_rewrite_string_escape(pattern) %] [% !loop.last && '[OR]' %]
@@ -108,8 +108,8 @@ RewriteRule ^ - [END]
 [% END %]
 
 [% IF dcv_location_regex -%]
-# Global DCV Exclude - Location
 <LocationMatch "[%- dcv_location_regex -%]">
+# Global DCV Exclude - Location
 Satisfy Any
 Order Allow,Deny
 Allow from all
