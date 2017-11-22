@@ -103,14 +103,13 @@ RewriteCond %{HTTP_HOST} !^(?:[% all_possible_proxy_subdomains_regex %])\.
 [% END -%]
 RewriteRule ^ - [END]
 </IfModule>
-[% IF dcv_location_regex -%]
+[% SET dcv_location_regex = '(' _ dcv_rewrite_patterns.join('|') _ ')';  %]
 <LocationMatch "[%- dcv_location_regex -%]">
 # Global DCV Exclude - Location
 Satisfy Any
 Order Allow,Deny
 Allow from all
 </LocationMatch>
-[% END -%]
 [% END %]
 
 
