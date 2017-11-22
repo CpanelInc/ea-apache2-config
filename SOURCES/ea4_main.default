@@ -90,9 +90,7 @@ ServerName [% wildcard_safe(main.servername.item.servername) %]
 [% IF main.exists('timeout') %]Timeout [% main.timeout.item.timeout %][% END %]
 
 
-[% IF global_dcv_rewrite_exclude -%]
-
-[% IF dcv_rewrite_patterns -%]
+[% IF global_dcv_rewrite_exclude && dcv_rewrite_patterns -%]
 <IfModule rewrite_module>
 # Global DCV Exclude - Rewrites
 RewriteEngine on
@@ -105,8 +103,6 @@ RewriteCond %{HTTP_HOST} !^(?:[% all_possible_proxy_subdomains_regex %])\.
 [% END -%]
 RewriteRule ^ - [END]
 </IfModule>
-[% END %]
-
 [% IF dcv_location_regex -%]
 <LocationMatch "[%- dcv_location_regex -%]">
 # Global DCV Exclude - Location
@@ -115,8 +111,8 @@ Order Allow,Deny
 Allow from all
 </LocationMatch>
 [% END -%]
+[% END %]
 
-[% END -%]
 
 # You can change this by using WHM, and navigating to the 'Apache Configuration' -> 'DirectoryIndex Priority' interface.
 <IfModule dir_module>
