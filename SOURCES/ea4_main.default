@@ -92,7 +92,7 @@ ServerName [% wildcard_safe(main.servername.item.servername) %]
 
 [% IF global_dcv_rewrite_exclude && dcv_rewrite_patterns -%]
 <IfModule rewrite_module>
-# Global DCV Exclude
+# Global DCV Exclude - Rewrites
 RewriteEngine on
 [% FOR pattern = dcv_rewrite_patterns -%]
 RewriteCond %{REQUEST_URI} [% mod_rewrite_string_escape(pattern) %] [% !loop.last && '[OR]' %]
@@ -103,6 +103,13 @@ RewriteCond %{HTTP_HOST} !^(?:[% all_possible_proxy_subdomains_regex %])\.
 [% END -%]
 RewriteRule ^ - [END]
 </IfModule>
+[% SET dcv_location_regex = '(' _ dcv_rewrite_patterns.join('|') _ ')';  %]
+<LocationMatch "[%- dcv_location_regex -%]">
+# Global DCV Exclude - Location
+Satisfy Any
+Order Allow,Deny
+Allow from all
+</LocationMatch>
 [% END %]
 
 
