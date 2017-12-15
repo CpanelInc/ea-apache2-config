@@ -159,8 +159,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
-* Wed Dec 06 2017 Cory McIntire <cory@cpanel.net> - 1.0-124
+* Wed Dec 13 2017 Cory McIntire <cory@cpanel.net> - 1.0-124
 - EA-6668: Update ea4_main.default to handle hostname SSL
+- Update IPs list to only be a wildcard for hostname SSL
 
 * Fri Dec 1 2017  J. Nick Koston <nick@cpanel.net> - 1.0-123
 - EA-6986: Add global rewrite exclude to allow DCV when .well-known dirs are behind htaccess based password protection.
