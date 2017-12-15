@@ -513,7 +513,6 @@ ProxyPass /___proxy_subdomain_ws_webmail ws://127.0.0.1:2095 max=1 retry=0
 
 [% ips_in_use.push("127.0.0.1") -%]
 [% SET copy_of_ips_in_use = ips_in_use.slice(0) -%]
-[% SET hostname_ssl_ips_in_use = ips_in_use.slice(0) -%]
 [% WHILE (ip_block = copy_of_ips_in_use.splice(0, 50)) AND ip_block.size -%]
 [%      IF proxysubdomains && supported.mod_proxy && supported.mod_rewrite -%]
 
@@ -860,11 +859,11 @@ Include "[% paths.dir_conf_includes %]/post_virtualhost_global.conf"
 ##################################################
 ##################################################
 
-[% WHILE (ip_block = hostname_ssl_ips_in_use.splice(0, 50)) AND ip_block.size -%]
-<VirtualHost[% FOREACH server_ip IN ip_block -%] [% "${server_ip}:${configured.main_port_ssl}" %][% END -%]>
-  ServerName [% wildcard_safe(servername) %]
-
-  DocumentRoot [% paths.dir_docroot %]
+[% FOREACH vh IN sharedips -%]
+<VirtualHost [% parsed_ip(vh) %]:[% configured.main_port_ssl %] *:[% configured.main_port_ssl %]>
+    ServerName [% parsed_ip(vh) %]
+    ServerAlias [% wildcard_safe(servername) %]
+    DocumentRoot [% paths.dir_docroot %]
 [% IF serveradmin -%]
   ServerAdmin [% serveradmin %]
 [% ELSE %]
