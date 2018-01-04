@@ -1,28 +1,24 @@
 #!groovy
 
-properties([
+List props = [
     // Our integration with OBS can only follow one build per OBS project; if
     // multiple builds occur, all running jobs will wait for the last build in
     // the OBS project to complete.  To help avoid confusing waits, disable
-    // cuncurrent builds for *this one* job in Jenkins (note: each branch is a
+    // concurrent builds for *this one* job in Jenkins (note: each branch is a
     // separate job).  Other jobs can still run concurrently, but if they use
     // the same OBS project, they will have the extra wait.
     disableConcurrentBuilds(),
-    pipelineTriggers([
-        // Enable SCM triggering of builds via a webhook, so BitBucket can tell
-        // us when we need to check for new commits.
-        pollSCM(''),
-    ]),
-])
+]
 
 // Allow parameterized builds on all branches other than master & production
 if ( !env.BRANCH_NAME.equals('master') && !env.BRANCH_NAME.equals('production') ) {
-    properties([
-        parameters([
-            string(defaultValue: 'master', description: 'The branch of the ea-tools repository to use for building; defaults to "master".', name: 'EA_TOOLS_BRANCH')
-        ]),
-    ])
+    props.add(
+            parameters([
+                string(defaultValue: 'master', description: 'The branch of the ea-tools repository to use for building; defaults to "master".', name: 'EA_TOOLS_BRANCH')
+            ]))
 }
+
+properties(props)
 
 // fileLoader implicitly uses an executor, so ensure this invocation is outside
 // the 'node' block; otherwise, you risk resource starvation
@@ -35,4 +31,3 @@ def ea4 = fileLoader.fromGit([
 ])
 
 node('tool:OBS && project:EA4') { ea4.modulino() }
-
