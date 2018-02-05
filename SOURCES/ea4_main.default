@@ -937,7 +937,7 @@ Include "[% paths.dir_conf_includes %]/post_virtualhost_global.conf"
         SecRuleEngine On
     </IfModule>
 </VirtualHost>
-[%- END -%]
+[% END -%]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
