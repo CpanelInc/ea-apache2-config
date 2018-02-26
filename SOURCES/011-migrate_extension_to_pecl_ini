@@ -39,9 +39,9 @@ for my $php_pkg ( @{$installed_phps} ) {
     my $source = $php->get_ini( package => $php_pkg )->get_default_system_ini();
 
     my $pecl = $source;
-    $pecl =~ s{/php\.ini$}{/php.d/02-pecl.ini};
+    $pecl =~ s{/php\.ini$}{/php.d/zzzzzzz-pecl.ini};
 
-    print "\t… moving zend_extension and extension directives from php.ini to php.d/02-pecl.ini …\n";
+    print "\t… moving zend_extension and extension directives from php.ini to php.d/zzzzzzz-pecl.ini …\n";
     _migrate_extension_directives( $source, $pecl );
 }
 
