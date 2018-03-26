@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 126
+%define release_prefix 127
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -159,6 +159,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Mon Feb 26 2018 Daniel Muey <dan@cpanel.net> - 1.0-127
+- EA-7252: Update migrate_extension_to_pecl_ini to use new INI file name
+
 * Mon Feb 05 2018  Dan Muey <dan@cpanel.net> - 1.0-126
 - ZC-3381: Ensure there is a newline after SSL hostname `</VirtualHost>`
 
