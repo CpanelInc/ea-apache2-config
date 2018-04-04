@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 127
+%define release_prefix 128
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -159,6 +159,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Wed Apr 04 2018 Daniel Muey <dan@cpanel.net> - 1.0-128
+- EA-7370: Have PHP config hook script error out if all PHPs would be set to `none`
+
 * Mon Feb 26 2018 Daniel Muey <dan@cpanel.net> - 1.0-127
 - EA-7252: Update migrate_extension_to_pecl_ini to use new INI file name
 

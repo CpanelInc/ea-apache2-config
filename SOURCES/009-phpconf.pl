@@ -266,6 +266,12 @@ sub apply_rebuild_settings {
         return 1;
     }
 
+    my $none_cnt = 0;
+    for my $pkg ( @{ $cfg->{packages} } ) {
+        $none_cnt++ if !$settings->{$pkg} || $settings->{$pkg} eq 'none';
+    }
+    logger->die("The only supported handler for all PHPs is `none`! Since that usually indicates a local/temporary RPM issue the php handler config is not being updated.\n") if @{ $cfg->{packages} } == $none_cnt;
+
     try {
         if ( $cfg->{api} eq 'old' ) {
             my %rebuild = %$settings;

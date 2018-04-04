@@ -225,7 +225,7 @@ sub test_get_rebuild_settings : Tests(10) {
     return;
 }
 
-sub test_apply_rebuild_settings : Tests(11) {
+sub test_apply_rebuild_settings : Tests(12) {
     note "Testing apply_rebuild_settings()";
     can_ok( 'ea_apache2_config::phpconf', 'apply_rebuild_settings' );
     %Mock::Cpanel::WebServer::Supported::apache::Package = ();
@@ -241,14 +241,17 @@ sub test_apply_rebuild_settings : Tests(11) {
     ok( !scalar stat(qq{$tmpdir/apachecfg$$.conf}), q{apply_rebuild_settings: Apache temp config file removed when no PHP packages installed} );
     ok( !scalar stat(qq{$tmpdir/cpanelcfg$$.conf}), q{apply_rebuild_settings: Cpanel temp config file removed when no PHP packages installed} );
 
+    $ret = trap { ea_apache2_config::phpconf::apply_rebuild_settings( { packages => [qw(ea-php42 ea-php99)] }, { "e    a-php42" => "none", "ea-php99" => undef } ) };
+    like( $trap->die, qr/The only supported handler for all PHPs is `none`! .* the php handler config is not being updated/, "apply_rebuild_settings() errors out if all packages would be set to none" );
+
     my $caught_error = 0;
 
-    no warnings qw( redefine );
+    no warnings qw( redefine once );
     local $INC{'Cpanel/WebServer.pm'} = 1;
     local *Cpanel::WebServer::new = sub { return Mock::Cpanel::WebServer->new() };
     local *Cpanel::Logger::die = sub { $caught_error = 1 };
+    use warnings qw( redefine once );
 
-    use warnings qw( redefine );
     my @packages = qw( x y z );
     my %settings = ( x => "xfoobar$$", y => "yfoobaz$$", z => "zfoofoo$$", default => 'x' );
     my $php      = Mock::Cpanel::ProgLang->new();
