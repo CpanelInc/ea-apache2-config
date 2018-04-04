@@ -266,13 +266,19 @@ sub test_apply_rebuild_settings : Tests(12) {
     return;
 }
 
-sub test_sanitize_php_config : Tests(5) {
+sub test_sanitize_php_config : Tests(6) {
     note "Testing sanitize_php_config()";
     can_ok( 'ea_apache2_config::phpconf', 'sanitize_php_config' );
     is( $ea_apache2_config::phpconf::cpanel_default_php_pkg, "ea-php56", '$cpanel_default_php_pkg is what we expect' );
 
     no warnings 'redefine';
     local *Cpanel::WebServer::Supported::apache::get_available_handlers = sub { return { suphp => 1 } };
+
+    {
+        local *Cpanel::WebServer::Supported::apache::get_available_handlers = sub { {} };
+        my $ret = trap { ea_apache2_config::phpconf::sanitize_php_config( { cfg_ref => { default => "ea-php42" }, packages => [qw(ea-php42 ea-php99)] } ) };
+        like( $trap->die, qr/The only supported handler for all PHPs is `none`! .* the php handler config is not being updated/, "sanitize_php_config() errors out if all packages would be set to none" );
+    }
 
     my $php     = Mock::Cpanel::ProgLang::Conf->new();
     my @non_def = qw(ea-php42 ea-php99 ea-php01);
