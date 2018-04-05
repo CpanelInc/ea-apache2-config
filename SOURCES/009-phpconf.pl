@@ -145,6 +145,8 @@ sub sanitize_php_config {
 
     # and only allow a single dso handler, set the rest to cgi or none
 
+    _bail_if_all_none( $cfg, \%save );
+
     !$cfg->{args}{dryrun} && $prog->set_conf( conf => \%save );
 
     return 1;
@@ -256,6 +258,19 @@ sub get_rebuild_settings {
     return \%settings;
 }
 
+sub _bail_if_all_none {
+    my ($cfg, $settings) = @_;
+
+    my $none_cnt = 0;
+    for my $pkg ( @{ $cfg->{packages} } ) {
+        $none_cnt++ if !$settings->{$pkg} || $settings->{$pkg} eq 'none';
+    }
+
+    logger->die("The only supported handler for all PHPs is `none`! Since that usually indicates a local/temporary RPM issue the php handler config is not being updated.\n") if @{ $cfg->{packages} } == $none_cnt;
+
+    return;
+}
+
 sub apply_rebuild_settings {
     my $cfg      = shift;
     my $settings = shift;
@@ -265,6 +280,8 @@ sub apply_rebuild_settings {
         !$cfg->{args}->{dryrun} && unlink( $cfg->{apache_path}, $cfg->{cfg_path} );
         return 1;
     }
+
+    _bail_if_all_none( $cfg, $settings );
 
     try {
         if ( $cfg->{api} eq 'old' ) {
