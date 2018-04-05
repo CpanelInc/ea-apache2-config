@@ -66,6 +66,7 @@ use warnings;
 use parent qw( Test::Class );
 use FindBin ();
 use Test::More;
+use Test::Warn;
 use Test::NoWarnings;
 use Test::Trap;
 use File::Temp ();
@@ -100,6 +101,16 @@ sub test_is_handler_supported : Tests(8) {
     }
 
     return;
+}
+
+sub test_get_preferred_handler : Tests(2) {
+    no warnings "redefine";
+    local *Cpanel::WebServer::Supported::apache::get_available_handlers = sub { };
+    warnings_like {
+        is( ea_apache2_config::phpconf::get_preferred_handler("ea-whatwhat"), "cgi", "get_preferred_handler() should default to cgi if no handlers are found" );
+    }
+    qr/Could not find a handler for ea-whatwhat\. Defaulting to 'cgi' so that, at worst case, we get an error instead of source code\./,
+      "give a warning when we must default to 'cgi'";
 }
 
 sub test_get_php_config : Tests(5) {
@@ -225,7 +236,7 @@ sub test_get_rebuild_settings : Tests(10) {
     return;
 }
 
-sub test_apply_rebuild_settings : Tests(12) {
+sub test_apply_rebuild_settings : Tests(11) {
     note "Testing apply_rebuild_settings()";
     can_ok( 'ea_apache2_config::phpconf', 'apply_rebuild_settings' );
     %Mock::Cpanel::WebServer::Supported::apache::Package = ();
@@ -240,9 +251,6 @@ sub test_apply_rebuild_settings : Tests(12) {
     ok( $ret,                                       q{apply_rebuild_settings: Correct return value when no PHP packages installed} );
     ok( !scalar stat(qq{$tmpdir/apachecfg$$.conf}), q{apply_rebuild_settings: Apache temp config file removed when no PHP packages installed} );
     ok( !scalar stat(qq{$tmpdir/cpanelcfg$$.conf}), q{apply_rebuild_settings: Cpanel temp config file removed when no PHP packages installed} );
-
-    $ret = trap { ea_apache2_config::phpconf::apply_rebuild_settings( { packages => [qw(ea-php42 ea-php99)] }, { "e    a-php42" => "none", "ea-php99" => undef } ) };
-    like( $trap->die, qr/The only supported handler for all PHPs is `none`! .* the php handler config is not being updated/, "apply_rebuild_settings() errors out if all packages would be set to none" );
 
     my $caught_error = 0;
 
@@ -266,19 +274,13 @@ sub test_apply_rebuild_settings : Tests(12) {
     return;
 }
 
-sub test_sanitize_php_config : Tests(6) {
+sub test_sanitize_php_config : Tests(5) {
     note "Testing sanitize_php_config()";
     can_ok( 'ea_apache2_config::phpconf', 'sanitize_php_config' );
     is( $ea_apache2_config::phpconf::cpanel_default_php_pkg, "ea-php56", '$cpanel_default_php_pkg is what we expect' );
 
     no warnings 'redefine';
     local *Cpanel::WebServer::Supported::apache::get_available_handlers = sub { return { suphp => 1 } };
-
-    {
-        local *Cpanel::WebServer::Supported::apache::get_available_handlers = sub { {} };
-        my $ret = trap { ea_apache2_config::phpconf::sanitize_php_config( { cfg_ref => { default => "ea-php42" }, packages => [qw(ea-php42 ea-php99)] } ) };
-        like( $trap->die, qr/The only supported handler for all PHPs is `none`! .* the php handler config is not being updated/, "sanitize_php_config() errors out if all packages would be set to none" );
-    }
 
     my $php     = Mock::Cpanel::ProgLang::Conf->new();
     my @non_def = qw(ea-php42 ea-php99 ea-php01);
