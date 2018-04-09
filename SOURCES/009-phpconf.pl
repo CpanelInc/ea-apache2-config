@@ -31,8 +31,8 @@ use Cpanel::WebServer           ();
 use Getopt::Long                ();
 use POSIX qw( :sys_wait_h );
 
-our @PreferredHandlers      = qw( suphp dso cgi none );
-our $cpanel_default_php_pkg = "ea-php56";                 # UPDATE ME UPDATE THE POD!!!
+our @PreferredHandlers      = qw( suphp dso cgi );
+our $cpanel_default_php_pkg = "ea-php56";            # UPDATE ME UPDATE THE POD!!!
 my ( $php, $server );
 
 sub debug {
@@ -94,6 +94,11 @@ sub get_preferred_handler {
         }
     }
 
+    if ( !$new_handler ) {
+        warn "Could not find a handler for $package. Defaulting to 'cgi' so that, at worst case, we get an error instead of source code.\n";
+        $new_handler = 'cgi';
+    }
+
     return $new_handler;
 }
 
@@ -111,7 +116,7 @@ sub sanitize_php_config {
     #   not break the MultiPHP EA4 code if a package or handler is removed
     #   from the system while it's configured.  It will iterate over all
     #   possible handler attempting to find a suitable (and supported)
-    #   handler.  It will resort to the 'none' handler if nothing else
+    #   handler.  It will resort to the 'cgi' handler if nothing else
     #   is supported.
     #
     # Finally, the cfg_ref hash is what this applications uses to update
@@ -143,9 +148,7 @@ sub sanitize_php_config {
 
     $save{default} = $default;
 
-    # and only allow a single dso handler, set the rest to cgi or none
-
-    _bail_if_all_none( $cfg, \%save );
+    # and only allow a single dso handler, set the rest to cgi
 
     !$cfg->{args}{dryrun} && $prog->set_conf( conf => \%save );
 
@@ -258,19 +261,6 @@ sub get_rebuild_settings {
     return \%settings;
 }
 
-sub _bail_if_all_none {
-    my ($cfg, $settings) = @_;
-
-    my $none_cnt = 0;
-    for my $pkg ( @{ $cfg->{packages} } ) {
-        $none_cnt++ if !$settings->{$pkg} || $settings->{$pkg} eq 'none';
-    }
-
-    logger->die("The only supported handler for all PHPs is `none`! Since that usually indicates a local/temporary RPM issue the php handler config is not being updated.\n") if @{ $cfg->{packages} } == $none_cnt;
-
-    return;
-}
-
 sub apply_rebuild_settings {
     my $cfg      = shift;
     my $settings = shift;
@@ -280,8 +270,6 @@ sub apply_rebuild_settings {
         !$cfg->{args}->{dryrun} && unlink( $cfg->{apache_path}, $cfg->{cfg_path} );
         return 1;
     }
-
-    _bail_if_all_none( $cfg, $settings );
 
     try {
         if ( $cfg->{api} eq 'old' ) {
@@ -391,9 +379,7 @@ If a check succeeds, no further checks are performed.
 
 =back
 
-=item 3. Attempt to assign a package to the 'cgi' handler if the mod_cgi or mod_cgid Apache modules are installed.
-
-=item 4. Assign the package to the 'none' handler since Apache isn't configured to serve PHP applications.
+=item 3. Attempt to assign a package to the 'cgi' handler since the mod_cgi or mod_cgid Apache modules should be installed (and in the wierd case it isn't then at leats they'll get errors instead of source code).
 
 =back
 
