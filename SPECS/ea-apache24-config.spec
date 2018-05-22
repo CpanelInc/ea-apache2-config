@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 129
+%define release_prefix 130
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -159,6 +159,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Mon May 21 2018 Daniel Muey <dan@cpanel.net> - 1.0-130
+- EA-3773: paths.conf: use correct value for file_conf_mime_types
+
 * Thu Apr 05 2018 Daniel Muey <dan@cpanel.net> - 1.0-129
 - EA-7383: never automatically set to none
 
