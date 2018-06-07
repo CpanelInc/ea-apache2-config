@@ -309,9 +309,11 @@ sub apply_rebuild_settings {
 }
 
 sub setup_session_save_path {
+    require Cpanel::ProgLang::Supported::php::Ini;
     if ( Cpanel::ProgLang::Supported::php::Ini->can('setup_session_save_path') ) {
-        Cpanel::ProgLang::Supported::php::Ini::setup_session_save_path();
+        return Cpanel::ProgLang::Supported::php::Ini::setup_session_save_path();
     }
+    return;
 }
 
 unless ( caller() ) {
