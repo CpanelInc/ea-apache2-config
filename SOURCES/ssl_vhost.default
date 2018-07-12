@@ -97,23 +97,6 @@
   <IfModule mod_suphp.c>
     suPHP_UserGroup [% vhost.user %] [% vhost.group %]
   </IfModule>
-[% IF phpopenbasedirprotect_enabled && vhost.phpopenbasedirprotect && ( supported.libphp4 || supported.libphp5 ) -%]
-  <IfModule concurrent_php.c>
-    php4_admin_value open_basedir "[% vhost.homedir %]:/usr/lib/php:/usr/php4/lib/php:/usr/local/lib/php:/usr/local/php4/lib/php:/tmp"
-    php5_admin_value open_basedir "[% vhost.homedir %]:/usr/lib/php:/usr/local/lib/php:/tmp"
-  </IfModule>
-  <IfModule !concurrent_php.c>
-    <IfModule mod_php4.c>
-      php_admin_value open_basedir "[% vhost.homedir %]:/usr/lib/php:/usr/php4/lib/php:/usr/local/lib/php:/usr/local/php4/lib/php:/tmp"
-    </IfModule>
-    <IfModule mod_php5.c>
-      php_admin_value open_basedir "[% vhost.homedir %]:/usr/lib/php:/usr/local/lib/php:/tmp"
-    </IfModule>
-    <IfModule sapi_apache2.c>
-      php_admin_value open_basedir "[% vhost.homedir %]:/usr/lib/php:/usr/php4/lib/php:/usr/local/lib/php:/usr/local/php4/lib/php:/tmp"
-    </IfModule>
-  </IfModule>
-[% END -%]
 [% IF vhost.user != 'nobody' -%]
   <IfModule suexec_module>
     <IfModule !mod_ruid2.c>
