@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 131
+%define release_prefix 132
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -159,6 +159,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Thu Jul 12 2018 Daniel Muey <dan@cpanel.net> - 1.0-132
+- ZC-3914: Remove EA3 specific concurrent PHP open_basedir
+
 * Thu Jun 07 2018 Rishwanth Yeddula <rish@cpanel.net> - 1.0-131
 - EA-7548: Ensure that setup_session_save_path codepath properly executes in the YUM hook
 
