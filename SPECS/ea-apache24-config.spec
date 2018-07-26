@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 132
+%define release_prefix 133
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -159,6 +159,10 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Thu Jul 26 2018 Rishwanth Yeddula <rish@cpanel.net> - 1.0-133
+- EA-7777: Ensure that log entries for the hostname, and the shared IPs are
+  logged in the main access_log instead of individual domlogs.
+
 * Thu Jul 12 2018 Daniel Muey <dan@cpanel.net> - 1.0-132
 - ZC-3914: Remove EA3 specific concurrent PHP open_basedir
 
