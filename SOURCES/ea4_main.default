@@ -411,8 +411,7 @@ ProxyPass /___proxy_subdomain_ws_webmail ws://127.0.0.1:2095 max=1 retry=0
 
 [% FOREACH vh IN sharedips -%]
 <VirtualHost [% vh %]>
-    ServerName [% parsed_ip(vh) %]
-    ServerAlias [% wildcard_safe(servername) %]
+    ServerName [% wildcard_safe(servername) %]
     DocumentRoot [% paths.dir_docroot %]
     ServerAdmin [% serveradmin %]
 
