@@ -262,9 +262,9 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
         [%# noop but catch is required or it dies %]
     [%- END -%]
     <IfModule logio_module>
-        CustomLog "|/usr/local/cpanel/bin/splitlogs --main=[% wildcard_safe(servername) %] --suffix=-bytes_log[% splitlogsextra %]" bytesvhost
+        CustomLog "|/usr/local/cpanel/bin/splitlogs --dir=[% paths.dir_domlogs %] --main=[% wildcard_safe(servername) %] --suffix=-bytes_log[% splitlogsextra %]" bytesvhost
     </IfModule>
-    CustomLog "|/usr/local/cpanel/bin/splitlogs --main=[% wildcard_safe(servername) %] --mainout=[% paths.file_access_log %][% splitlogsextra %]" combinedvhost
+    CustomLog "|/usr/local/cpanel/bin/splitlogs --dir=[% paths.dir_domlogs %] --main=[% wildcard_safe(servername) %] --mainout=[% paths.file_access_log %][% splitlogsextra %]" combinedvhost
 </IfModule>
 [% ELSE %]
 <IfModule log_config_module>
