@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 133
+%define release_prefix 135
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -159,6 +159,12 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Fri Aug 17 2018 Tim Mullin <tim@cpanel.net> - 1.0-135
+- EA-7035: Explicitly set the --dir option for splitlogs
+
+* Wed Aug 15 2018 Tim Mullin <tim@cpanel.net> - 1.0-134
+- EA-7012: Use hostname for proxy subdomains SSL vhost
+
 * Thu Jul 26 2018 Rishwanth Yeddula <rish@cpanel.net> - 1.0-133
 - EA-7777: Ensure that log entries for the hostname, and the shared IPs are
   logged in the main access_log instead of individual domlogs.
