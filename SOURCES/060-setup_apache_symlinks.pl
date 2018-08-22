@@ -22,6 +22,7 @@ use strict;
 use warnings;
 
 use Cpanel::ConfigFiles::Apache ();
+use Cpanel::FileUtils           ();
 
 # Get the paths from the paths.conf file
 my $apacheconf = Cpanel::ConfigFiles::Apache->new();
@@ -59,7 +60,7 @@ for my $dir ( $ea3_basedir, $ea3_bindir, $ea3_confdir ) {
 # Make a symlink from all the old ea3 paths to the new folders
 my $verbose = grep /^--verbose/, @ARGV;
 my $had_errors = 0;
-foreach my $key ( keys %ea3_paths ) {
+foreach my $key ( sort keys %ea3_paths ) {
     eval {
 
         # If the old and the new are the same, no symlink required
@@ -87,12 +88,24 @@ foreach my $key ( keys %ea3_paths ) {
             }
         }
 
-        # If we can see the item to be linked, it is likely visible
+        # If we can see the item to be linked, it is possibly visible
         # due to its parent being linked.
-        # In any case, don't link on top of an existing file
+        # If not, backup and move the EA3 file before creating the link
         if ( -e $ea3_paths{$key} ) {
-            print "$ea3_paths{$key} already visible, no need to link\n" if $verbose;
-            return;
+
+            # Test if they are actually the same file by virtue of parent
+            # directory linkage
+            if ( Cpanel::FileUtils::equivalent_files( $ea3_paths{$key}, $apacheconf->{$key} ) ) {
+                print "$ea3_paths{$key} already linked via parent directory, no need to link\n" if $verbose;
+                return;
+            }
+
+            # Move the file out of the way so we can create the link
+            # Passing "-fa" to safemv will cause it to uniquely rename
+            # the destination file if it already exists
+            print "Renaming $ea3_paths{$key} to $ea3_paths{$key}.ea3 to create link\n" if $verbose;
+            Cpanel::FileUtils::safemv( "-fa", $ea3_paths{$key}, $ea3_paths{$key} . '.ea3' )
+              or die("Unable to rename $ea3_paths{$key}:  $!\n");
         }
 
         print "Linking $ea3_paths{$key} -> $apacheconf->{$key}\n" if $verbose;
