@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 136
+%define release_prefix 137
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -159,6 +159,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Fri Aug 31 2018 Tim Mullin <tim@cpanel.net> - 1.0-137
+- EA-7373: Fix ServerAdmin in the template
+
 * Wed Aug 22 2018 Tim Mullin <tim@cpanel.net> - 1.0-136
 - EA-7261: Create EA3->EA4 symlinks even when EA3 file exists
 

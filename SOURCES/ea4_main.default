@@ -55,7 +55,7 @@ SymlinkProtectRoot [% paths.dir_docroot %]
 [% END -%]
 
 # You can change this by using WHM, and navigating to the 'Basic cPanel & WHM Setup' -> 'Contact Information' interface.
-ServerAdmin [% main.serveradmin.item.serveradmin %]
+ServerAdmin [% serveradmin %]
 
 # You can change this by using WHM, and navigating to the 'Networking Setup' => 'Change Hostname' interface.
 ServerName [% wildcard_safe(main.servername.item.servername) %]
