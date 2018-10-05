@@ -54,8 +54,8 @@ SymlinkProtect [% main.symlink_protect.item.symlink_protect %]
 SymlinkProtectRoot [% paths.dir_docroot %]
 [% END -%]
 
-# You can change this by using WHM, and navigating to the 'Basic cPanel & WHM Setup' -> 'Contact Information' interface.
-ServerAdmin [% main.serveradmin.item.serveradmin %]
+# You can change this by using WHM, and navigating to the 'Basic WebHost Manager® Setup' -> 'Contact Information' interface.
+ServerAdmin [% serveradmin %]
 
 # You can change this by using WHM, and navigating to the 'Networking Setup' => 'Change Hostname' interface.
 ServerName [% wildcard_safe(main.servername.item.servername) %]
@@ -285,7 +285,7 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
     LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
 [%  END -%]
 
-    # access_log format can be set in WHM under 'Basic cPanel & WHM Setup'
+    # access_log format can be set in WHM under 'Basic WebHost Manager® Setup'
 [%  IF main.ifmodulemodlogconfigc.customlog.items.length -%]
 [%      FOREACH dir IN main.ifmodulemodlogconfigc.customlog.items -%]
     CustomLog [% dir.target %] [% dir.format %]
