@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 138
+%define release_prefix 139
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -159,6 +159,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 
 %changelog
+* Thu Nov 01 2018 Cory McIntire <cory@cpanel.net> - 1.0-139
+- EA-7980: Revert template changes as it was causing Wordpress failures
+
 * Tue Oct 23 2018 Tim Mullin <tim@cpanel.net> - 1.0-138
 - EA-7903: Update vhost templates for PHP-FPM ErrorDocument handling
 
