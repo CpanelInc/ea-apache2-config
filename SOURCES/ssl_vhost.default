@@ -215,10 +215,6 @@
         <FilesMatch \.(phtml|php[0-9]*)$>
             SetHandler proxy:unix:[% vhost.php_fpm_socket %]|fcgi://[% wildcard_safe(vhost.servername) %]
         </FilesMatch>
-
-        RewriteCond %{REQUEST_FILENAME} \.php$
-        RewriteCond %{DOCUMENT_ROOT}/%{REQUEST_URI} !-f
-        RewriteRule (.*) - [H=text/html]
     </IfModule>
 [%- END %]
 [%- IF !added_include %]
