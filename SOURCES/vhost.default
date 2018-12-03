@@ -1,6 +1,13 @@
 
 <VirtualHost[% FOREACH ipblock IN vhost.ips %] [% ipblock.ip %]:[% ipblock.port %][% END %]>
   ServerName [% wildcard_safe(vhost.servername) %]
+  [% IF vhost.redirect_to_ssl -%]
+  <IfModule rewrite_module>
+    RewriteEngine On
+    RewriteCond %{HTTPS} !=on
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+  </IfModule>
+  [% END -%]
 [% IF vhost.serveralias_array.size -%]
 [% FOREACH alias IN vhost.serveralias_array -%]
   ServerAlias [% alias %]
