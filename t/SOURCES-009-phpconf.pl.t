@@ -109,7 +109,7 @@ sub test_get_preferred_handler : Tests(2) {
     warnings_like {
         is( ea_apache2_config::phpconf::get_preferred_handler("ea-whatwhat"), "cgi", "get_preferred_handler() should default to cgi if no handlers are found" );
     }
-    qr/Could not find a handler for ea-whatwhat\. Defaulting to 'cgi' so that, at worst case, we get an error instead of source code\./,
+    qr/Could not find a handler for ea-whatwhat\. Defaulting to “cgi” so that, at worst case, we get an error instead of source code\./,
       "give a warning when we must default to 'cgi'";
 }
 
@@ -176,7 +176,7 @@ sub test_get_rebuild_settings : Tests(10) {
         {
             mods     => { mod_cgi => 1 },
             packages => [qw( x y z )],
-            conf => { default => 'x', x => 'cgi', y => 'cgi', z => 'cgi' },
+            conf     => { default => 'x', x => 'cgi', y => 'cgi', z => 'cgi' },
             default  => 'x',                                                                                    # NOTE: In practice, this will be the same as conf variable
             note     => qq{Happy path: all packages and handlers installed and accounted for in config file},
             expected => { default => 'x', x => 'cgi', y => 'cgi', z => 'cgi' },
@@ -194,7 +194,7 @@ sub test_get_rebuild_settings : Tests(10) {
         {
             mods     => { mod_cgi => 1, mod_suphp => 1 },
             packages => [qw( x y z )],
-            conf => { default => 'x' },
+            conf     => { default => 'x' },
             default  => 'x',                                                                                              # NOTE: In practice, this will be the same as conf variable
             note     => qq{All packages installed, handlers undefined in config, assign to preferred default -- suphp},
             expected => { default => 'x', x => 'suphp', y => 'suphp', z => 'suphp' },
@@ -203,7 +203,7 @@ sub test_get_rebuild_settings : Tests(10) {
         {
             mods     => { mod_cgi => 1, mod_suphp => 1 },
             packages => [qw( y z )],
-            conf => { default => 'x' },
+            conf     => { default => 'x' },
             default  => 'x',                                                                                                                 # NOTE: In practice, this will be the same as conf variable
             note     => qq{The system default package is missing -- default to latest package and use preferred default handler -- suphp},
             expected => { default => 'z', y => 'suphp', z => 'suphp' },
@@ -286,7 +286,7 @@ sub test_sanitize_php_config : Tests(5) {
     my @non_def = qw(ea-php42 ea-php99 ea-php01);
     ea_apache2_config::phpconf::sanitize_php_config(
         {
-            cfg_ref => { default => "ea-php42" },
+            cfg_ref  => { default => "ea-php42" },
             packages => [ @non_def, $ea_apache2_config::phpconf::cpanel_default_php_pkg ],
         },
         $php
