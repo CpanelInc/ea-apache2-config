@@ -25,6 +25,7 @@ use Cpanel::Imports;
 use Try::Tiny;
 use Cpanel::ConfigFiles::Apache ();
 use Cpanel::DataStore           ();
+use Cpanel::EA4::Util           ();
 use Cpanel::Notify              ();
 use Cpanel::ProgLang            ();
 use Cpanel::WebServer           ();
@@ -95,8 +96,9 @@ sub get_preferred_handler {
     }
 
     if ( !$new_handler ) {
-        warn "Could not find a handler for $package. Defaulting to 'cgi' so that, at worst case, we get an error instead of source code.\n";
-        $new_handler = 'cgi';
+        my $def = Cpanel::EA4::Util::get_default_php_handler();
+        warn "Could not find a handler for $package. Defaulting to “$def” so that, at worst case, we get an error instead of source code.\n";
+        $new_handler = $def;
     }
 
     return $new_handler;
@@ -116,7 +118,7 @@ sub sanitize_php_config {
     #   not break the MultiPHP EA4 code if a package or handler is removed
     #   from the system while it's configured.  It will iterate over all
     #   possible handler attempting to find a suitable (and supported)
-    #   handler.  It will resort to the 'cgi' handler if nothing else
+    #   handler.  It will resort to the Cpanel::EA4::Util::get_default_php_handler() handler if nothing else
     #   is supported.
     #
     # Finally, the cfg_ref hash is what this applications uses to update
@@ -148,7 +150,7 @@ sub sanitize_php_config {
 
     $save{default} = $default;
 
-    # and only allow a single dso handler, set the rest to cgi
+    # and only allow a single dso handler, set the rest to Cpanel::EA4::Util::get_default_php_handler()
 
     !$cfg->{args}{dryrun} && $prog->set_conf( conf => \%save );
 
@@ -221,8 +223,8 @@ sub get_rebuild_settings {
 
     # We can't assume that suphp will always be available for each package.
     # This will iterate over each package and verify that the handler is
-    # installed.  If it's not, then revert to the 'cgi' handler, which
-    # is installed by default.
+    # installed.  If it's not, then revert to the Cpanel::EA4::Util::get_default_php_handler() handler,
+    # which should be installed (if it is 'cgi' then it is available by default).
 
     for my $package ( @{ $cfg->{packages} } ) {
         my $old_handler = $ref->{$package} || '';
@@ -381,7 +383,7 @@ If a check succeeds, no further checks are performed.
 
 =back
 
-=item 3. Attempt to assign a package to the 'cgi' handler since the mod_cgi or mod_cgid Apache modules should be installed (and in the wierd case it isn't then at leats they'll get errors instead of source code).
+=item 3. Attempt to assign a package to the Cpanel::EA4::Util::get_default_php_handler() (which if it is cgi, will work since the mod_cgi or mod_cgid Apache modules should be installed (and in the weird case it isn't then at leats they'll get errors instead of source code)).
 
 =back
 
