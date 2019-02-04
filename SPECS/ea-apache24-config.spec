@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 142
+%define release_prefix 143
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -44,6 +44,7 @@ Source19:      490-restartsrv_apache_php_fpm
 Source20:      000-local_template_check
 Source21:      010-suphpconf.pl
 Source22:      011-migrate_extension_to_pecl_ini
+Source23:      php_add_handler_fix.conf
 
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:      ea-webserver
@@ -125,6 +126,8 @@ install %{SOURCE12} %{buildroot}/%{_httpd_bindir}/
 %{__mkdir_p} %{buildroot}/%{_httpd_confdir}/includes
 %{__perl} %{buildroot}/%{_httpd_bindir}/generate-errordoc-conf > %{buildroot}/%{_httpd_confdir}/includes/errordocument.conf
 
+install %{SOURCE23} %{buildroot}/%{_httpd_confdir}/
+
 %clean
 rm -rf %{buildroot}
 
@@ -157,8 +160,12 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-apache24-config/000-local_template_check
 %attr(0755,root,root) %{_httpd_bindir}/generate-errordoc-conf
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
+%config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Mon Feb 04 2019 Daniel Muey <dan@cpanel.net> - 1.0-143
+- ZC-4742: Install configuration to prevent non-PHP files from being executed by PHP
+
 * Thu Jan 24 2019 Daniel Muey <dan@cpanel.net> - 1.0-142
 - ZC-4726: use get_default_php_handler() instead of hardcoded value
 
