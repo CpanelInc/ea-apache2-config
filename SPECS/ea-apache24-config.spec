@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 143
+%define release_prefix 144
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -163,6 +163,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Tue Feb 18 2019 Tim Mullin <tim@cpanel.net> - 1.0-144
+- EA-8228: Fix extra chomping in ea4_main.default
+
 * Mon Feb 04 2019 Daniel Muey <dan@cpanel.net> - 1.0-143
 - ZC-4742: Install configuration to prevent non-PHP files from being executed by PHP
 
