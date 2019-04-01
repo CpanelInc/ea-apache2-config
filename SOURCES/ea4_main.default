@@ -489,94 +489,6 @@ ProxyPass /___proxy_subdomain_ws_webmail ws://127.0.0.1:2095 max=1 retry=0
 ##################################################
 ##################################################
 #
-# Default SSL Hostname Virtual Host
-#
-##################################################
-##################################################
-
-[%- WHILE (vh_block = sharedips.splice(0, 50)) AND vh_block.size -%]
-<VirtualHost [% FOREACH vh IN vh_block -%][% parsed_ip(vh) _ ":${configured.main_port_ssl}" %] [% END -%][% IF !sharedips.size %]*:[% configured.main_port_ssl %][% END %]>
-    ServerName [% wildcard_safe(servername) %]
-    DocumentRoot [% paths.dir_docroot %]
-
-    [%- IF serveradmin -%]
-
-    ServerAdmin [% serveradmin %]
-    [%- ELSE -%]
-
-    ServerAdmin webmaster@[% servername %]
-    [%- END -%]
-
-    <IfModule suphp_module>
-        suPHP_UserGroup nobody nobody
-    </IfModule>
-
-    [%- IF supported.mod_userdir && !supported.mpm_itk && !supported.mod_ruid2 && !supported.mod_passenger -%]
-    <Directory "/">
-        AllowOverride All
-    </Directory>
-    [% ELSE -%]
-    <Directory "[% paths.dir_docroot %]">
-        AllowOverride All
-    </Directory>
-    [%- END -%]
-
-    [%- IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' -%]
-    UserDir disabled
-    [%- IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 && !supported.mod_passenger -%]
-    UserDir enabled [% defaultvhost.userdirprotect %]
-    [%- END -%]
-    [%- END -%]
-
-    <IfModule ssl_module>
-        SSLEngine on
-        [% IF file_test('f', '/var/cpanel/ssl/cpanel/mycpanel.pem') %]
-
-        SSLCertificateFile /var/cpanel/ssl/cpanel/mycpanel.pem
-        SSLCertificateKeyFile /var/cpanel/ssl/cpanel/mycpanel.pem
-        SSLCertificateChainFile /var/cpanel/ssl/cpanel/mycpanel.pem
-        [%- IF supported.stapling && !has_ocsp('/var/cpanel/ssl/cpanel/mycpanel.pem') -%]
-
-        SSLUseStapling Off
-        [%- END -%]
-        [%- ELSIF file_test('f', '/var/cpanel/ssl/cpanel/cpanel.pem') -%]
-
-        SSLCertificateFile /var/cpanel/ssl/cpanel/cpanel.pem
-        SSLCertificateKeyFile /var/cpanel/ssl/cpanel/cpanel.pem
-        SSLCertificateChainFile /var/cpanel/ssl/cpanel/cpanel.pem
-        [%- IF supported.stapling && !has_ocsp('/var/cpanel/ssl/cpanel/cpanel.pem') -%]
-
-        SSLUseStapling Off
-        [%- END -%]
-        [%- ELSIF file_test('f', '/var/cpanel/ssl/cpanel/cpanel.crt') && file_test('f', '/var/cpanel/ssl/cpanel/cpanel.key') -%]
-
-        SSLCertificateFile /var/cpanel/ssl/cpanel/cpanel.crt
-        SSLCertificateKeyFile /var/cpanel/ssl/cpanel/cpanel.key
-        [%- IF file_test('f', '/var/cpanel/ssl/cpanel/cpanel.cab') -%]
-
-        SSLCertificateChainFile /var/cpanel/ssl/cpanel/cpanel.cab
-        [%- END -%]
-        [%- IF supported.stapling && !has_ocsp('/var/cpanel/ssl/cpanel/cpanel.crt') -%]
-
-        SSLUseStapling Off
-        [%- END -%]
-        [% ELSE %]
-        # No service SSL installed for cPanel
-        [% END %]
-
-    </IfModule>
-
-    UseCanonicalName Off
-
-    <IfModule security2_module>
-        SecRuleEngine On
-    </IfModule>
-</VirtualHost>
-[% END -%]
-
-##################################################
-##################################################
-#
 # Define the virtual host configurtion for user domains
 #
 ##################################################
@@ -950,6 +862,93 @@ Include "[% paths.dir_conf_includes %]/post_virtualhost_global.conf"
 # You can set this by logging into WHM, and navigating to the 'DNS Functions' => 'Setup/Edit Domain Forwarding' interface.
 [% END %]
 
+##################################################
+##################################################
+#
+# Default SSL Hostname Virtual Host
+#
+##################################################
+##################################################
+
+[%- WHILE (vh_block = sharedips.splice(0, 50)) AND vh_block.size -%]
+<VirtualHost [% FOREACH vh IN vh_block -%][% parsed_ip(vh) _ ":${configured.main_port_ssl}" %] [% END -%][% IF !sharedips.size %]*:[% configured.main_port_ssl %][% END %]>
+    ServerName [% wildcard_safe(servername) %]
+    DocumentRoot [% paths.dir_docroot %]
+
+    [%- IF serveradmin -%]
+
+    ServerAdmin [% serveradmin %]
+    [%- ELSE -%]
+
+    ServerAdmin webmaster@[% servername %]
+    [%- END -%]
+
+    <IfModule suphp_module>
+        suPHP_UserGroup nobody nobody
+    </IfModule>
+
+    [%- IF supported.mod_userdir && !supported.mpm_itk && !supported.mod_ruid2 && !supported.mod_passenger -%]
+    <Directory "/">
+        AllowOverride All
+    </Directory>
+    [% ELSE -%]
+    <Directory "[% paths.dir_docroot %]">
+        AllowOverride All
+    </Directory>
+    [%- END -%]
+
+    [%- IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' -%]
+    UserDir disabled
+    [%- IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 && !supported.mod_passenger -%]
+    UserDir enabled [% defaultvhost.userdirprotect %]
+    [%- END -%]
+    [%- END -%]
+
+    <IfModule ssl_module>
+        SSLEngine on
+        [% IF file_test('f', '/var/cpanel/ssl/cpanel/mycpanel.pem') %]
+
+        SSLCertificateFile /var/cpanel/ssl/cpanel/mycpanel.pem
+        SSLCertificateKeyFile /var/cpanel/ssl/cpanel/mycpanel.pem
+        SSLCertificateChainFile /var/cpanel/ssl/cpanel/mycpanel.pem
+        [%- IF supported.stapling && !has_ocsp('/var/cpanel/ssl/cpanel/mycpanel.pem') -%]
+
+        SSLUseStapling Off
+        [%- END -%]
+        [%- ELSIF file_test('f', '/var/cpanel/ssl/cpanel/cpanel.pem') -%]
+
+        SSLCertificateFile /var/cpanel/ssl/cpanel/cpanel.pem
+        SSLCertificateKeyFile /var/cpanel/ssl/cpanel/cpanel.pem
+        SSLCertificateChainFile /var/cpanel/ssl/cpanel/cpanel.pem
+        [%- IF supported.stapling && !has_ocsp('/var/cpanel/ssl/cpanel/cpanel.pem') -%]
+
+        SSLUseStapling Off
+        [%- END -%]
+        [%- ELSIF file_test('f', '/var/cpanel/ssl/cpanel/cpanel.crt') && file_test('f', '/var/cpanel/ssl/cpanel/cpanel.key') -%]
+
+        SSLCertificateFile /var/cpanel/ssl/cpanel/cpanel.crt
+        SSLCertificateKeyFile /var/cpanel/ssl/cpanel/cpanel.key
+        [%- IF file_test('f', '/var/cpanel/ssl/cpanel/cpanel.cab') -%]
+
+        SSLCertificateChainFile /var/cpanel/ssl/cpanel/cpanel.cab
+        [%- END -%]
+        [%- IF supported.stapling && !has_ocsp('/var/cpanel/ssl/cpanel/cpanel.crt') -%]
+
+        SSLUseStapling Off
+        [%- END -%]
+        [% ELSE %]
+        # No service SSL installed for cPanel
+        [% END %]
+
+    </IfModule>
+
+    UseCanonicalName Off
+
+    <IfModule security2_module>
+        SecRuleEngine On
+    </IfModule>
+</VirtualHost>
+[% END -%]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
