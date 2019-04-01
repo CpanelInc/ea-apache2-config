@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 145
+%define release_prefix 146
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -163,6 +163,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Mon Apr 01 2019 Cory McIntire <cory@cpanel.net> - 1.0-146
+- EA-8305: Revert case EA-8250.
+
 * Fri Feb 22 2019 Tim Mullin <tim@cpanel.net> - 1.0-145
 - EA-8250: Moved default SSL block to be before user domains
 
