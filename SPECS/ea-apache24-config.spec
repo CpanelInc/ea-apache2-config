@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 147
+%define release_prefix 148
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -163,6 +163,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Wed Apr 17 2019 Jared Wright <jared.wright@cpanel.net> - 1.0-148
+- BWG-779: Allow DCV requests to pass through when 'Redirect to SSL' is enabled.
+
 * Fri Apr 12 2019 Tim Mullin <tim@cpanel.net> - 1.0-147
 - EA-8338: Keep virtual host include file comment in place even if conf files have been included
 
