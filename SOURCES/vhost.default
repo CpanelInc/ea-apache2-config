@@ -202,15 +202,13 @@
     </IfModule>
 [%- END %]
 
+[%- IF apache_target_version %]
+    [%- SET vhost_include_base = paths.dir_conf_userdata _ "/std/$apache_target_version/" %]
+[%- ELSE %]
+    [%- SET vhost_include_base = paths.dir_conf_userdata _ '/std/2_4/' %]
+[%- END %]
+[%- domain = legacy_wildcard_safe(vhost.servername) %]
 
-[%- IF !added_include %]
-    [%- IF apache_target_version %]
-        [%- SET vhost_include_base = paths.dir_conf_userdata _ "/std/$apache_target_version/" %]
-    [%- ELSE %]
-        [%- SET vhost_include_base = paths.dir_conf_userdata _ '/std/2_4/' %]
-    [%- END %]
-    [%- domain = legacy_wildcard_safe(vhost.servername) %]
   # To customize this VirtualHost use an include file at the following location
   # Include "[% vhost_include_base %][% vhost.user %]/[% domain %]/*.conf"
-[%- END %]
 </VirtualHost>

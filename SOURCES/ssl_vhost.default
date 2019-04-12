@@ -217,17 +217,16 @@
         </FilesMatch>
     </IfModule>
 [%- END %]
-[%- IF !added_include %]
-    [% IF apache_target_version %]
-        [%- SET vhost_include_base = paths.dir_conf_userdata _ "/ssl/$apache_target_version/" %]
-    [% ELSE %]
-        [%- SET vhost_include_base = paths.dir_conf_userdata _ '/ssl/2_4/' %]
-    [% END %]
-    [%- domain = legacy_wildcard_safe(vhost.servername) %]
 
-    # To customize this VirtualHost use an include file at the following location
-    # Include "[% vhost_include_base %][% vhost.user %]/[% domain %]/*.conf"
-[%- END %]
+[% IF apache_target_version %]
+    [%- SET vhost_include_base = paths.dir_conf_userdata _ "/ssl/$apache_target_version/" %]
+[% ELSE %]
+    [%- SET vhost_include_base = paths.dir_conf_userdata _ '/ssl/2_4/' %]
+[% END %]
+[%- domain = legacy_wildcard_safe(vhost.servername) %]
+
+  # To customize this VirtualHost use an include file at the following location
+  # Include "[% vhost_include_base %][% vhost.user %]/[% domain %]/*.conf"
 
 [%- IF proxysubdomains && vhost.proxy_subdomains && supported.mod_proxy && supported.mod_rewrite && vhost.proxy_subdomains.size %]
     <IfModule headers_module>
