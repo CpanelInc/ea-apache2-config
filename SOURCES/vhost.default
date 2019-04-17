@@ -4,6 +4,9 @@
   [% IF vhost.redirect_to_ssl -%]
   <IfModule rewrite_module>
     RewriteEngine On
+    RewriteCond %{REQUEST_URI} ^/\.well-known/(pki-validation|cpanel-dcv)/
+    RewriteRule ^ - [END]
+
     RewriteCond %{HTTPS} !=on
     RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
   </IfModule>
