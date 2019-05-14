@@ -139,6 +139,13 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
     Require all denied
 </FilesMatch>
 
+# PHP error_log protection
+<Files ~ "^error_log$">
+   <RequireAll>
+       Require all denied
+   </RequireAll>
+</Files>
+
 <IfModule alias_module>
     ScriptAliasMatch ^/?controlpanel/?$ /usr/local/cpanel/cgi-sys/redirect.cgi
     ScriptAliasMatch ^/?cpanel/?$ /usr/local/cpanel/cgi-sys/redirect.cgi
