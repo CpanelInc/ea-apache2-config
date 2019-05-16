@@ -163,7 +163,7 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
-* Fri May 09 2019 Tim Mullin <tim@cpanel.net> - 1.0-150
+* Fri May 10 2019 Tim Mullin <tim@cpanel.net> - 1.0-150
 - EA-8436: Omit mailman aliases when skipmailman tweak setting is set
 
 * Fri May 10 2019 Tim Mullin <tim@cpanel.net> - 1.0-149
