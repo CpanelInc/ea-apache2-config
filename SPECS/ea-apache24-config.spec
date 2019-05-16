@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 149
+%define release_prefix 150
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -163,8 +163,11 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
-* Thu May 09 2019 Tim Mullin <tim@cpanel.net> - 1.0-149
+* Fri May 10 2019 Tim Mullin <tim@cpanel.net> - 1.0-150
 - EA-8436: Omit mailman aliases when skipmailman tweak setting is set
+
+* Fri May 10 2019 Tim Mullin <tim@cpanel.net> - 1.0-149
+- EA-8447: Added error log protection to the ea4_main template
 
 * Wed Apr 17 2019 Jared Wright <jared.wright@cpanel.net> - 1.0-148
 - BWG-779: Allow DCV requests to pass through when 'Redirect to SSL' is enabled.
