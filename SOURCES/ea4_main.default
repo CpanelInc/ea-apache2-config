@@ -164,12 +164,16 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimi
     Alias /bandwidth /usr/local/bandmin/htdocs/
     Alias /img-sys /usr/local/cpanel/img-sys/
     Alias /java-sys /usr/local/cpanel/java-sys/
+[% IF !skipmailman -%]
     Alias /mailman/archives /usr/local/cpanel/3rdparty/mailman/archives/public/
     Alias /pipermail /usr/local/cpanel/3rdparty/mailman/archives/public/
+[% END -%]
     Alias /sys_cpanel /usr/local/cpanel/sys_cpanel/
 
     ScriptAlias /cgi-sys /usr/local/cpanel/cgi-sys/
+[% IF !skipmailman -%]
     ScriptAlias /mailman /usr/local/cpanel/3rdparty/mailman/cgi-bin/
+[% END -%]
     [% IF file_test('f', '/usr/local/cpanel/cgi-sys/scgiwrap') %]ScriptAlias /scgi-bin /usr/local/cpanel/cgi-sys/scgiwrap[% END %]
 </IfModule>
 
