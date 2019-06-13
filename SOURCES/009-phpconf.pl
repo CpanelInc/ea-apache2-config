@@ -239,25 +239,23 @@ sub get_rebuild_settings {
         $settings{$package} = $new_handler;
     }
 
-    # Let's make sure that the system default version is still actually
-    # installed.  If not, we'll try to set the highest-numbered version
-    # that we have.  We are guaranteed to have at least one installed
-    # version at this point in the script.
-    #
-    # It is possible that the system default setting may not match what we
-    # got from the YAML file, so let's make sure things are as we expect.
-    # System default will take precedence.
     if ( $cfg->{api} eq 'old' ) {
-        my $sys_default = eval { $php->php_get_system_default_version() };
-        my @packages = reverse sort @{ $cfg->{packages} };
-        $sys_default = $packages[0] if ( !defined $sys_default || !grep( /\A\Q$sys_default\E\z/, @packages ) );
-        $settings{phpversion} = $sys_default;
+        my $cur_sys_default = eval { $php->php_get_system_default_version() };
+        $cur_sys_default = undef if !$cur_sys_default || !grep { $cur_sys_default eq $_ } @{ $cfg->{packages} };
+        $settings{phpversion} = $cur_sys_default || Cpanel::EA4::Util::get_default_php_version();
+        if ( $settings{phpversion} =~ m/\./ ) {
+            $settings{phpversion} = "ea-php$settings{phpversion}";
+            $settings{phpversion} =~ s/\.//g;
+        }
     }
     else {
-        my $sys_default = $php->get_system_default_package();
-        my @packages    = reverse sort @{ $cfg->{packages} };
-        $sys_default = $packages[0] if ( !defined $sys_default || !grep( /\A\Q$sys_default\E\z/, @packages ) );
-        $settings{default} = $sys_default;
+        my $cur_sys_default = $php->get_system_default_package();
+        $cur_sys_default = undef if !$cur_sys_default || !grep { $cur_sys_default eq $_ } @{ $cfg->{packages} };
+        $settings{default} = $cur_sys_default || Cpanel::EA4::Util::get_default_php_version();
+        if ( $settings{default} =~ m/\./ ) {
+            $settings{default} = "ea-php$settings{default}";
+            $settings{default} =~ s/\.//g;
+        }
     }
 
     return \%settings;

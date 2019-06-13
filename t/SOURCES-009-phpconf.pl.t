@@ -71,7 +71,8 @@ use Test::NoWarnings;
 use Test::Trap;
 use File::Temp ();
 use lib qw( /usr/local/cpanel/t/lib );
-use Test::Filesys ();
+use Test::Filesys     ();
+use Cpanel::EA4::Util ();
 
 sub init : Test(startup => 1) {
     require_ok("$FindBin::Bin/../SOURCES/009-phpconf.pl");
@@ -215,6 +216,7 @@ sub test_get_rebuild_settings : Tests(10) {
         my $handler_changed = 0;
 
         no warnings qw( redefine once );
+        local *Cpanel::EA4::Util::get_default_php_version = sub { return "z" };
         my %supported_handlers = map { $_ => 1 } map { substr( $_, 0, 4 ) eq 'mod_' ? substr( $_, 4 ) : $_ } keys %{ $test->{mods} };
         local *Cpanel::AdvConfig::apache::modules::get_supported_modules = sub { return $test->{mods} };
         local *ea_apache2_config::phpconf::send_notification             = sub { };

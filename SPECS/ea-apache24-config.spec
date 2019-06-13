@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 150
+%define release_prefix 151
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -163,6 +163,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Thu Jun 13 2019 Daniel Muey <dan@cpanel.net> - 1.0-151
+- ZC-5210: Fallback to the ea4 meta default PHP when the current default is not installed
+
 * Fri May 10 2019 Tim Mullin <tim@cpanel.net> - 1.0-150
 - EA-8436: Omit mailman aliases when skipmailman tweak setting is set
 
