@@ -22,7 +22,7 @@ package ea_apache2_config::phpconf;
 
 use strict;
 use Cpanel::Imports;
-use Cpanel::Packman ();
+use Cpanel::PackMan ();
 use Try::Tiny;
 use Cpanel::ConfigFiles::Apache ();
 use Cpanel::DataStore           ();
@@ -34,7 +34,9 @@ use Getopt::Long                ();
 use POSIX qw( :sys_wait_h );
 
 our @PreferredHandlers      = qw( suphp dso cgi );
-our $cpanel_default_php_pkg = "ea-php56";            # UPDATE ME UPDATE THE POD!!!
+our $cpanel_default_php_pkg = "ea-php" . Cpanel::EA4::Util::get_default_php_version();
+$cpanel_default_php_pkg =~ s/\.//g;
+
 my ( $php, $server );
 
 sub debug {
@@ -245,7 +247,7 @@ sub get_rebuild_settings {
         $cur_sys_default = undef if !$cur_sys_default || !grep { $cur_sys_default eq $_ } @{ $cfg->{packages} };
         $settings{phpversion} = $cur_sys_default || Cpanel::EA4::Util::get_default_php_version();
 
-        my $def_hr = Cpanel::Packman->instance->pkg_hr( $settings{phpversion} ) || {};
+        my $def_hr = Cpanel::PackMan->instance->pkg_hr( $settings{phpversion} ) || {};
         if ( !$def_hr->{version_installed} ) {
             $settings{phpversion} = ( Cpanel::EA4::Util::get_available_php_versions() )[-1];
         }
@@ -260,7 +262,7 @@ sub get_rebuild_settings {
         $cur_sys_default = undef if !$cur_sys_default || !grep { $cur_sys_default eq $_ } @{ $cfg->{packages} };
         $settings{default} = $cur_sys_default || Cpanel::EA4::Util::get_default_php_version();
 
-        my $def_hr = Cpanel::Packman->instance->pkg_hr( $settings{default} ) || {};
+        my $def_hr = Cpanel::PackMan->instance->pkg_hr( $settings{default} ) || {};
         if ( !$def_hr->{version_installed} ) {
             $settings{default} = ( Cpanel::EA4::Util::get_available_php_versions() )[-1];
         }
@@ -375,7 +377,7 @@ Some of the things it does are as follows:
 
 =head1 DEFAULT SYSTEM PACKAGE
 
-If the default PHP package is removed, C<$cpanel_default_php_pkg> (currently ea-php56) is used if its installed. Otherwise the latest (according to PHP version number) is used.
+If the default PHP package is removed, C<$cpanel_default_php_pkg> (AKA C<Cpanel::EA4::Util::get_default_php_version()>) is used if its installed. Otherwise the latest (according to PHP version number) is used.
 
 =head1 APACHE HANDLER FOR PHP
 
