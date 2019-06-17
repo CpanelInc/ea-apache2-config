@@ -244,36 +244,33 @@ sub get_rebuild_settings {
 
     if ( $cfg->{api} eq 'old' ) {
         my $cur_sys_default = eval { $php->php_get_system_default_version() };
-        $cur_sys_default = undef if !$cur_sys_default || !grep { $cur_sys_default eq $_ } @{ $cfg->{packages} };
-        $settings{phpversion} = $cur_sys_default || Cpanel::EA4::Util::get_default_php_version();
-
-        my $def_hr = Cpanel::PackMan->instance->pkg_hr( $settings{phpversion} ) || {};
-        if ( !$def_hr->{version_installed} ) {
-            $settings{phpversion} = ( Cpanel::EA4::Util::get_available_php_versions() )[-1];
-        }
-
-        if ( $settings{phpversion} =~ m/\./ ) {
-            $settings{phpversion} = "ea-php$settings{phpversion}";
-            $settings{phpversion} =~ s/\.//g;
-        }
+        $settings{phpversion} = _ensure_default_key_is_valid( $cur_sys_default => $cfg );
     }
     else {
         my $cur_sys_default = $php->get_system_default_package();
-        $cur_sys_default = undef if !$cur_sys_default || !grep { $cur_sys_default eq $_ } @{ $cfg->{packages} };
-        $settings{default} = $cur_sys_default || Cpanel::EA4::Util::get_default_php_version();
-
-        my $def_hr = Cpanel::PackMan->instance->pkg_hr( $settings{default} ) || {};
-        if ( !$def_hr->{version_installed} ) {
-            $settings{default} = ( Cpanel::EA4::Util::get_available_php_versions() )[-1];
-        }
-
-        if ( $settings{default} =~ m/\./ ) {
-            $settings{default} = "ea-php$settings{default}";
-            $settings{default} =~ s/\.//g;
-        }
+        $settings{default} = _ensure_default_key_is_valid( $cur_sys_default => $cfg );
     }
 
     return \%settings;
+}
+
+sub _ensure_default_key_is_valid {
+    my ( $cur_sys_default, $cfg ) = @_;
+
+    $cur_sys_default = undef if !$cur_sys_default || !grep { $cur_sys_default eq $_ } @{ $cfg->{packages} };
+    my $def = $cur_sys_default || Cpanel::EA4::Util::get_default_php_version();
+
+    my $def_hr = Cpanel::PackMan->instance->pkg_hr($def) || {};
+    if ( !$def_hr->{version_installed} ) {
+        $def = ( Cpanel::EA4::Util::get_available_php_versions() )[-1];
+    }
+
+    if ( $def =~ m/\./ ) {
+        $def = "ea-php$def";
+        $def =~ s/\.//g;
+    }
+
+    return $def;
 }
 
 sub apply_rebuild_settings {
