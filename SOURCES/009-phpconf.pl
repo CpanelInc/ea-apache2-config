@@ -265,13 +265,7 @@ sub _ensure_default_key_is_valid {
     }
 
     my $def_hr = Cpanel::PackMan->instance->pkg_hr($def) || {};
-    if ( !$def_hr->{version_installed} ) {
-        $def = ( Cpanel::EA4::Util::get_available_php_versions() )[-1];
-        if ( $def =~ m/\./ ) {
-            $def = "ea-php$def";
-            $def =~ s/\.//g;
-        }
-    }
+    $def = $cfg->{packages}[-1] if !$def_hr->{version_installed};
 
     return $def;
 }
