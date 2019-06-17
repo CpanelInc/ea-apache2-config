@@ -259,15 +259,18 @@ sub _ensure_default_key_is_valid {
 
     $cur_sys_default = undef if !$cur_sys_default || !grep { $cur_sys_default eq $_ } @{ $cfg->{packages} };
     my $def = $cur_sys_default || Cpanel::EA4::Util::get_default_php_version();
+    if ( $def =~ m/\./ ) {
+        $def = "ea-php$def";
+        $def =~ s/\.//g;
+    }
 
     my $def_hr = Cpanel::PackMan->instance->pkg_hr($def) || {};
     if ( !$def_hr->{version_installed} ) {
         $def = ( Cpanel::EA4::Util::get_available_php_versions() )[-1];
-    }
-
-    if ( $def =~ m/\./ ) {
-        $def = "ea-php$def";
-        $def =~ s/\.//g;
+        if ( $def =~ m/\./ ) {
+            $def = "ea-php$def";
+            $def =~ s/\.//g;
+        }
     }
 
     return $def;
