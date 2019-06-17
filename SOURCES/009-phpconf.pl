@@ -22,6 +22,7 @@ package ea_apache2_config::phpconf;
 
 use strict;
 use Cpanel::Imports;
+use Cpanel::PackMan ();
 use Try::Tiny;
 use Cpanel::ConfigFiles::Apache ();
 use Cpanel::DataStore           ();
@@ -33,7 +34,9 @@ use Getopt::Long                ();
 use POSIX qw( :sys_wait_h );
 
 our @PreferredHandlers      = qw( suphp dso cgi );
-our $cpanel_default_php_pkg = "ea-php56";            # UPDATE ME UPDATE THE POD!!!
+our $cpanel_default_php_pkg = "ea-php" . Cpanel::EA4::Util::get_default_php_version();
+$cpanel_default_php_pkg =~ s/\.//g;
+
 my ( $php, $server );
 
 sub debug {
@@ -239,28 +242,35 @@ sub get_rebuild_settings {
         $settings{$package} = $new_handler;
     }
 
-    # Let's make sure that the system default version is still actually
-    # installed.  If not, we'll try to set the highest-numbered version
-    # that we have.  We are guaranteed to have at least one installed
-    # version at this point in the script.
-    #
-    # It is possible that the system default setting may not match what we
-    # got from the YAML file, so let's make sure things are as we expect.
-    # System default will take precedence.
     if ( $cfg->{api} eq 'old' ) {
-        my $sys_default = eval { $php->php_get_system_default_version() };
-        my @packages = reverse sort @{ $cfg->{packages} };
-        $sys_default = $packages[0] if ( !defined $sys_default || !grep( /\A\Q$sys_default\E\z/, @packages ) );
-        $settings{phpversion} = $sys_default;
+        my $cur_sys_default = eval { $php->php_get_system_default_version() };
+        $settings{phpversion} = _ensure_default_key_is_valid( $cur_sys_default => $cfg );
     }
     else {
-        my $sys_default = $php->get_system_default_package();
-        my @packages    = reverse sort @{ $cfg->{packages} };
-        $sys_default = $packages[0] if ( !defined $sys_default || !grep( /\A\Q$sys_default\E\z/, @packages ) );
-        $settings{default} = $sys_default;
+        my $cur_sys_default = $php->get_system_default_package();
+        $settings{default} = _ensure_default_key_is_valid( $cur_sys_default => $cfg );
     }
 
     return \%settings;
+}
+
+sub _ensure_default_key_is_valid {
+    my ( $cur_sys_default, $cfg ) = @_;
+
+    $cur_sys_default = undef if !$cur_sys_default || !grep { $cur_sys_default eq $_ } @{ $cfg->{packages} };
+    my $def = $cur_sys_default || Cpanel::EA4::Util::get_default_php_version();
+
+    my $def_hr = Cpanel::PackMan->instance->pkg_hr($def) || {};
+    if ( !$def_hr->{version_installed} ) {
+        $def = ( Cpanel::EA4::Util::get_available_php_versions() )[-1];
+    }
+
+    if ( $def =~ m/\./ ) {
+        $def = "ea-php$def";
+        $def =~ s/\.//g;
+    }
+
+    return $def;
 }
 
 sub apply_rebuild_settings {
@@ -364,7 +374,7 @@ Some of the things it does are as follows:
 
 =head1 DEFAULT SYSTEM PACKAGE
 
-If the default PHP package is removed, C<$cpanel_default_php_pkg> (currently ea-php56) is used if its installed. Otherwise the latest (according to PHP version number) is used.
+If the default PHP package is removed, C<$cpanel_default_php_pkg> (AKA C<Cpanel::EA4::Util::get_default_php_version()>) is used if its installed. Otherwise the latest (according to PHP version number) is used.
 
 =head1 APACHE HANDLER FOR PHP
 
