@@ -301,11 +301,18 @@ sub apply_rebuild_settings {
             my $apache = Cpanel::WebServer->new->get_server( type => "apache" );
             while ( my ( $pkg, $handler ) = each(%pkginfo) ) {
                 debug( $cfg, "Setting the '$pkg' package to the '$handler' handler" );
-                !$cfg->{args}->{dryrun} && $apache->set_package_handler(
-                    type    => $handler,
-                    lang    => $cfg->{php},
-                    package => $pkg,
-                );
+                if ( !$cfg->{args}->{dryrun} ) {
+                    $apache->set_package_handler(
+                        type    => $handler,
+                        lang    => $cfg->{php},
+                        package => $pkg,
+                    );
+                    $apache->update_user_package_handlers(
+                        type    => $handler,
+                        lang    => $cfg->{php},
+                        package => $pkg
+                    );
+                }
                 debug( $cfg, "Successfully updated the '$pkg' package" );
             }
         }
