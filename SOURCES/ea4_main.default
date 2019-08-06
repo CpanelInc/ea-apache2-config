@@ -121,10 +121,10 @@ Allow from all
 # You can change this by using WHM, and navigating to the 'Apache Configuration' -> 'Memory Usage Restrictions' interface.
 [%# NOTE: The maxrlimit* settings are currently hard-coded to off in WHM -%]
 [% IF main.rlimitcpu.item.softrlimitcpu -%]
-RLimitCPU [% main.rlimitcpu.item.softrlimitcpu %] [% mainrlimitcpu.item.maxrlimitcpu %]
+RLimitCPU [% main.rlimitcpu.item.softrlimitcpu %] [% main.rlimitcpu.item.maxrlimitcpu %]
 [% END -%]
 [% IF main.rlimitmem.item.softrlimitmem -%]
-RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% mainrlimitmem.item.maxrlimitmem %]
+RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% main.rlimitmem.item.maxrlimitmem %]
 [% END -%]
 
 # This setting is required by cPanel & WHM in order to provide access to a default webpage when none exists
