@@ -35,6 +35,8 @@ my $php = Cpanel::ProgLang->new( type => 'php' );
 my $installed_phps = $php->get_installed_packages();    # this always returns an array ref
 
 for my $php_pkg ( @{$installed_phps} ) {
+    next if ($php_pkg =~ m/alt-php/);
+
     print "Processing $php_pkg …\n";
     my $source = $php->get_ini( package => $php_pkg )->get_default_system_ini();
 
