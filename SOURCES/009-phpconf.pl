@@ -307,11 +307,16 @@ sub apply_rebuild_settings {
                         lang    => $cfg->{php},
                         package => $pkg,
                     );
-                    $apache->update_user_package_handlers(
-                        type    => $handler,
-                        lang    => $cfg->{php},
-                        package => $pkg
-                    );
+                    try {
+                        $apache->update_user_package_handlers(
+                            type    => $handler,
+                            lang    => $cfg->{php},
+                            package => $pkg
+                        );
+                    }
+                    catch {
+                        logger->warn("Error updating user package handlers for $pkg: $_");
+                    };
                 }
                 debug( $cfg, "Successfully updated the '$pkg' package" );
             }
