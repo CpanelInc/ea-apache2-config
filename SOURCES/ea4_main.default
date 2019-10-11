@@ -329,7 +329,7 @@ Listen [% default_apache_port %]
 
     <IfModule socache_shmcb_module>
 [%      IF supported.stapling -%]
-        SSLUseStapling on
+        SSLUseStapling [% IF main.sslusestapling.item.sslusestapling.length %][% main.sslusestapling.item.sslusestapling %][% ELSE %]On[% END %]
         SSLStaplingCache shmcb:[% paths.dir_run %]/stapling_cache_shmcb(256000)
 
         # Prevent browsers from failing if an OCSP server is temporarily broken.
