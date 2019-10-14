@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 156
+%define release_prefix 157
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -163,6 +163,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Thu Oct 10 2019 Daniel Muey <dan@cpanel.net> - 1.0-157
+- ZC-5669: Add undocumented & unsupported touchfile to disable 009-phpconf.pl's user setting validation
+
 * Wed Sep 25 2019 Rishwanth Yeddula <rish@cpanel.net> - 1.0-156
 - BOO-873: Allow SSLUseStapling to be configured in ea4.conf
 
