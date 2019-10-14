@@ -308,6 +308,11 @@ sub apply_rebuild_settings {
                         package => $pkg,
                     );
                     try {
+                        my $disable_flag_file = "/var/cpanel/ea4-disable_009-phpconf.pl_user_setting_validation_and_risk_breaking_PHP_based_sites_and_exposing_sensitive_data_in_PHP_source_code";
+                        if ( -e $disable_flag_file ) {
+                            die "Ensuring that user settings are still valid is disabled via the existence of $disable_flag_file:\n\t!!!! your PHP based sites may be broken and exposing sensitive data in the source code !!\n";
+                        }
+
                         $apache->update_user_package_handlers(
                             type    => $handler,
                             lang    => $cfg->{php},
