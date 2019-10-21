@@ -100,7 +100,11 @@ foreach my $pkg (@pkgs) {
 
     # Rebuild the Apache config
     my $php_cfg_ref = Cpanel::PHP::Config::get_php_config_for_users($users_ref);
-    if ( Cpanel::PHPFPM::rebuild_files( $php_cfg_ref, 0, 1, 1 ) ) {
+
+    if (!%$php_cfg_ref) {
+        msglog( 0, "No domains were on ea-php${phpfpm_version}-php-fpm." );
+    }
+    elsif ( Cpanel::PHPFPM::rebuild_files( $php_cfg_ref, 0, 1, 1 ) ) {
         msglog( 0, "All domains that were on ea-php${phpfpm_version}-php-fpm should be back to system defaults." );
     }
     else {
@@ -138,7 +142,7 @@ sub get_users_on_fpm_version {
                     while ( my $line = <$cnf_fh> ) {
                         $line =~ s/\s+//g;
                         chomp($line);
-                        if ( $line =~ m/^user=(.*)$/ ) {
+                        if ( $line =~ m/^user=\"*([^\"]*)\"*$/ ) {
                             my $username = $1;
                             push( @users, $username );
                         }
