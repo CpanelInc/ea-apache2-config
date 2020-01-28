@@ -132,6 +132,9 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% main.rlimitmem.item.maxrlim
     Options All
     AllowOverride None
     Require all granted
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires 0
 </Directory>
 
 # Required cPanel security policy: Disallow remote access to .htaccess, .htpasswd, .user.ini, and php.ini files
