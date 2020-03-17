@@ -43,6 +43,11 @@ Include "[% paths.dir_conf_includes %]/pre_main_global.conf"
 # Create "[% paths.dir_conf_includes %]/pre_main_global.conf" if you want to customize httpd.conf.
 [% END -%]
 
+[% IF file_test('f', paths.dir_conf_includes _ '/pre_main_2.conf') -%]
+# Major Version Specific
+Include "[% paths.dir_conf_includes %]/pre_main_2.conf"
+[% END -%]
+
 # These are hard-coded values that are required by cPanel & WHM
 PidFile [% paths.dir_run %]/httpd.pid
 User nobody
@@ -384,6 +389,11 @@ Include "[% paths.dir_conf_includes %]/errordocument.conf"
 Include "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf"
 [% ELSE -%]
 # Create "[% paths.dir_conf_includes %]/pre_virtualhost_global.conf" if you want to customize httpd.conf.
+[% END -%]
+
+[% IF file_test('f', paths.dir_conf_includes _ '/pre_virtualhost_2.conf') -%]
+# Major Version Specific
+Include "[% paths.dir_conf_includes %]/pre_virtualhost_2.conf"
 [% END -%]
 
 [% IF proxypass_for_proxysubdomains -%]
@@ -854,6 +864,11 @@ ProxyPass /___proxy_subdomain_ws_webmail ws://127.0.0.1:2095 max=1 retry=0
 Include "[% paths.dir_conf_includes %]/post_virtualhost_global.conf"
 [% ELSE -%]
 # Create "[% paths.dir_conf_includes %]/post_virtualhost_global.conf" if you want to customize httpd.conf.
+[% END -%]
+
+[% IF file_test('f', paths.dir_conf_includes _ '/post_virtualhost_2.conf') -%]
+# Major Version Specific
+Include "[% paths.dir_conf_includes %]/post_virtualhost_2.conf"
 [% END -%]
 
 ##################################################
