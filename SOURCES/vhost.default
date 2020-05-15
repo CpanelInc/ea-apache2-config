@@ -18,6 +18,12 @@
 [% ELSE -%]
   ServerAlias [% vhost.serveralias %]
 [% END -%]
+[% IF vhost.proxy_backend -%]
+  <Location "/">
+    ProxyPass "http://[% vhost.proxy_backend %]/"
+    ProxyPreserveHost on
+  </Location>
+[% END -%]
   DocumentRoot [% vhost.documentroot %]
 [% IF vhost.serveradmin -%]
   ServerAdmin [% vhost.serveradmin %]

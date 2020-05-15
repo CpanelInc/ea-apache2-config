@@ -8,6 +8,13 @@
 [% ELSE -%]
   ServerAlias [% vhost.serveralias %]
 [% END -%]
+[% IF vhost.proxy_backend -%]
+  SSLProxyEngine on
+  <Location "/">
+    ProxyPass "https://[% vhost.proxy_backend %]/"
+    ProxyPreserveHost on
+  </Location>
+[% END -%]
   DocumentRoot [% vhost.documentroot %]
 [% IF vhost.serveradmin -%]
   ServerAdmin [% vhost.serveradmin %]
