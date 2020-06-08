@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 161
+%define release_prefix 162
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -163,6 +163,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Mon Jun 08 2020 Dan Muey <dan@cpanel.net> - 1.0-162
+- ZC-6899: do not log proxied requests to avoid double counting of them in stats
+
 * Fri May 15 2020 Felipe Gasper <felipe@cpanel.net> - 1.0-161
 - CPANEL-32753: Teach templates to recognize vhost.proxy_backend.
 
