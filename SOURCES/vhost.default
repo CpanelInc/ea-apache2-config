@@ -18,6 +18,12 @@
 [% ELSE -%]
   ServerAlias [% vhost.serveralias %]
 [% END -%]
+[% IF vhost.proxy_backend -%]
+  <Location "/">
+    ProxyPass "http://[% vhost.proxy_backend %]/"
+    ProxyPreserveHost on
+  </Location>
+[% END -%]
   DocumentRoot [% vhost.documentroot %]
 [% IF vhost.serveradmin -%]
   ServerAdmin [% vhost.serveradmin %]
@@ -35,7 +41,7 @@
 [% END -%]
 [% IF logstyle == 'combined' -%]
     [%- IF !enable_piped_logs || !supported.mod_log_config -%]
-  CustomLog [% paths.dir_domlogs %]/[% wildcard_safe(vhost.log_servername) %] combined
+  CustomLog [% paths.dir_domlogs %]/[% wildcard_safe(vhost.log_servername) %] combined env=!isproxyrequest
     [%- END %]
 [% ELSE %]
   TransferLog [% paths.dir_domlogs %]/[% wildcard_safe(vhost.log_servername) %]
@@ -43,7 +49,7 @@
 [% IF !enable_piped_logs -%]
   <IfModule log_config_module>
     <IfModule logio_module>
-      CustomLog [% paths.dir_domlogs %]/[% wildcard_safe(vhost.log_servername) %]-bytes_log "%{%s}t %I .\n%{%s}t %O ."
+      CustomLog [% paths.dir_domlogs %]/[% wildcard_safe(vhost.log_servername) %]-bytes_log "%{%s}t %I .\n%{%s}t %O ." env=!isproxyrequest
     </IfModule>
   </IfModule>
 [% END -%]
