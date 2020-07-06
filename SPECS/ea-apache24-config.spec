@@ -53,8 +53,8 @@ BuildRequires: perl-libwww-perl
 BuildRequires: ea-apache24-devel
 
 %if 0%{?rhel} > 7
-    %define hooks_base $RPM_BUILD_ROOT%{_sysconfdir}/dnf/universal-hooks/transaction
-    %define hooks_base_sys %{_sysconfdir}/dnf/universal-hooks/transaction
+    %define hooks_base $RPM_BUILD_ROOT%{_sysconfdir}/dnf/universal-hooks/multi_pkgs/transaction
+    %define hooks_base_sys %{_sysconfdir}/dnf/universal-hooks/multi_pkgs/transaction
 %else
     %define hooks_base $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans
     %define hooks_base_sys %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans
