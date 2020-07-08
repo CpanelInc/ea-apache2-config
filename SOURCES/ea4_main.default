@@ -256,9 +256,9 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% main.rlimitmem.item.maxrlim
     </IfModule>
 </IfModule>
 
-# This allows us to not log requests proxied to Apache;
+# This allows us to not log requests proxied to Apache from nginx;
 #    That way hits are not double recorded.
-SetEnvIf X-Forwarded-For "^.*\..*\..*\..*" isproxyrequest
+SetEnvIf cPanel-localhost 1 isproxyrequest
 
 [% IF enable_piped_logs -%]
 <IfModule mod_log_config.c>
