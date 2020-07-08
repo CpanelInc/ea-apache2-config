@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 162
+%define release_prefix 164
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -51,6 +51,14 @@ Requires:      ea-webserver
 Requires:      %{pkg_name}-runtime = %{version}
 BuildRequires: perl-libwww-perl
 BuildRequires: ea-apache24-devel
+
+%if 0%{?rhel} > 7
+    %define hooks_base $RPM_BUILD_ROOT%{_sysconfdir}/dnf/universal-hooks/multi_pkgs/transaction
+    %define hooks_base_sys %{_sysconfdir}/dnf/universal-hooks/multi_pkgs/transaction
+%else
+    %define hooks_base $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans
+    %define hooks_base_sys %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans
+%endif
 
 %description
 This is the main package for Apache 2.4 on CentOS 6 for cPanel & WHM.
@@ -89,34 +97,43 @@ mkdir -p $RPM_BUILD_ROOT/etc/cpanel/ea4
 mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/apache2/domlogs
 
 # Install the cache purge trigger
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-php__WILDCARD__
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-apache24-config
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/__WILDCARD__-php__WILDCARD__
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/pkgs/glibc/posttrans/
-install %{SOURCE2}  $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/300-fixmailman.pl
-install %{SOURCE6}  $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/010-purge_cache.pl
-install %{SOURCE5}  $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/400-patch_mod_security2.pl
-install %{SOURCE7}  $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/500-restartsrv_httpd
-ln -sf %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/500-restartsrv_httpd $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/pkgs/glibc/posttrans/100-glibc-restartsrv_httpd
-install %{SOURCE8}  $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/060-setup_apache_symlinks.pl
-install %{SOURCE9}  $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
-install %{SOURCE11} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/__WILDCARD__-php__WILDCARD__/009-phpconf.pl
-install %{SOURCE21} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/__WILDCARD__-php__WILDCARD__/010-suphpconf.pl
-install %{SOURCE11} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/009-phpconf.pl
-install %{SOURCE21} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/010-suphpconf.pl
-install %{SOURCE13} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/011-modsec_cpanel_conf_init
-install %{SOURCE14} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/020-rebuild-httpdconf
-install %{SOURCE15} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/030-update-apachectl
-install %{SOURCE18} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/520-enablefileprotect
-install %{SOURCE19} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-php__WILDCARD__/490-restartsrv_apache_php_fpm
-install %{SOURCE20} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-apache24-config/000-local_template_check
-install %{SOURCE22} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-php__WILDCARD__/011-migrate_extension_to_pecl_ini
+mkdir -p %{hooks_base}/ea-__WILDCARD__
+mkdir -p %{hooks_base}/ea-php__WILDCARD__
+mkdir -p %{hooks_base}/ea-apache24-config
+mkdir -p %{hooks_base}/__WILDCARD__-php__WILDCARD__
+%if 0%{?rhel} > 7
+    mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/dnf/universal-hooks/pkgs/glibc/transaction/
+%else
+    mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/pkgs/glibc/posttrans/
+%endif
+install %{SOURCE2}  %{hooks_base}/ea-__WILDCARD__/300-fixmailman.pl
+install %{SOURCE6}  %{hooks_base}/ea-__WILDCARD__/010-purge_cache.pl
+install %{SOURCE5}  %{hooks_base}/ea-__WILDCARD__/400-patch_mod_security2.pl
+install %{SOURCE7}  %{hooks_base}/ea-__WILDCARD__/500-restartsrv_httpd
+
+%if 0%{?rhel} > 7
+    ln -sf  %{hooks_base_sys}/ea-__WILDCARD__/500-restartsrv_httpd $RPM_BUILD_ROOT%{_sysconfdir}/dnf/universal-hooks/pkgs/glibc/transaction/100-glibc-restartsrv_httpd
+%else
+    ln -sf  %{hooks_base_sys}/ea-__WILDCARD__/500-restartsrv_httpd $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/pkgs/glibc/posttrans/100-glibc-restartsrv_httpd
+%endif
+
+install %{SOURCE8}  %{hooks_base}/ea-__WILDCARD__/060-setup_apache_symlinks.pl
+install %{SOURCE9}  %{hooks_base}/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
+install %{SOURCE11} %{hooks_base}/__WILDCARD__-php__WILDCARD__/009-phpconf.pl
+install %{SOURCE21} %{hooks_base}/__WILDCARD__-php__WILDCARD__/010-suphpconf.pl
+install %{SOURCE11} %{hooks_base}/ea-__WILDCARD__/009-phpconf.pl
+install %{SOURCE21} %{hooks_base}/ea-__WILDCARD__/010-suphpconf.pl
+install %{SOURCE13} %{hooks_base}/ea-__WILDCARD__/011-modsec_cpanel_conf_init
+install %{SOURCE14} %{hooks_base}/ea-__WILDCARD__/020-rebuild-httpdconf
+install %{SOURCE15} %{hooks_base}/ea-__WILDCARD__/030-update-apachectl
+install %{SOURCE18} %{hooks_base}/ea-__WILDCARD__/520-enablefileprotect
+install %{SOURCE19} %{hooks_base}/ea-php__WILDCARD__/490-restartsrv_apache_php_fpm
+install %{SOURCE20} %{hooks_base}/ea-apache24-config/000-local_template_check
+install %{SOURCE22} %{hooks_base}/ea-php__WILDCARD__/011-migrate_extension_to_pecl_ini
 
 # For the PHP-FPM specific cleanup script
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-php__WILDCARD__-php-fpm
-install %{SOURCE17} $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-php__WILDCARD__-php-fpm/100-phpfpm_cleanup.pl
-
+mkdir -p %{hooks_base}/ea-php__WILDCARD__-php-fpm
+install %{SOURCE17} %{hooks_base}/ea-php__WILDCARD__-php-fpm/100-phpfpm_cleanup.pl
 
 # Install apache utility
 %{__mkdir_p} %{buildroot}/%{_httpd_bindir}/
@@ -139,30 +156,42 @@ rm -rf %{buildroot}
 %dir %{_localstatedir}/cpanel/templates/apache2_4
 %{_localstatedir}/cpanel/templates/apache2_4/*
 %attr(0711,root,root) %dir %{_localstatedir}/log/apache2/domlogs
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/__WILDCARD__-php__WILDCARD__/009-phpconf.pl
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/__WILDCARD__-php__WILDCARD__/010-suphpconf.pl
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/009-phpconf.pl
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/010-suphpconf.pl
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/010-purge_cache.pl
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/011-modsec_cpanel_conf_init
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/020-rebuild-httpdconf
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/030-update-apachectl
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/520-enablefileprotect
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/060-setup_apache_symlinks.pl
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/300-fixmailman.pl
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/400-patch_mod_security2.pl
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-php__WILDCARD__/490-restartsrv_apache_php_fpm
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-php__WILDCARD__/011-migrate_extension_to_pecl_ini
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-__WILDCARD__/500-restartsrv_httpd
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/pkgs/glibc/posttrans/100-glibc-restartsrv_httpd
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-php__WILDCARD__-php-fpm/100-phpfpm_cleanup.pl
-%attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans/ea-apache24-config/000-local_template_check
+%attr(0755,root,root) %{hooks_base_sys}/__WILDCARD__-php__WILDCARD__/009-phpconf.pl
+%attr(0755,root,root) %{hooks_base_sys}/__WILDCARD__-php__WILDCARD__/010-suphpconf.pl
+%attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/009-phpconf.pl
+%attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/010-suphpconf.pl
+%attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/010-purge_cache.pl
+%attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/011-modsec_cpanel_conf_init
+%attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/020-rebuild-httpdconf
+%attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/030-update-apachectl
+%attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/520-enablefileprotect
+%attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/060-setup_apache_symlinks.pl
+%attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
+%attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/300-fixmailman.pl
+%attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/400-patch_mod_security2.pl
+%attr(0755,root,root) %{hooks_base_sys}/ea-php__WILDCARD__/490-restartsrv_apache_php_fpm
+%attr(0755,root,root) %{hooks_base_sys}/ea-php__WILDCARD__/011-migrate_extension_to_pecl_ini
+%attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/500-restartsrv_httpd
+
+%if 0%{?rhel} > 7
+    %attr(0755,root,root) %{_sysconfdir}/dnf/universal-hooks/pkgs/glibc/transaction/100-glibc-restartsrv_httpd
+%else
+    %attr(0755,root,root) %{_sysconfdir}/yum/universal-hooks/pkgs/glibc/posttrans/100-glibc-restartsrv_httpd
+%endif
+
+%attr(0755,root,root) %{hooks_base_sys}/ea-php__WILDCARD__-php-fpm/100-phpfpm_cleanup.pl
+%attr(0755,root,root) %{hooks_base_sys}/ea-apache24-config/000-local_template_check
 %attr(0755,root,root) %{_httpd_bindir}/generate-errordoc-conf
 %config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Wed Jul 08 2020 Tim Mullin <tim@cpanel.net> - 1.0-164
+- EA-9123: Check for cPanel-localhost to see if we are proxying from nginx
+
+* Mon Jul 06 2020 Julian Brown <julian.brown@cpanel.net> - 1.0-163
+- ZC-7101: Update hooks for Yum and DNF
+
 * Mon Jun 08 2020 Dan Muey <dan@cpanel.net> - 1.0-162
 - ZC-6899: do not log proxied requests to avoid double counting of them in stats
 
