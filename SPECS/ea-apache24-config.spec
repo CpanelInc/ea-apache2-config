@@ -186,7 +186,7 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
-* Wed Jul 01 2020 Tim Mullin <tim@cpanel.net> - 1.0-164
+* Wed Jul 08 2020 Tim Mullin <tim@cpanel.net> - 1.0-164
 - EA-9123: Check for cPanel-localhost to see if we are proxying from nginx
 
 * Mon Jul 06 2020 Julian Brown <julian.brown@cpanel.net> - 1.0-163
