@@ -140,6 +140,9 @@
   <IfModule security2_module>
     SecRuleEngine Off
   </IfModule>
+  <IfModule security3_module>
+    modsecurity_rules 'SecRuleEngine Off'
+  </IfModule>
 [%- END %]
 [% IF vhost.hascgi && scriptalias == 1 -%]
   <IfModule alias_module>
