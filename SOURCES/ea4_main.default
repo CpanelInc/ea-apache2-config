@@ -406,6 +406,10 @@ ProxyPass /___proxy_subdomain_ws_whm     ws://127.0.0.1:2086 max=1 retry=0
 ProxyPass /___proxy_subdomain_ws_webmail ws://127.0.0.1:2095 max=1 retry=0
 [% END -%]
 
+[% IF supports_cpanelwebcall -%]
+ProxyPass /cpanelwebcall/ http://127.0.0.1:2082/cpanelwebcall/ max=1 retry=0
+[% END -%]
+
 [% MACRO websocket_proxies (servername) BLOCK -%]
     [% IF servername.match('^cpanel\\.') -%]
         RewriteCond %{HTTP_HOST} !=[% servername %]
