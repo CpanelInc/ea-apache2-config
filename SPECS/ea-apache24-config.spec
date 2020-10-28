@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 165
+%define release_prefix 166
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -186,6 +186,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Wed Oct 28 2020 Daniel Muey <dan@cpanel.net> - 1.0-166
+- ZC-7308: Updates for PHP 8
+
 * Tue Sep 8 2020 Felipe Gasper <felipe@cpanel.net> - 1.0-165
 - CPANEL-34021: Proxy /cpanelwebcall/ URLs to cpsrvd.
 
