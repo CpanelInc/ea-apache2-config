@@ -4,7 +4,12 @@
   [% IF vhost.redirect_to_ssl -%]
   <IfModule rewrite_module>
     RewriteEngine On
-    RewriteCond %{REQUEST_URI} ^/\.well-known/(pki-validation|cpanel-dcv)/
+
+    [%# “dcv_rewrite_patterns” always exists because
+        “vhost.redirect_to_ssl” does. -%]
+    [% FOR pattern = dcv_rewrite_patterns -%]
+        RewriteCond %{REQUEST_URI} [% mod_rewrite_string_escape(pattern) %] [% !loop.last && '[OR]' %]
+    [% END -%]
     RewriteRule ^ - [END]
 
     RewriteCond %{HTTPS} !=on
