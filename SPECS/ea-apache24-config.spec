@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 167
+%define release_prefix 168
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -49,7 +49,6 @@ Source23:      php_add_handler_fix.conf
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:      ea-webserver
 Requires:      %{pkg_name}-runtime = %{version}
-BuildRequires: perl-libwww-perl
 BuildRequires: ea-apache24-devel
 
 %if 0%{?rhel} > 7
@@ -72,7 +71,6 @@ Requires:  %{pkg_name} = %{version}
 Requires:  yum-plugin-universal-hooks
 AutoReq:   no
 BuildArch: noarch
-Requires:  perl-libwww-perl
 
 %description runtime
 Package shipping essential scripts/configurations to work with cPanel & WHM.
@@ -186,6 +184,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Tue Dec 22 2020 Julian Brown <julian.brown@cpanel.net> - 1.0-168
+- EA-9493: EA-9493-ea-apache2-config: remove need for perl-libwww-perl
+
 * Wed Nov 4 2020 Felipe Gasper <felipe@cpanel.net> - 1.0-167
 - COBRA-11968: Fix Let’s Encrypt HTTP DCV under SSL force-redirect.
 
