@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 168
+%define release_prefix 169
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -180,10 +180,13 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{hooks_base_sys}/ea-php__WILDCARD__-php-fpm/100-phpfpm_cleanup.pl
 %attr(0755,root,root) %{hooks_base_sys}/ea-apache24-config/000-local_template_check
 %attr(0755,root,root) %{_httpd_bindir}/generate-errordoc-conf
-%config %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
+%config(noreplace) %attr(0640,root,root) %{_httpd_confdir}/includes/errordocument.conf
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Wed Jan 27 2021 Tim Mullin <tim@cpanel.net> - 1.0-169
+- EA-9550: Fix to not overwrite errordocument.conf upon upgrade
+
 * Tue Dec 22 2020 Julian Brown <julian.brown@cpanel.net> - 1.0-168
 - EA-9493: EA-9493-ea-apache2-config: remove need for perl-libwww-perl
 
