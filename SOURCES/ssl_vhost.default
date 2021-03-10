@@ -235,33 +235,37 @@
   # To customize this VirtualHost use an include file at the following location
   # Include "[% vhost_include_base %][% vhost.user %]/[% domain %]/*.conf"
 
-[%- IF proxysubdomains && vhost.proxy_subdomains && supported.mod_proxy && supported.mod_rewrite && vhost.proxy_subdomains.size %]
+[%- IF proxysubdomains && vhost.proxy_subdomains && supported.mod_proxy && supported.mod_rewrite %]
     <IfModule headers_module>
     RequestHeader set X-HTTPS 1
     </IfModule>
-
     RewriteEngine On
-    [%- FOR label__zones = vhost.proxy_subdomains %]
-        [%- FOR basezone = label__zones.value %]
-            RewriteCond %{HTTP_HOST} =[% label__zones.key %].[% basezone %] [OR]
-            RewriteCond %{HTTP_HOST} =[% label__zones.key %].[% basezone %]:[% vhost.port %][% !loop.last && ' [OR]' %]
-        [%- END %]
-        RewriteCond %{HTTP:Upgrade} !websocket   [nocase]
-
-        [% proxy_subdomain_redirect_rule(label__zones.key) %]
-    [%- END %]
-
-    [%- FOR label__zones = vhost.proxy_subdomains %]
-        [%- ws_redirect = proxy_subdomain_websocket_redirect_rule_if_exists(label__zones.key) %]
-        [%- IF ws_redirect %]
-            RewriteCond %{HTTP:Upgrade} websocket   [nocase]
+    [%- IF vhost.proxy_subdomains.size %]
+        [%- FOR label__zones = vhost.proxy_subdomains %]
             [%- FOR basezone = label__zones.value %]
                 RewriteCond %{HTTP_HOST} =[% label__zones.key %].[% basezone %] [OR]
                 RewriteCond %{HTTP_HOST} =[% label__zones.key %].[% basezone %]:[% vhost.port %][% !loop.last && ' [OR]' %]
             [%- END %]
+            RewriteCond %{HTTP:Upgrade} !websocket   [nocase]
 
-            [% ws_redirect %]
+            [% proxy_subdomain_redirect_rule(label__zones.key) %]
+        [%- END %]
+
+        [%- FOR label__zones = vhost.proxy_subdomains %]
+            [%- ws_redirect = proxy_subdomain_websocket_redirect_rule_if_exists(label__zones.key) %]
+            [%- IF ws_redirect %]
+                RewriteCond %{HTTP:Upgrade} websocket   [nocase]
+                [%- FOR basezone = label__zones.value %]
+                    RewriteCond %{HTTP_HOST} =[% label__zones.key %].[% basezone %] [OR]
+                    RewriteCond %{HTTP_HOST} =[% label__zones.key %].[% basezone %]:[% vhost.port %][% !loop.last && ' [OR]' %]
+                [%- END %]
+
+                [% ws_redirect %]
+            [%- END %]
         [%- END %]
     [%- END %]
+
+    RewriteRule ^/Microsoft-Server-ActiveSync /___proxy_activesync/$1 [PT]
+    ProxyPass "/___proxy_activesync" "http://127.0.0.1:2090/Microsoft-Server-ActiveSync" max=1 retry=0
 [%- END %]
 </VirtualHost>
