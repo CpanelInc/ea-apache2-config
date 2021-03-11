@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 169
+%define release_prefix 170
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -184,6 +184,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Wed Mar 10 2021 Rikus Goodell <rikus.goodell@cpanel.net> - 1.0-170
+- CPANEL-36164: Add proxy path for ActiveSync.
+
 * Wed Jan 27 2021 Tim Mullin <tim@cpanel.net> - 1.0-169
 - EA-9550: Fix to not overwrite errordocument.conf upon upgrade
 
