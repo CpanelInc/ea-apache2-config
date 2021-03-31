@@ -1,0 +1,18 @@
+{
+    "vars": {
+        "hooks_base": "$DEB_INSTALL_ROOT%{_sysconfdir}/apt/universal-hooks/multi_pkgs/transaction",
+        "hooks_base_sys": "$DEB_INSTALL_ROOT%{_sysconfdir}/apt/universal-hooks/multi_pkgs/transaction",
+        "_httpd_dir": "/etc/apache2",
+        "_httpd_bindir": "%{_httpd_dir}/bin",
+        "_httpd_confdir": "%{_httpd_dir}/conf.d"
+
+    },
+    "override_vars": {
+        "buildroot": "$DEB_INSTALL_ROOT"
+    },
+    "remove_from_requires": [
+        "ea-apache24-devel",
+        "ea-webserver"
+    ]
+}
+
