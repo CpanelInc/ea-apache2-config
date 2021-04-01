@@ -1,4 +1,5 @@
 {
+    "dont_override_install": 0,
     "vars": {
         "hooks_base": "$DEB_INSTALL_ROOT%{_sysconfdir}/apt/universal-hooks/multi_pkgs/transaction",
         "hooks_base_sys": "$DEB_INSTALL_ROOT%{_sysconfdir}/apt/universal-hooks/multi_pkgs/transaction",
@@ -11,8 +12,7 @@
         "buildroot": "$DEB_INSTALL_ROOT"
     },
     "remove_from_requires": [
-        "ea-apache24-devel",
-        "ea-webserver"
+        "ea-apache24-devel"
     ]
 }
 
