@@ -23,6 +23,8 @@ install $SOURCE2  $hooks_base/ea-__WILDCARD__/300-fixmailman.pl
 install $SOURCE6  $hooks_base/ea-__WILDCARD__/010-purge_cache.pl
 install $SOURCE5  $hooks_base/ea-__WILDCARD__/400-patch_mod_security2.pl
 install $SOURCE7  $hooks_base/ea-__WILDCARD__/500-restartsrv_httpd
+install $SOURCE24 $hooks_base/ea-__WILDCARD__/001-ensure-nobody
+
 ln -sf  $hooks_base_sys/ea-__WILDCARD__/500-restartsrv_httpd $DEB_INSTALL_ROOT$_sysconfdir/apt/universal-hooks/pkgs/glibc/Post-Invoke/100-glibc-restartsrv_httpd
 install $SOURCE8  $hooks_base/ea-__WILDCARD__/060-setup_apache_symlinks.pl
 install $SOURCE9  $hooks_base/ea-__WILDCARD__/070-cloudlinux-cagefs.pl
