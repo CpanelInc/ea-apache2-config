@@ -38,8 +38,8 @@ if ( !defined $uid ) {
     $uid = getpwnam("nobody");
     die "Could not ensure `nobody` user\n" if !defined $uid;
 }
-else {
-    system("usermod -G $gid -a nobody");
-}
+
+# if already done, its a noop. adduser’s --gid does not make this happen
+system("usermod -G $gid -a nobody");
 
 print "`nobody` UID: $uid GID: $gid\n";
