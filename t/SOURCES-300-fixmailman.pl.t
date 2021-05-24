@@ -33,7 +33,7 @@ sub test_fix_list_dirs : Test(3) {
     return 1;
 }
 
-sub test_fix_rpm_dirs : Test(2) {
+sub test_fix_pkg_dirs : Test(2) {
     my $self     = shift;
     my $setperms = 0;
 
@@ -41,8 +41,8 @@ sub test_fix_rpm_dirs : Test(2) {
     local *Cpanel::Mailman::Perms::set_perms = sub { $setperms = 1; return 1 };
 
     use warnings qw( redefine once );
-    ok( ea_apache24_config_runtime::SOURCES::300_fixmailman::fix_rpm_dirs(), q{fix_rpm_dirs: We assume success baby!} );
-    ok( $setperms,                                                           q{fix_rpm_dirs: Script attempted to fix the RPM directories} );
+    ok( ea_apache24_config_runtime::SOURCES::300_fixmailman::fix_pkg_dirs(), q{fix_pkg_dirs: We assume success baby!} );
+    ok( $setperms,                                                           q{fix_pkg_dirs: Script attempted to fix the package’s directories} );
 
     return 1;
 }

@@ -48,7 +48,7 @@ sub debug {
 sub is_handler_supported {
     my ( $handler, $package ) = @_;
 
-    $php ||= Cpanel::ProgLang->new( type => 'php' );
+    $php    ||= Cpanel::ProgLang->new( type => 'php' );
     $server ||= Cpanel::WebServer->new()->get_server( type => 'apache' );
 
     my $ref = $server->get_available_handlers( lang => $php, package => $package );
@@ -93,7 +93,7 @@ sub get_preferred_handler {
     }
     else {
         for my $handler (@PreferredHandlers) {
-            last if $new_handler;
+            last                    if $new_handler;
             $new_handler = $handler if is_handler_supported( $handler, $package );
         }
     }
@@ -358,18 +358,17 @@ __END__
 
 =head1 NAME
 
-009-phpconf.pl -- universal YUM hook
+009-phpconf.pl -- package manager universal hook
 
 =head1 SYNOPSIS
 
-Typically lives in a sub-directory under /etc/yum/universal-hooks.  This
-is executed by the YUM plugin, universal-hooks.
+Executed by various package managers via this package: https://github.com/CpanelInc/yum-plugin-universal-hooks
 
 =head1 DESCRIPTION
 
 This scripts updates the cPanel and Apache MultiPHP configurations.  It's important
-for this script to run after packages have been added, removed, or updated via YUM because
-the cPanel MultiPHP system depends on the configuration (default: /etc/cpanel/ea4/php.conf)
+for this script to run after packages have been added, removed, or updated via the package manager
+because the cPanel MultiPHP system depends on the configuration (default: /etc/cpanel/ea4/php.conf)
 always being correct.
 
 Some of the things it does are as follows:
@@ -378,11 +377,11 @@ Some of the things it does are as follows:
 
 =item * If no PHP packages are installed on the system, it will remove all cPanel and Apache configuration information related to PHP.
 
-=item * If a PHP package is removed using YUM, configuration for that package is removed.
+=item * If a PHP package is removed usingt the package manager, configuration for that package is removed.
 
-=item * If a PHP package is added using YUM, a default configuration is applied.
+=item * If a PHP package is added using the package manager, a default configuration is applied.
 
-=item * If an Apache handler for PHP is removed using YUM, a default Apache handler is used instead.
+=item * If an Apache handler for PHP is removed using the package manager, a default Apache handler is used instead.
 
 =back
 
@@ -416,4 +415,4 @@ If a check succeeds, no further checks are performed.
 This script depends on the packages setting up the correct dependencies and conflicts.  For
 example, this script doesn't check the Apache configuration for MPM ITK when assigning PHP
 to the SuPHP handler since it assumes the package should already have a conflict detected
-by YUM during installation.
+by the package manager during installation.
