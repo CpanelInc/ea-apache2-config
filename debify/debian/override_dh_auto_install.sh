@@ -3,7 +3,7 @@
 set -x 
 source debian/vars.sh
 
-# NOTE: There isn't a (meta) RPM that owns /var/cpanel directory, so.. we
+# NOTE: There isn't a (meta) package that owns /var/cpanel directory, so.. we
 # gotta hardcode the path to this file without using a macro.  This also
 # means that we won't be able to clean up after ourselves just yet.
 mkdir -p $buildroot$_localstatedir/cpanel/templates/apache2_4

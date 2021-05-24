@@ -25,6 +25,7 @@ use strict;
 use warnings;
 use Cpanel::Version::Tiny    ();
 use Cpanel::Version::Compare ();
+use Cpanel::PackMan          ();
 
 # The libraries needed to run this script weren't introduced until this release.
 exit 0 if Cpanel::Version::Compare::compare( $Cpanel::Version::Tiny::VERSION_BUILD, '<', '11.60.0.1' );
@@ -71,9 +72,8 @@ foreach my $pkg (@pkgs) {
     # At this point, if we are installing, it should now exist. If we are removing, it should not.
     my $installing = 0;
 
-    # TODO - move this check to a module, something like Cpanel::PackMan::is_package_installed_quick() ?
-    my $rc = system( "rpm", "--quiet", "-q", $pkg );
-    if ($rc) {
+    my $pkg_hr = Cpanel::PackMan->instance->pkg_hr($pkg);
+    if ( $pkg_hr && $pkg_hr->{version_installed} ) {
         $installing = 0;
     }
     else {
@@ -101,7 +101,7 @@ foreach my $pkg (@pkgs) {
     # Rebuild the Apache config
     my $php_cfg_ref = Cpanel::PHP::Config::get_php_config_for_users($users_ref);
 
-    if (!%$php_cfg_ref) {
+    if ( !%$php_cfg_ref ) {
         msglog( 0, "No domains were on ea-php${phpfpm_version}-php-fpm." );
     }
     elsif ( Cpanel::PHPFPM::rebuild_files( $php_cfg_ref, 0, 1, 1 ) ) {

@@ -31,7 +31,7 @@ if ( !-e '/usr/local/bin/ea_convert_php_ini' ) {
 
     write_file( $suphpconf::suphpconf, "; oh hai" );
     trap { suphpconf::run() };
-    is( $trap->stderr, "Unable to update /etc/suphp.conf without the ea-cpanel-tools RPM installed.\n", "missing ea_convert_php_ini does expected warning" );
+    is( $trap->stderr, "Unable to update /etc/suphp.conf without the ea-cpanel-tools package installed.\n", "missing ea_convert_php_ini does expected warning" );
 
     exit(0);
 }
