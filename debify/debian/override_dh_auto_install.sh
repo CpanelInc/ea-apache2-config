@@ -52,7 +52,7 @@ install $SOURCE23 $buildroot/$_httpd_confdir/
 
 # I tried very hard to use adjust_install_file_src, but it would not work
 mkdir -p debian/tmp/etc/apt/universal-hooks/pkgs/glibc/Post-Invoke
-ln -sf hooks_base_sys/ea-__WILDCARD__/500-restartsrv_httpd debian/tmp/etc/apt/universal-hooks/pkgs/glibc/Post-Invoke/100-glibc-restartsrv_httpd
+ln -sf $hooks_base_sys/ea-__WILDCARD__/500-restartsrv_httpd debian/tmp/etc/apt/universal-hooks/pkgs/glibc/Post-Invoke/100-glibc-restartsrv_httpd
 
 mkdir -p debian/tmp/var/cpanel/log/apache2/domlogs
 
