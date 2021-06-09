@@ -1,0 +1,45 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+my $uid = getpwnam("nobody");
+my $gid = getgrnam("nobody");
+my @ids = ( 65534, 99 );
+
+if ( !defined $gid ) {
+    for my $id (@ids) {
+        system("addgroup --system --gid $id nobody");
+        $gid = getgrnam("nobody");
+        last if defined $gid;
+    }
+
+    if ( !defined $gid ) {
+        system("addgroup --system nobody");
+    }
+
+    $gid = getgrnam("nobody");
+    die "Could not ensure `nobody` group\n" if !defined $gid;
+}
+
+if ( !defined $uid ) {
+    system("touch /etc/systemd/dont-synthesize-nobody") if -d "/etc/systemd";
+
+    for my $id (@ids) {
+        system("adduser --system --uid $id --gid $gid --home / --no-create-home --shell /sbin/nologin --disabled-password --disabled-login nobody");
+        $uid = getpwnam("nobody");
+        last if defined $uid;
+    }
+
+    if ( !defined $uid ) {
+        system("adduser --system --gid $gid --home / --no-create-home --shell /sbin/nologin --disabled-password --    disabled-login nobody");
+    }
+
+    $uid = getpwnam("nobody");
+    die "Could not ensure `nobody` user\n" if !defined $uid;
+}
+
+# if already done, its a noop. adduser’s --gid does not make this happen
+system("usermod -G $gid -a nobody");
+
+print "`nobody` UID: $uid GID: $gid\n";

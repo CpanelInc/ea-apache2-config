@@ -15,8 +15,8 @@ use Cpanel::Daemonizer::Tiny ();
 
 our @Steps = (
     {
-        name => 'Fix mailman RPM directories',
-        code => \&fix_rpm_dirs,
+        name => 'Fix mailman package directories',
+        code => \&fix_pkg_dirs,
     },
     {
         name => 'Fix mailing list perms',
@@ -32,8 +32,8 @@ sub fix_list_dirs {
 }
 
 # Fixes the permissions of the core mailman directories...
-# because this used to installed without an RPM on systems < 11.57
-sub fix_rpm_dirs {
+# because this used to installed without a package on systems < 11.57
+sub fix_pkg_dirs {
     my $perm = Cpanel::Mailman::Perms->new();
     $perm->set_perms();    # this always assumes success, so no point in checking retval
     return 1;

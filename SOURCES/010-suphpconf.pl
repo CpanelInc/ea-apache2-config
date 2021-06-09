@@ -17,7 +17,7 @@ run() unless caller;
 sub run {
     if ( -e $suphpconf ) {
         if ( !-e "/usr/local/bin/ea_convert_php_ini" ) {    # This madness will go away with EA-5696
-            warn "Unable to update /etc/suphp.conf without the ea-cpanel-tools RPM installed.\n";
+            warn "Unable to update /etc/suphp.conf without the ea-cpanel-tools package installed.\n";
         }
         else {
             require "/usr/local/bin/ea_convert_php_ini";    ##no critic (RequireBarewordIncludes) This madness will go away with EA-5696
