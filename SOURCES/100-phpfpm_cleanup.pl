@@ -73,7 +73,7 @@ foreach my $pkg (@pkgs) {
     my $installing = 0;
 
     my $pkg_hr = Cpanel::PackMan->instance->pkg_hr($pkg);
-    if ( $pkg_hr && $pkg_hr->{version_installed} ) {
+    if ( !$pkg_hr || $pkg_hr->{version_installed} eq "" ) {
         $installing = 0;
     }
     else {
