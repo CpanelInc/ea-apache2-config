@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 171
+%define release_prefix 172
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -187,6 +187,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Wed Jun 09 2021 Daniel Muey <dan@cpanel.net> - 1.0-172
+- ZC-8941: 100-phpfpm_cleanup.pl’s logic bug with `$installing`
+
 * Thu May 20 2021 Daniel Muey <dan@cpanel.net> - 1.0-171
 - ZC-8853: ensure nobody user/group exist until CPANEL-37051
 
