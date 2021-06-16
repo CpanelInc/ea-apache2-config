@@ -7,7 +7,11 @@ my $uid = getpwnam("nobody");
 my $gid = getgrnam("nobody");
 my @ids = ( 65534, 99 );
 
+my $user_needs_informed = 0;
+
 if ( !defined $gid ) {
+    $user_needs_informed = 1;
+
     for my $id (@ids) {
         system("addgroup --system --gid $id nobody");
         $gid = getgrnam("nobody");
@@ -23,6 +27,8 @@ if ( !defined $gid ) {
 }
 
 if ( !defined $uid ) {
+    $user_needs_informed = 1;
+
     system("touch /etc/systemd/dont-synthesize-nobody") if -d "/etc/systemd";
 
     for my $id (@ids) {
@@ -42,4 +48,4 @@ if ( !defined $uid ) {
 # if already done, its a noop. adduser’s --gid does not make this happen
 system("usermod -G $gid -a nobody");
 
-print "`nobody` UID: $uid GID: $gid\n";
+print "[INFO] `nobody` user created with UID $uid and GID $gid\n" if $user_needs_informed;
