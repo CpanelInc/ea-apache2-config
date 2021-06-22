@@ -72,7 +72,6 @@ sub test_ssl_vhost_proxy_rewritecond : Test(4) {
         [
             'RewriteCond %{REQUEST_URI} ^/\\.well-known/pki-validation/(?:\\ Ballot169)?',
             'RewriteCond %{REQUEST_URI} ^/\\.well-known/cpanel-dcv/[0-9a-zA-Z_-]+$',
-            'RewriteCond %{REQUEST_URI} ^/\\.well-known/pki-validation/[A-F0-9]{32}\\.txt(?:\\ QAPortal\\ DCV)?$',
             'RewriteCond %{REQUEST_URI} ^/\\.well-known/pki-validation/[A-F0-9]{32}\\.txt(?:\\ Sectigo\\ DCV)?$',
             'RewriteCond %{HTTP_HOST} !^(?:autoconfig|autodiscover|cpanel|cpcalendars|cpcontacts|webdisk|webmail|whm)\\.',
             'RewriteCond %{HTTP_HOST} =autodiscover.mock.server.tld',
@@ -149,7 +148,6 @@ sub test_ssl_vhost_proxy_rewritecond : Test(4) {
             'RewriteCond %{HTTP_HOST} =whm.whm.tld:443',
             'RewriteCond %{REQUEST_URI} ^/\\.well-known/pki-validation/(?:\\ Ballot169)?',
             'RewriteCond %{REQUEST_URI} ^/\\.well-known/cpanel-dcv/[0-9a-zA-Z_-]+$',
-            'RewriteCond %{REQUEST_URI} ^/\\.well-known/pki-validation/[A-F0-9]{32}\\.txt(?:\\ QAPortal\\ DCV)?$',
             'RewriteCond %{REQUEST_URI} ^/\\.well-known/pki-validation/[A-F0-9]{32}\\.txt(?:\\ Sectigo\\ DCV)?$',
             'RewriteCond %{HTTP_HOST} !^mock.server.tld$',
             'RewriteCond %{HTTP_HOST} ^cpanel\\.',
@@ -215,7 +213,6 @@ sub test_ssl_vhost_proxy_rewritecond : Test(4) {
     cmp_bag(
         $lines_ar,
         [
-            'RewriteCond %{REQUEST_URI} ^/\\.well-known/pki-validation/[A-F0-9]{32}\\.txt(?:\\ QAPortal\\ DCV)?$',
             'RewriteCond %{REQUEST_URI} ^/\\.well-known/pki-validation/(?:\\ Ballot169)?',
             'RewriteCond %{REQUEST_URI} ^/\\.well-known/pki-validation/[A-F0-9]{32}\\.txt(?:\\ Sectigo\\ DCV)?$',
             'RewriteCond %{REQUEST_URI} ^/\\.well-known/cpanel-dcv/[0-9a-zA-Z_-]+$',
