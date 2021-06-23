@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+system("touch /etc/systemd/dont-synthesize-nobody") if -d "/etc/systemd";
 my $uid = getpwnam("nobody");
 my $gid = getgrnam("nobody");
 my @ids = ( 65534, 99 );
@@ -12,14 +13,15 @@ my $user_needs_informed = 0;
 if ( !defined $gid ) {
     $user_needs_informed = 1;
 
+    my $addgroup = -x '/usr/sbin/groupadd' ? "groupadd" : "addgroup";
     for my $id (@ids) {
-        system("addgroup --system --gid $id nobody");
+        system("$addgroup --system --gid $id nobody");
         $gid = getgrnam("nobody");
         last if defined $gid;
     }
 
     if ( !defined $gid ) {
-        system("addgroup --system nobody");
+        system("$addgroup --system nobody");
     }
 
     $gid = getgrnam("nobody");
@@ -29,16 +31,15 @@ if ( !defined $gid ) {
 if ( !defined $uid ) {
     $user_needs_informed = 1;
 
-    system("touch /etc/systemd/dont-synthesize-nobody") if -d "/etc/systemd";
-
+    my $flags = -x '/usr/sbin/groupadd' ? "" : "--disabled-password --disabled-login";
     for my $id (@ids) {
-        system("adduser --system --uid $id --gid $gid --home / --no-create-home --shell /sbin/nologin --disabled-password --disabled-login nobody");
+        system("adduser --system --uid $id --gid $gid --home / --no-create-home --shell /sbin/nologin $flags nobody");
         $uid = getpwnam("nobody");
         last if defined $uid;
     }
 
     if ( !defined $uid ) {
-        system("adduser --system --gid $gid --home / --no-create-home --shell /sbin/nologin --disabled-password --    disabled-login nobody");
+        system("adduser --system --gid $gid --home / --no-create-home --shell /sbin/nologin $flags nobody");
     }
 
     $uid = getpwnam("nobody");
