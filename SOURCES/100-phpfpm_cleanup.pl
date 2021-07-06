@@ -21,105 +21,112 @@
 #
 ##############################################################################################
 
+package unihook::phpfpm_clean;
+
 use strict;
 use warnings;
 use Cpanel::Version::Tiny    ();
 use Cpanel::Version::Compare ();
 use Cpanel::PackMan          ();
 
-# The libraries needed to run this script weren't introduced until this release.
-exit 0 if Cpanel::Version::Compare::compare( $Cpanel::Version::Tiny::VERSION_BUILD, '<', '11.60.0.1' );
-
-require Cpanel::PHP::Config;
-require Cpanel::PHPFPM;
-require Cpanel::HttpUtils::ApRestart::BgSafe;
-
-##############################################################################################
-
-my $debuglvl       = 1;
-my $phpfpm_version = '';
-my @pkgs;
+my $debuglvl    = 1;
 my $script_name = $0;
 $script_name =~ s/.+\/(.+?)\.pl$/$1/;
 
-foreach my $arg (@ARGV) {
-    if ( $arg =~ m/^--pkg_list=(.+)$/ ) {
-        my $pkgs_path = $1;
-        if ( open( my $pkgs_list_fh, '<', $pkgs_path ) ) {
-            @pkgs = <$pkgs_list_fh>;
-            chomp @pkgs;
-            close $pkgs_list_fh;
+run(@ARGV) unless caller;
+
+sub run {
+    my @args = @_;
+
+    # The libraries needed to run this script weren't introduced until this release.
+    return 0 if Cpanel::Version::Compare::compare( $Cpanel::Version::Tiny::VERSION_BUILD, '<', '11.60.0.1' );
+
+    require Cpanel::PHP::Config;
+    require Cpanel::PHPFPM;
+    require Cpanel::HttpUtils::ApRestart::BgSafe;
+
+##############################################################################################
+
+    my $phpfpm_version = '';
+    my @pkgs;
+
+    foreach my $arg (@args) {
+        if ( $arg =~ m/^--pkg_list=(.+)$/ ) {
+            my $pkgs_path = $1;
+            if ( open( my $pkgs_list_fh, '<', $pkgs_path ) ) {
+                @pkgs = <$pkgs_list_fh>;
+                chomp @pkgs;
+                close $pkgs_list_fh;
+            }
+            else {
+                die "Found path to packages “$pkgs_path” but could not read from it: $!\n";
+            }
+        }
+    }
+
+    my $restart_needed = 0;
+
+    foreach my $pkg (@pkgs) {
+        msglog( 2, "Processing package '$pkg'" );
+        if ( $pkg =~ m/^ea-php(\d{2})-php-fpm$/ ) {
+            $phpfpm_version = $1;
         }
         else {
-            die "Found path to packages “$pkgs_path” but could not read from it : $!\n";
+            # This is not the package we are looking for /waveshand
+            next;
+        }
+
+        # Try to determine if we are removing the package or installing it.
+        # At this point, if we are installing, it should now exist. If we are removing, it should not.
+        my $installing = 0;
+
+        my $pkg_hr = Cpanel::PackMan->instance->pkg_hr($pkg);
+        if ( !$pkg_hr || $pkg_hr->{version_installed} eq "" ) {
+            $installing = 0;
+        }
+        else {
+            $installing = 1;
+        }
+
+        # If we are installing, there presumably isn't anything to clean up. Otherwise, proceed with the purge. -.-
+        if ($installing) {
+            msglog( 0, "[$pkg] No need to clean user files since we are installing." );
+            next;
+        }
+        else {
+            msglog( 0, "Cleaning up PHP-FPM configs for version $phpfpm_version since we are removing the package." );
+        }
+
+        # If we get here, we're going to want to restart Apache
+        $restart_needed = 1;
+
+        # Build a list of users on a certain version of PHP-FPM
+        my $users_ref = get_users_on_fpm_version($phpfpm_version);
+
+        # Disable any user currently configured for this version of PHP-FPM
+        disable_all_fpm_users_for_version( $phpfpm_version, $users_ref );
+
+        # Rebuild the Apache config
+        my $php_cfg_ref = Cpanel::PHP::Config::get_php_config_for_users($users_ref);
+
+        if ( !%$php_cfg_ref ) {
+            msglog( 0, "No domains were on ea-php${phpfpm_version}-php-fpm." );
+        }
+        elsif ( Cpanel::PHPFPM::rebuild_files( $php_cfg_ref, 0, 1, 1 ) ) {
+            msglog( 0, "All domains that were on ea-php${phpfpm_version}-php-fpm should be back to system defaults." );
+        }
+        else {
+            msglog( 0, "Problem encountered while trying to rebuild the PHP-FPM related configuration files. Please check the Apache server to be sure it is running correctly." );
         }
     }
-}
 
-my $restart_needed = 0;
+    if ($restart_needed) {
 
-foreach my $pkg (@pkgs) {
-    msglog( 2, "Processing package '$pkg'" );
-    if ( $pkg =~ m/^ea-php(\d{2})-php-fpm$/ ) {
-        $phpfpm_version = $1;
-    }
-    else {
-        # This is not the package we are looking for /waveshand
-        next;
-    }
-
-    # Try to determine if we are removing the package or installing it.
-    # At this point, if we are installing, it should now exist. If we are removing, it should not.
-    my $installing = 0;
-
-    my $pkg_hr = Cpanel::PackMan->instance->pkg_hr($pkg);
-    if ( !$pkg_hr || $pkg_hr->{version_installed} eq "" ) {
-        $installing = 0;
-    }
-    else {
-        $installing = 1;
-    }
-
-    # If we are installing, there presumably isn't anything to clean up. Otherwise, proceed with the purge. -.-
-    if ($installing) {
-        msglog( 0, "[$pkg] No need to clean user files since we are installing." );
-        next;
-    }
-    else {
-        msglog( 0, "Cleaning up PHP-FPM configs for version $phpfpm_version since we are removing the package." );
-    }
-
-    # If we get here, we're going to want to restart Apache
-    $restart_needed = 1;
-
-    # Build a list of users on a certain version of PHP-FPM
-    my $users_ref = get_users_on_fpm_version($phpfpm_version);
-
-    # Disable any user currently configured for this version of PHP-FPM
-    disable_all_fpm_users_for_version( $phpfpm_version, $users_ref );
-
-    # Rebuild the Apache config
-    my $php_cfg_ref = Cpanel::PHP::Config::get_php_config_for_users($users_ref);
-
-    if ( !%$php_cfg_ref ) {
-        msglog( 0, "No domains were on ea-php${phpfpm_version}-php-fpm." );
-    }
-    elsif ( Cpanel::PHPFPM::rebuild_files( $php_cfg_ref, 0, 1, 1 ) ) {
-        msglog( 0, "All domains that were on ea-php${phpfpm_version}-php-fpm should be back to system defaults." );
-    }
-    else {
-        msglog( 0, "Problem encountered while trying to rebuild the PHP-FPM related configuration files. Please check the Apache server to be sure it is running correctly." );
+        # Finally, restart apache with the updated config
+        msglog( 0, "Restarting Apache" );
+        Cpanel::HttpUtils::ApRestart::BgSafe::restart();
     }
 }
-
-if ($restart_needed) {
-
-    # Finally, restart apache with the updated config
-    msglog( 0, "Restarting Apache" );
-    Cpanel::HttpUtils::ApRestart::BgSafe::restart();
-}
-
-exit;
 
 ##############################################################################################
 # Functions
@@ -189,3 +196,5 @@ sub msglog {
     }
     return;
 }
+
+1;
