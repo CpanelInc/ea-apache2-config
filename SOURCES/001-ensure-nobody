@@ -49,4 +49,26 @@ if ( !defined $uid ) {
 # if already done, its a noop. adduser’s --gid does not make this happen
 system("usermod -G $gid -a nobody");
 
+my $home = ( getpwnam("nobody") )[7];
+if ( !-d $home ) {
+
+    # We do not want to create it for them in case there are other implications in /nonexistent existing.
+    # We can’t `usermod --home / nobody` for them because we’d have to hard stop all nobody processes first.
+    my $sep = "#" x 42;
+    print <<"END_HOMEDIR";
+$sep
+[WARN] Detected non-existent home directory for `nobody`.
+
+This situation can result in some harmless STDERR going to your web server’s error log as errors.
+
+If you experience this your options are:
+
+  1. Ignore the log entries
+  2. Create the directory “$home” if it is safe to do so.
+  3. Change the `nobody` user’s home directory to one that exists. e.g. `usermod --home / nobody`
+$sep
+END_HOMEDIR
+
+}
+
 print "[INFO] `nobody` user created with UID $uid and GID $gid\n" if $user_needs_informed;
