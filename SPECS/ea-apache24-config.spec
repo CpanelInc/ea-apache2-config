@@ -189,6 +189,7 @@ rm -rf %{buildroot}
 %changelog
 * Thu Jul 08 2021 Daniel Muey <dan@cpanel.net> - 1.0-175
 - ZC-9061: Detect and inform admin of non-existent home directory
+- ZC-9058: Have nobody check set primary group to nobody
 
 * Wed Jun 23 2021 Daniel Muey <dan@cpanel.net> - 1.0-174
 - ZC-8936: Address C8 issue w/ 001-ensure-nobody hook

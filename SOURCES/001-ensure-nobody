@@ -47,7 +47,7 @@ if ( !defined $uid ) {
 }
 
 # if already done, its a noop. adduser’s --gid does not make this happen
-system("usermod -G $gid -a nobody");
+system("usermod -g $gid nobody");
 
 my $home = ( getpwnam("nobody") )[7];
 if ( !-d $home ) {
