@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 176
+%define release_prefix 177
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -187,6 +187,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Thu Jul 29 2021 Stephen Bee <stephen@cpanel.net> - 1.0-177
+- CPANEL-36901: Avoid redirection loops when handling requests from reverse proxies.
+
 * Tue Jul 27 2021 Daniel Muey <dan@cpanel.net> - 1.0-176
 - ZC-7402: Set SecRuleEngine under mod sec 3.x the same as we do for 2.x
 
