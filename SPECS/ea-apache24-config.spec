@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 175
+%define release_prefix 176
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -187,6 +187,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Tue Jul 27 2021 Daniel Muey <dan@cpanel.net> - 1.0-176
+- ZC-7402: Set SecRuleEngine under mod sec 3.x the same as we do for 2.x
+
 * Thu Jul 08 2021 Daniel Muey <dan@cpanel.net> - 1.0-175
 - ZC-9061: Detect and inform admin of non-existent home directory
 - ZC-9058: Have nobody check set primary group to nobody

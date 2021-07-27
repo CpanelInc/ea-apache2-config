@@ -229,6 +229,9 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% main.rlimitmem.item.maxrlim
         <IfModule security2_module>
             SecRuleEngine Off
         </IfModule>
+        <IfModule security3_module>
+           modsecurity_rules 'SecRuleEngine Off'
+        </IfModule>
     </Location>
 
 [%  IF serve_server_status -%]
@@ -579,6 +582,9 @@ ProxyPass /cpanelwebcall/ http://127.0.0.1:2082/cpanelwebcall/ max=1 retry=0
         <IfModule security2_module>
             SecRuleEngine Off
         </IfModule>
+        <IfModule security3_module>
+           modsecurity_rules 'SecRuleEngine Off'
+        </IfModule>
     </Proxy>
 
 [%- IF supported.mod_userdir && !supported.mpm_itk && !supported.mod_ruid2 && !supported.mod_passenger %]
@@ -688,6 +694,9 @@ ProxyPass /cpanelwebcall/ http://127.0.0.1:2082/cpanelwebcall/ max=1 retry=0
     <IfModule security2_module>
         SecRuleEngine On
     </IfModule>
+    <IfModule security3_module>
+        modsecurity_rules 'SecRuleEngine On'
+    </IfModule>
 </VirtualHost>
 [%      END %]
 [% END -%]
@@ -713,6 +722,9 @@ ProxyPass /cpanelwebcall/ http://127.0.0.1:2082/cpanelwebcall/ max=1 retry=0
     <Proxy "*">
         <IfModule security2_module>
             SecRuleEngine Off
+        </IfModule>
+        <IfModule security3_module>
+            modsecurity_rules 'SecRuleEngine Off'
         </IfModule>
     </Proxy>
 
@@ -863,6 +875,9 @@ ProxyPass /cpanelwebcall/ http://127.0.0.1:2082/cpanelwebcall/ max=1 retry=0
     <IfModule security2_module>
         SecRuleEngine On
     </IfModule>
+    <IfModule security3_module>
+        modsecurity_rules 'SecRuleEngine On'
+    </IfModule>
 </VirtualHost>
 [%      END -%]
 [% END -%]
@@ -983,6 +998,9 @@ Include "[% paths.dir_conf_includes %]/post_virtualhost_2.conf"
 
     <IfModule security2_module>
         SecRuleEngine On
+    </IfModule>
+    <IfModule security3_module>
+        modsecurity_rules 'SecRuleEngine On'
     </IfModule>
 </VirtualHost>
 [% END -%]
