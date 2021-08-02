@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x 
+set -x
 source debian/vars.sh
 
 # NOTE: There isn't a (meta) package that owns /var/cpanel directory, so.. we
@@ -18,12 +18,15 @@ mkdir -p $hooks_base/ea-__WILDCARD__
 mkdir -p $hooks_base/ea-php__WILDCARD__
 mkdir -p $hooks_base/ea-apache24-config
 mkdir -p $hooks_base/__WILDCARD__-php__WILDCARD__
+mkdir -p $hooks_base_pre/ea-__WILDCARD__
+
 mkdir -p $DEB_INSTALL_ROOT$_sysconfdir/apt/universal-hooks/pkgs/glibc/Post-Invoke/
+
 install $SOURCE2  $hooks_base/ea-__WILDCARD__/300-fixmailman.pl
 install $SOURCE6  $hooks_base/ea-__WILDCARD__/010-purge_cache.pl
 install $SOURCE5  $hooks_base/ea-__WILDCARD__/400-patch_mod_security2.pl
 install $SOURCE7  $hooks_base/ea-__WILDCARD__/500-restartsrv_httpd
-install $SOURCE24 $hooks_base/ea-__WILDCARD__/001-ensure-nobody
+install $SOURCE24 $hooks_base_pre/ea-__WILDCARD__/001-ensure-nobody
 
 ln -sf  $hooks_base_sys/ea-__WILDCARD__/500-restartsrv_httpd $DEB_INSTALL_ROOT$_sysconfdir/apt/universal-hooks/pkgs/glibc/Post-Invoke/100-glibc-restartsrv_httpd
 install $SOURCE8  $hooks_base/ea-__WILDCARD__/060-setup_apache_symlinks.pl

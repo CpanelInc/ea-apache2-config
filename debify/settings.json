@@ -2,7 +2,9 @@
     "dont_override_install": 0,
     "vars": {
         "hooks_base": "$DEB_INSTALL_ROOT%{_sysconfdir}/apt/universal-hooks/multi_pkgs/Post-Invoke",
-        "hooks_base_sys": "$DEB_INSTALL_ROOT%{_sysconfdir}/apt/universal-hooks/multi_pkgs/Post-Invoke",
+        "hooks_base_sys": "%{_sysconfdir}/apt/universal-hooks/multi_pkgs/Post-Invoke",
+        "hooks_base_pre": "$DEB_INSTALL_ROOT%{_sysconfdir}/apt/universal-hooks/multi_pkgs/Pre-Invoke",
+        "hooks_base_pre_sys": "%{_sysconfdir}/apt/universal-hooks/multi_pkgs/Pre-Invoke",
         "_httpd_dir": "/etc/apache2",
         "_httpd_bindir": "%{_httpd_dir}/bin",
         "_httpd_confdir": "%{_httpd_dir}/conf.d"
