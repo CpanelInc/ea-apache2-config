@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 177
+%define release_prefix 178
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -55,9 +55,13 @@ BuildRequires: ea-apache24-devel
 %if 0%{?rhel} > 7
     %define hooks_base $RPM_BUILD_ROOT%{_sysconfdir}/dnf/universal-hooks/multi_pkgs/transaction
     %define hooks_base_sys %{_sysconfdir}/dnf/universal-hooks/multi_pkgs/transaction
+    %define hooks_base_pre $RPM_BUILD_ROOT%{_sysconfdir}/dnf/universal-hooks/multi_pkgs/pre_transaction
+    %define hooks_base_pre_sys %{_sysconfdir}/dnf/universal-hooks/multi_pkgs/pre_transaction
 %else
     %define hooks_base $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans
     %define hooks_base_sys %{_sysconfdir}/yum/universal-hooks/multi_pkgs/posttrans
+    %define hooks_base_pre $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/multi_pkgs/pretrans
+    %define hooks_base_pre_sys %{_sysconfdir}/yum/universal-hooks/multi_pkgs/pretrans
 %endif
 
 %description
@@ -95,21 +99,23 @@ mkdir -p $RPM_BUILD_ROOT/etc/cpanel/ea4
 
 mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/apache2/domlogs
 
-# Install the cache purge trigger
 mkdir -p %{hooks_base}/ea-__WILDCARD__
 mkdir -p %{hooks_base}/ea-php__WILDCARD__
 mkdir -p %{hooks_base}/ea-apache24-config
 mkdir -p %{hooks_base}/__WILDCARD__-php__WILDCARD__
+mkdir -p %{hooks_base_pre}/ea-__WILDCARD__
+
 %if 0%{?rhel} > 7
     mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/dnf/universal-hooks/pkgs/glibc/transaction/
 %else
     mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/yum/universal-hooks/pkgs/glibc/posttrans/
 %endif
+
 install %{SOURCE2}  %{hooks_base}/ea-__WILDCARD__/300-fixmailman.pl
 install %{SOURCE6}  %{hooks_base}/ea-__WILDCARD__/010-purge_cache.pl
 install %{SOURCE5}  %{hooks_base}/ea-__WILDCARD__/400-patch_mod_security2.pl
 install %{SOURCE7}  %{hooks_base}/ea-__WILDCARD__/500-restartsrv_httpd
-install %{SOURCE24} %{hooks_base}/ea-__WILDCARD__/001-ensure-nobody
+install %{SOURCE24} %{hooks_base_pre}/ea-__WILDCARD__/001-ensure-nobody
 
 %if 0%{?rhel} > 7
     ln -sf  %{hooks_base_sys}/ea-__WILDCARD__/500-restartsrv_httpd $RPM_BUILD_ROOT%{_sysconfdir}/dnf/universal-hooks/pkgs/glibc/transaction/100-glibc-restartsrv_httpd
@@ -158,7 +164,7 @@ rm -rf %{buildroot}
 %attr(0711,root,root) %dir %{_localstatedir}/log/apache2/domlogs
 %attr(0755,root,root) %{hooks_base_sys}/__WILDCARD__-php__WILDCARD__/009-phpconf.pl
 %attr(0755,root,root) %{hooks_base_sys}/__WILDCARD__-php__WILDCARD__/010-suphpconf.pl
-%attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/001-ensure-nobody
+%attr(0755,root,root) %{hooks_base_pre_sys}/ea-__WILDCARD__/001-ensure-nobody
 %attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/009-phpconf.pl
 %attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/010-suphpconf.pl
 %attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/010-purge_cache.pl
@@ -187,6 +193,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Mon Aug 02 2021 Dan Muey <dan@cpanel.net> - 1.0-178
+- ZC-9109: Do ensure-nobody script pre transaction so post transaction script can relay on it being there
+
 * Thu Jul 29 2021 Stephen Bee <stephen@cpanel.net> - 1.0-177
 - CPANEL-36901: Avoid redirection loops when handling requests from reverse proxies.
 
