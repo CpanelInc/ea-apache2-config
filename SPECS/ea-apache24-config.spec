@@ -115,6 +115,7 @@ install %{SOURCE2}  %{hooks_base}/ea-__WILDCARD__/300-fixmailman.pl
 install %{SOURCE6}  %{hooks_base}/ea-__WILDCARD__/010-purge_cache.pl
 install %{SOURCE5}  %{hooks_base}/ea-__WILDCARD__/400-patch_mod_security2.pl
 install %{SOURCE7}  %{hooks_base}/ea-__WILDCARD__/500-restartsrv_httpd
+install %{SOURCE24} %{hooks_base}/ea-__WILDCARD__/001-ensure-nobody
 install %{SOURCE24} %{hooks_base_pre}/ea-__WILDCARD__/001-ensure-nobody
 
 %if 0%{?rhel} > 7
@@ -164,6 +165,7 @@ rm -rf %{buildroot}
 %attr(0711,root,root) %dir %{_localstatedir}/log/apache2/domlogs
 %attr(0755,root,root) %{hooks_base_sys}/__WILDCARD__-php__WILDCARD__/009-phpconf.pl
 %attr(0755,root,root) %{hooks_base_sys}/__WILDCARD__-php__WILDCARD__/010-suphpconf.pl
+%attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/001-ensure-nobody
 %attr(0755,root,root) %{hooks_base_pre_sys}/ea-__WILDCARD__/001-ensure-nobody
 %attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/009-phpconf.pl
 %attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/010-suphpconf.pl
