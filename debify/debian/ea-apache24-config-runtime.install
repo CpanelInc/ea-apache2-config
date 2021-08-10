@@ -16,6 +16,7 @@ debian/tmp/etc/cpanel/ea4/paths.conf /etc/cpanel/ea4
 ./400-patch_mod_security2.pl /etc/apt/universal-hooks/multi_pkgs/Post-Invoke/ea-__WILDCARD__
 ./500-restartsrv_httpd /etc/apt/universal-hooks/multi_pkgs/Post-Invoke/ea-__WILDCARD__
 ./001-ensure-nobody /etc/apt/universal-hooks/multi_pkgs/Post-Invoke/ea-__WILDCARD__
+./001-ensure-nobody /etc/apt/universal-hooks/multi_pkgs/Pre-Install-Pkgs/ea-__WILDCARD__
 ./520-enablefileprotect /etc/apt/universal-hooks/multi_pkgs/Post-Invoke/ea-__WILDCARD__
 ./000-local_template_check /etc/apt/universal-hooks/multi_pkgs/Post-Invoke/ea-apache24-config
 ./100-phpfpm_cleanup.pl /etc/apt/universal-hooks/multi_pkgs/Post-Invoke/ea-php__WILDCARD__-php-fpm
