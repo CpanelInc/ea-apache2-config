@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 178
+%define release_prefix 179
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -45,7 +45,6 @@ Source20:      000-local_template_check
 Source21:      010-suphpconf.pl
 Source22:      011-migrate_extension_to_pecl_ini
 Source23:      php_add_handler_fix.conf
-Source24:      001-ensure-nobody
 
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:      ea-webserver
@@ -115,8 +114,6 @@ install %{SOURCE2}  %{hooks_base}/ea-__WILDCARD__/300-fixmailman.pl
 install %{SOURCE6}  %{hooks_base}/ea-__WILDCARD__/010-purge_cache.pl
 install %{SOURCE5}  %{hooks_base}/ea-__WILDCARD__/400-patch_mod_security2.pl
 install %{SOURCE7}  %{hooks_base}/ea-__WILDCARD__/500-restartsrv_httpd
-install %{SOURCE24} %{hooks_base}/ea-__WILDCARD__/001-ensure-nobody
-install %{SOURCE24} %{hooks_base_pre}/ea-__WILDCARD__/001-ensure-nobody
 
 %if 0%{?rhel} > 7
     ln -sf  %{hooks_base_sys}/ea-__WILDCARD__/500-restartsrv_httpd $RPM_BUILD_ROOT%{_sysconfdir}/dnf/universal-hooks/pkgs/glibc/transaction/100-glibc-restartsrv_httpd
@@ -165,8 +162,6 @@ rm -rf %{buildroot}
 %attr(0711,root,root) %dir %{_localstatedir}/log/apache2/domlogs
 %attr(0755,root,root) %{hooks_base_sys}/__WILDCARD__-php__WILDCARD__/009-phpconf.pl
 %attr(0755,root,root) %{hooks_base_sys}/__WILDCARD__-php__WILDCARD__/010-suphpconf.pl
-%attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/001-ensure-nobody
-%attr(0755,root,root) %{hooks_base_pre_sys}/ea-__WILDCARD__/001-ensure-nobody
 %attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/009-phpconf.pl
 %attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/010-suphpconf.pl
 %attr(0755,root,root) %{hooks_base_sys}/ea-__WILDCARD__/010-purge_cache.pl
@@ -195,6 +190,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Tue Sep 07 2021 Dan Muey <dan@cpanel.net> - 1.0-179
+- ZC-9253: install nobody hook via ea-cpanel-tools so its available for pre-txn profile install
+
 * Mon Aug 02 2021 Dan Muey <dan@cpanel.net> - 1.0-178
 - ZC-9109: Do ensure-nobody script pre transaction so post transaction script can relay on it being there
 
