@@ -10,6 +10,9 @@
         "_httpd_confdir": "%{_httpd_dir}/conf.d"
 
     },
+    "no_files_pkgs": {
+         "ea-apache24-config" : "files are in runtime"
+    },
     "override_vars": {
         "buildroot": "$DEB_INSTALL_ROOT"
     },
