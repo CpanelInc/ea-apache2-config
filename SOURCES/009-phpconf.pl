@@ -24,13 +24,17 @@ use strict;
 use Cpanel::Imports;
 use Cpanel::PackMan ();
 use Try::Tiny;
-use Cpanel::ConfigFiles::Apache ();
-use Cpanel::DataStore           ();
-use Cpanel::EA4::Util           ();
-use Cpanel::Notify              ();
-use Cpanel::ProgLang            ();
-use Cpanel::WebServer           ();
-use Getopt::Long                ();
+use Cpanel::ConfigFiles::Apache     ();
+use Cpanel::Config::LoadUserDomains ();
+use Cpanel::Config::LoadCpUserFile  ();
+use Cpanel::Exception               ();
+use Cpanel::WebServer::Userdata     ();
+use Cpanel::DataStore               ();
+use Cpanel::EA4::Util               ();
+use Cpanel::Notify                  ();
+use Cpanel::ProgLang                ();
+use Cpanel::WebServer               ();
+use Getopt::Long                    ();
 use POSIX qw( :sys_wait_h );
 
 our @PreferredHandlers      = qw( suphp dso cgi );
@@ -325,11 +329,54 @@ sub apply_rebuild_settings {
                 }
                 debug( $cfg, "Successfully updated the '$pkg' package" );
             }
+
+            # now that existing packages are ship shape, let’s handle users still set to non-existent version
+            update_users_set_to_non_existant_phps( $apache, $cfg->{php}, $default );
         }
     }
     catch {
         logger->die("$_");    # copy $_ since it can be magical
     };
+
+    return 1;
+}
+
+sub update_users_set_to_non_existant_phps {
+    my ( $apache, $lang, $default ) = @_;
+
+    my ( %users, @error );
+    Cpanel::Config::LoadUserDomains::loadtrueuserdomains( \%users, 1 );
+
+    my %installed;
+    @installed{ $lang->get_installed_packages() } = ();
+    for my $user ( keys %users ) {
+        next unless $users{$user};    # some accounts are invalid and don't contain a domain in the /etc/trueusersdomain configuration file
+
+        my $cfg = try { Cpanel::Config::LoadCpUserFile::load_or_die($user) };
+        next unless $cfg;
+        next if $cfg->{PLAN} =~ /Cpanel\s+Ticket\s+System/i;    # Accounts like this are created by the autofixer2 create_temp_reseller_for_ticket_access script when cpanel support logs in
+
+        my $userdata = Cpanel::WebServer::Userdata->new( user => $user );
+
+        for my $vhost ( @{ $userdata->get_vhost_list() } ) {
+
+            try {
+                my $pkg = $userdata->get_vhost_lang_package( lang => $lang, vhost => $vhost );
+                if ( !exists $installed{$pkg} ) {
+
+                    # This PHP is no longer installed so set them to the default (their code may break but at least we ensure their source code is not served)
+                    $apache->set_vhost_lang_package( userdata => $userdata, vhost => $vhost, lang => $lang, package => $default );
+                    $userdata->set_vhost_lang_package( vhost => $vhost, lang => $lang, package => $default );
+                }
+            }
+            catch {
+                push @error, $_;
+            };
+        }
+    }
+
+    die Cpanel::Exception::create( 'Collection', [ exceptions => \@error ] ) if @error > 1;
+    die $error[0]                                                            if @error == 1;
 
     return 1;
 }
