@@ -424,7 +424,13 @@ Some of the things it does are as follows:
 
 =item * If no PHP packages are installed on the system, it will remove all cPanel and Apache configuration information related to PHP.
 
-=item * If a PHP package is removed usingt the package manager, configuration for that package is removed.
+It will leave users’ configurations as-is in case it was a temporary situation or a mistake. It also acts as a security benefit because they will get an error instead of the source code.
+
+=item * If a PHP package is removed using the package manager, configuration for that package is removed.
+
+Users assigned to it will be moved to the newest PHP installed.
+
+This uses userdata for efficiency and reliability. It will not traverse the file system looking for C<.htaccess> files that have PHP looking handlers. That would be an expensive and fragile operation. As long as they use MultiPHP Manager (or CL’s PHP selector/cagefs system?) they will be in ship shape.
 
 =item * If a PHP package is added using the package manager, a default configuration is applied.
 
