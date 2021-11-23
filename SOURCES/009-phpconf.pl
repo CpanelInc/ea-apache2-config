@@ -331,7 +331,7 @@ sub apply_rebuild_settings {
             }
 
             # now that existing packages are ship shape, let’s handle users still set to non-existent version
-            update_users_set_to_non_existant_phps( $apache, $cfg->{php}, $default );
+            update_users_set_to_non_existant_phps( $apache, $cfg->{php}, "inherit" );
         }
     }
     catch {
@@ -362,7 +362,7 @@ sub update_users_set_to_non_existant_phps {
 
             try {
                 my $pkg = $userdata->get_vhost_lang_package( lang => $lang, vhost => $vhost );
-                if ( !exists $installed{$pkg} ) {
+                if ( $pkg ne "inherit" && !exists $installed{$pkg} ) {
 
                     # This PHP is no longer installed so set them to the default (their code may break but at least we ensure their source code is not served)
                     $apache->set_vhost_lang_package( userdata => $userdata, vhost => $vhost, lang => $lang, package => $default );
