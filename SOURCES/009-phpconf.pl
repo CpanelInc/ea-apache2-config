@@ -366,7 +366,7 @@ sub update_users_set_to_non_existant_phps {
 
                     # This PHP is no longer installed so set them to the default (their code may break but at least we ensure their source code is not served)
                     $apache->set_vhost_lang_package( userdata => $userdata, vhost => $vhost, lang => $lang, package => $default );
-                    $userdata->set_vhost_lang_package( vhost => $vhost, lang => $lang, package => $default );    # TODO: this may not be necessary as it looks like $server->set_vhost_lang_package does it already
+                    $userdata->set_vhost_lang_package( vhost => $vhost, lang => $lang, package => $default );
                 }
             }
             catch {
