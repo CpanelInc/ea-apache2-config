@@ -249,6 +249,15 @@ sub test_get_rebuild_settings : Tests(10) {
     return;
 }
 
+sub test_update_users_set_to_non_existant_phps : Tests(1) {
+    note "Testing update_users_set_to_non_existant_phps()";
+    can_ok( 'ea_apache2_config::phpconf', 'update_users_set_to_non_existant_phps' );
+
+    # TODO:
+    # Mock the guts away
+    # call $orig_update_users_set_to_non_existant_phps->(…) and verify results
+}
+
 sub test_apply_rebuild_settings : Tests(14) {
     note "Testing apply_rebuild_settings()";
     can_ok( 'ea_apache2_config::phpconf', 'apply_rebuild_settings' );
