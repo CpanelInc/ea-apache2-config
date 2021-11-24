@@ -249,13 +249,48 @@ sub test_get_rebuild_settings : Tests(10) {
     return;
 }
 
-sub test_update_users_set_to_non_existant_phps : Tests(1) {
+sub test_update_users_set_to_non_existant_phps : Tests(3) {
     note "Testing update_users_set_to_non_existant_phps()";
     can_ok( 'ea_apache2_config::phpconf', 'update_users_set_to_non_existant_phps' );
 
-    # TODO:
+    no warnings "redefine", "once";
+
     # Mock the guts away
-    # call $orig_update_users_set_to_non_existant_phps->(…) and verify results
+    local *Cpanel::Config::LoadUserDomains::loadtrueuserdomains = sub {
+        my $hr = shift;
+        $hr->{bob} = 1;    # inherit, not updated
+        $hr->{sam} = 2;    # ea-not-installed, set to inherit
+        $hr->{sal} = 3;    # ea-installed, not updated
+    };
+    local *Cpanel::Config::LoadCpUserFile::load_or_die = sub { return { PLAN => 42 } };
+
+    my @ws_set_vhost_lang_package_calls;
+    my $apache = Mock::Cpanel::ConfigFiles::Apache->new();
+    local *Mock::Cpanel::ConfigFiles::Apache::set_vhost_lang_package = sub { shift; push @ws_set_vhost_lang_package_calls, \@_ };
+
+    my $lang = return Mock::Cpanel::ProgLang->new();
+    local $Mock::Cpanel::ProgLang::Packages = [qw(ea-installed)];
+
+    my $ud = {
+        bob => { "bob.test" => "inherit" },             # inherit, not updated
+        sam => { "sam.test" => "ea-not-installed" },    # ea-not-installed, set to inherit
+        sal => { "sal.test" => "ea-installed" },        # ea-installed, not updated
+    };
+    my @ud_set_vhost_lang_package_calls;
+    my $mud = Test::MockModule->new("Cpanel::WebServer::Userdata")->redefine( new => sub { my ( $class, %args ) = @_; return bless \%args, $class } )->redefine( get_vhost_list => sub { my ($self) = @_; return keys %{ $ud->{ $self->{user} } } } )->redefine( get_vhost_lang_package => sub { my ( $self, %args ) = @_; return $ud->{ $self->{user} }{ $args{vhost} } } )
+      ->redefine( set_vhost_lang_package => sub { shift; push @ud_set_vhost_lang_package_calls, \@_ } );
+
+    my $sam_ud = Cpanel::WebServer::Userdata->new( user => "sam" );
+
+    # now call it and verify:
+    $orig_update_users_set_to_non_existant_phps->( $apache, $lang, "inherit" );
+
+    is_deeply \@ws_set_vhost_lang_package_calls,
+      [ [ userdata => $sam_ud, vhost => "sam.test", lang => $lang, package => "inherit" ] ],
+      "webserver updated only for domain set to non-existent version";
+    is_deeply \@ud_set_vhost_lang_package_calls,
+      [ [ vhost => "sam.test", lang => $lang, package => "inherit" ] ],
+      "userdata updated only for domain set to non-existent version";
 }
 
 sub test_apply_rebuild_settings : Tests(14) {
