@@ -348,7 +348,7 @@ sub update_users_set_to_non_existant_phps {
     Cpanel::Config::LoadUserDomains::loadtrueuserdomains( \%users, 1 );
 
     my %installed;
-    @installed{ $lang->get_installed_packages() } = ();
+    @installed{ @{ $lang->get_installed_packages() } } = ();
     for my $user ( keys %users ) {
         next unless $users{$user};    # some accounts are invalid and don't contain a domain in the /etc/trueusersdomain configuration file
 
