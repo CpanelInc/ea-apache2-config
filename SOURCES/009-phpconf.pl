@@ -303,6 +303,9 @@ sub apply_rebuild_settings {
 
             require Cpanel::WebServer;
             my $apache = Cpanel::WebServer->new->get_server( type => "apache" );
+
+            my $disable_flag_file = "/var/cpanel/ea4-disable_009-phpconf.pl_user_setting_validation_and_risk_breaking_PHP_based_sites_and_exposing_sensitive_data_in_PHP_source_code";
+
             while ( my ( $pkg, $handler ) = each(%pkginfo) ) {
                 debug( $cfg, "Setting the '$pkg' package to the '$handler' handler" );
                 if ( !$cfg->{args}->{dryrun} ) {
@@ -312,7 +315,6 @@ sub apply_rebuild_settings {
                         package => $pkg,
                     );
                     try {
-                        my $disable_flag_file = "/var/cpanel/ea4-disable_009-phpconf.pl_user_setting_validation_and_risk_breaking_PHP_based_sites_and_exposing_sensitive_data_in_PHP_source_code";
                         if ( -e $disable_flag_file ) {
                             die "Ensuring that user settings are still valid is disabled via the existence of $disable_flag_file:\n\t!!!! your PHP based sites may be broken and exposing sensitive data in the source code !!\n";
                         }
@@ -331,7 +333,12 @@ sub apply_rebuild_settings {
             }
 
             # now that existing packages are ship shape, let’s handle users still set to non-existent version
-            update_users_set_to_non_existant_phps( $apache, $cfg->{php}, "inherit" );
+            if ( -e $disable_flag_file ) {
+                logger->warn("Ensuring that user settings are still valid is disabled via the existence of $disable_flag_file:\n\t!!!! your PHP based sites may be broken and exposing sensitive data in the source code !!\n");
+            }
+            else {
+                update_users_set_to_non_existant_phps( $apache, $cfg->{php}, "inherit" );
+            }
         }
     }
     catch {
