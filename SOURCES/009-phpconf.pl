@@ -349,6 +349,12 @@ sub update_users_set_to_non_existant_phps {
 
     my %installed;
     @installed{ @{ $lang->get_installed_packages() } } = ();
+
+    if ( !keys %installed ) {
+        warn "!!!! No PHPs installed! !!\nUsers’ PHP settings will be left as is. That way PHP requests will get an error instead of serving source code and potentialy sensitive data like database credentials.\n";
+        return;
+    }
+
     for my $user ( keys %users ) {
         next unless $users{$user};    # some accounts are invalid and don't contain a domain in the /etc/trueusersdomain configuration file
 
@@ -365,6 +371,7 @@ sub update_users_set_to_non_existant_phps {
                 if ( $pkg ne "inherit" && !exists $installed{$pkg} ) {
 
                     # This PHP is no longer installed so set them to the default (their code may break but at least we ensure their source code is not served)
+                    warn "User $user’s vhost “$vhost” is set to PHP “$pkg” which is no longer installed. Setting them to to inherit …\n";
                     $apache->set_vhost_lang_package( userdata => $userdata, vhost => $vhost, lang => $lang, package => $default );
                     $userdata->set_vhost_lang_package( vhost => $vhost, lang => $lang, package => $default );
                 }
