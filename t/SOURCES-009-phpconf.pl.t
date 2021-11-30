@@ -249,7 +249,7 @@ sub test_get_rebuild_settings : Tests(10) {
     return;
 }
 
-sub test_update_users_set_to_non_existant_phps : Tests(3) {
+sub test_update_users_set_to_non_existant_phps : Tests(4) {
     note "Testing update_users_set_to_non_existant_phps()";
     can_ok( 'ea_apache2_config::phpconf', 'update_users_set_to_non_existant_phps' );
 
@@ -291,6 +291,14 @@ sub test_update_users_set_to_non_existant_phps : Tests(3) {
     is_deeply \@ud_set_vhost_lang_package_calls,
       [ [ vhost => "sam.test", lang => $lang, package => "inherit" ] ],
       "userdata updated only for domain set to non-existent version";
+
+    {
+        @ws_set_vhost_lang_package_calls = ();
+        @ud_set_vhost_lang_package_calls = ();
+        local $Mock::Cpanel::ProgLang::Packages = [];
+        $orig_update_users_set_to_non_existant_phps->( $apache, $lang, "inherit" );
+        is_deeply [ \@ws_set_vhost_lang_package_calls, \@ud_set_vhost_lang_package_calls ], [ [], [] ], "update_users_set_to_non_existant_phps() does not update users when there are no PHPs";
+    }
 }
 
 sub test_apply_rebuild_settings : Tests(14) {
