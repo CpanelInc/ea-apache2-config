@@ -104,7 +104,7 @@ sub get_preferred_handler {
 
     if ( !$new_handler ) {
         my $def = Cpanel::EA4::Util::get_default_php_handler();
-        logger->info("Could not find a handler for $package. Defaulting to “$def” so that, at worst case, we get an error instead of source code.\n");
+        logger->info("Could not find a handler for $package. Defaulting to “$def” so that, at worst case, we get an error instead of source code.");
         $new_handler = $def;
     }
 
@@ -280,7 +280,7 @@ sub apply_rebuild_settings {
 
     if ( $#{ $cfg->{packages} } == -1 ) {
         debug( $cfg, "No PHP packages installed.  Removing configuration files." );
-        logger->info("!!!! No PHPs installed! !!\nUsers’ PHP settings will be left as is. That way PHP requests will get an error instead of serving source code and potentially sensitive data like database credentials.\n");
+        logger->info("!!!! No PHPs installed! !!\nUsers’ PHP settings will be left as is. That way PHP requests will get an error instead of serving source code and potentially sensitive data like database credentials.");
         !$cfg->{args}->{dryrun} && unlink( $cfg->{apache_path}, $cfg->{cfg_path} );
         return 1;
     }
@@ -335,7 +335,7 @@ sub apply_rebuild_settings {
 
             # now that existing packages are ship shape, let’s handle users still set to non-existent version
             if ( -e $disable_flag_file ) {
-                logger->info("Ensuring that user settings are still valid is disabled via the existence of $disable_flag_file:\n\t!!!! your PHP based sites may be broken and exposing sensitive data in the source code !!\n");
+                logger->info("Ensuring that user settings are still valid is disabled via the existence of $disable_flag_file:\n\t!!!! your PHP based sites may be broken and exposing sensitive data in the source code !!");
             }
             else {
                 update_users_set_to_non_existant_phps( $apache, $cfg->{php}, "inherit" );
@@ -360,7 +360,7 @@ sub update_users_set_to_non_existant_phps {
 
     # this should not be possible *but* just in case
     if ( !keys %installed ) {
-        logger->info("!!!! No PHPs installed! !!\nUsers’ PHP settings will be left as is. That way PHP requests will get an error instead of serving source code and potentially sensitive data like database credentials.\n");
+        logger->info("!!!! No PHPs installed! !!\nUsers’ PHP settings will be left as is. That way PHP requests will get an error instead of serving source code and potentially sensitive data like database credentials.");
         return;
     }
 
@@ -380,7 +380,7 @@ sub update_users_set_to_non_existant_phps {
                 if ( $pkg ne "inherit" && !exists $installed{$pkg} ) {
 
                     # This PHP is no longer installed so set them to the default (their code may break but at least we ensure their source code is not served)
-                    logger->info("User $user’s vhost “$vhost” is set to PHP “$pkg” which is no longer installed. Setting them to inherit …\n");
+                    logger->info("User $user’s vhost “$vhost” is set to PHP “$pkg” which is no longer installed. Setting them to inherit …");
                     $apache->set_vhost_lang_package( userdata => $userdata, vhost => $vhost, lang => $lang, package => $default );
                     $userdata->set_vhost_lang_package( vhost => $vhost, lang => $lang, package => $default );
                 }
