@@ -398,7 +398,9 @@ sub update_users_set_to_non_existant_phps {
 sub setup_session_save_path {
     require Cpanel::ProgLang::Supported::php::Ini;
     if ( Cpanel::ProgLang::Supported::php::Ini->can('setup_session_save_path') ) {
-        return Cpanel::ProgLang::Supported::php::Ini::setup_session_save_path();
+        my $rv = eval { Cpanel::ProgLang::Supported::php::Ini::setup_session_save_path() };
+        return 2 if ref($@) eq "Cpanel::Exception::FeatureNotEnabled";    # ignore failures from PHP not being installed
+        return $rv;
     }
     return;
 }
