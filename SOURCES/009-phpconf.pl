@@ -280,6 +280,7 @@ sub apply_rebuild_settings {
 
     if ( $#{ $cfg->{packages} } == -1 ) {
         debug( $cfg, "No PHP packages installed.  Removing configuration files." );
+        logger->warn("!!!! No PHPs installed! !!\nUsers’ PHP settings will be left as is. That way PHP requests will get an error instead of serving source code and potentialy sensitive data like database credentials.\n");
         !$cfg->{args}->{dryrun} && unlink( $cfg->{apache_path}, $cfg->{cfg_path} );
         return 1;
     }
@@ -357,6 +358,7 @@ sub update_users_set_to_non_existant_phps {
     my %installed;
     @installed{ @{ $lang->get_installed_packages() } } = ();
 
+    # this should not be possible *but* just in case
     if ( !keys %installed ) {
         logger->warn("!!!! No PHPs installed! !!\nUsers’ PHP settings will be left as is. That way PHP requests will get an error instead of serving source code and potentialy sensitive data like database credentials.\n");
         return;
