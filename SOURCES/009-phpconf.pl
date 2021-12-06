@@ -24,13 +24,17 @@ use strict;
 use Cpanel::Imports;
 use Cpanel::PackMan ();
 use Try::Tiny;
-use Cpanel::ConfigFiles::Apache ();
-use Cpanel::DataStore           ();
-use Cpanel::EA4::Util           ();
-use Cpanel::Notify              ();
-use Cpanel::ProgLang            ();
-use Cpanel::WebServer           ();
-use Getopt::Long                ();
+use Cpanel::ConfigFiles::Apache     ();
+use Cpanel::Config::LoadUserDomains ();
+use Cpanel::Config::LoadCpUserFile  ();
+use Cpanel::Exception               ();
+use Cpanel::WebServer::Userdata     ();
+use Cpanel::DataStore               ();
+use Cpanel::EA4::Util               ();
+use Cpanel::Notify                  ();
+use Cpanel::ProgLang                ();
+use Cpanel::WebServer               ();
+use Getopt::Long                    ();
 use POSIX qw( :sys_wait_h );
 
 our @PreferredHandlers      = qw( suphp dso cgi );
@@ -100,7 +104,7 @@ sub get_preferred_handler {
 
     if ( !$new_handler ) {
         my $def = Cpanel::EA4::Util::get_default_php_handler();
-        warn "Could not find a handler for $package. Defaulting to “$def” so that, at worst case, we get an error instead of source code.\n";
+        logger->info("Could not find a handler for $package. Defaulting to “$def” so that, at worst case, we get an error instead of source code.");
         $new_handler = $def;
     }
 
@@ -276,6 +280,7 @@ sub apply_rebuild_settings {
 
     if ( $#{ $cfg->{packages} } == -1 ) {
         debug( $cfg, "No PHP packages installed.  Removing configuration files." );
+        logger->info("!!!! No PHPs installed! !!\nUsers’ PHP settings will be left as is. That way PHP requests will get an error instead of serving source code and potentially sensitive data like database credentials.");
         !$cfg->{args}->{dryrun} && unlink( $cfg->{apache_path}, $cfg->{cfg_path} );
         return 1;
     }
@@ -299,6 +304,9 @@ sub apply_rebuild_settings {
 
             require Cpanel::WebServer;
             my $apache = Cpanel::WebServer->new->get_server( type => "apache" );
+
+            my $disable_flag_file = "/var/cpanel/ea4-disable_009-phpconf.pl_user_setting_validation_and_risk_breaking_PHP_based_sites_and_exposing_sensitive_data_in_PHP_source_code";
+
             while ( my ( $pkg, $handler ) = each(%pkginfo) ) {
                 debug( $cfg, "Setting the '$pkg' package to the '$handler' handler" );
                 if ( !$cfg->{args}->{dryrun} ) {
@@ -308,7 +316,6 @@ sub apply_rebuild_settings {
                         package => $pkg,
                     );
                     try {
-                        my $disable_flag_file = "/var/cpanel/ea4-disable_009-phpconf.pl_user_setting_validation_and_risk_breaking_PHP_based_sites_and_exposing_sensitive_data_in_PHP_source_code";
                         if ( -e $disable_flag_file ) {
                             die "Ensuring that user settings are still valid is disabled via the existence of $disable_flag_file:\n\t!!!! your PHP based sites may be broken and exposing sensitive data in the source code !!\n";
                         }
@@ -320,10 +327,18 @@ sub apply_rebuild_settings {
                         );
                     }
                     catch {
-                        logger->warn("Error updating user package handlers for $pkg: $_");
+                        logger->info("Error updating user package handlers for $pkg: $_");
                     };
                 }
                 debug( $cfg, "Successfully updated the '$pkg' package" );
+            }
+
+            # now that existing packages are ship shape, let’s handle users still set to non-existent version
+            if ( -e $disable_flag_file ) {
+                logger->info("Ensuring that user settings are still valid is disabled via the existence of $disable_flag_file:\n\t!!!! your PHP based sites may be broken and exposing sensitive data in the source code !!");
+            }
+            else {
+                update_users_set_to_non_existant_phps( $apache, $cfg->{php}, "inherit" );
             }
         }
     }
@@ -334,10 +349,60 @@ sub apply_rebuild_settings {
     return 1;
 }
 
+sub update_users_set_to_non_existant_phps {
+    my ( $apache, $lang, $default ) = @_;
+
+    my ( %users, @error );
+    Cpanel::Config::LoadUserDomains::loadtrueuserdomains( \%users, 1 );
+
+    my %installed;
+    @installed{ @{ $lang->get_installed_packages() } } = ();
+
+    # this should not be possible *but* just in case
+    if ( !keys %installed ) {
+        logger->info("!!!! No PHPs installed! !!\nUsers’ PHP settings will be left as is. That way PHP requests will get an error instead of serving source code and potentially sensitive data like database credentials.");
+        return;
+    }
+
+    for my $user ( keys %users ) {
+        next unless $users{$user};    # some accounts are invalid and don't contain a domain in the /etc/trueusersdomain configuration file
+
+        my $cfg = try { Cpanel::Config::LoadCpUserFile::load_or_die($user) };
+        next unless $cfg;
+        next if $cfg->{PLAN} =~ /Cpanel\s+Ticket\s+System/i;    # Accounts like this are created by the autofixer2 create_temp_reseller_for_ticket_access script when cpanel support logs in
+
+        my $userdata = Cpanel::WebServer::Userdata->new( user => $user );
+
+        for my $vhost ( @{ $userdata->get_vhost_list() } ) {
+
+            try {
+                my $pkg = $userdata->get_vhost_lang_package( lang => $lang, vhost => $vhost );
+                if ( $pkg ne "inherit" && !exists $installed{$pkg} ) {
+
+                    # This PHP is no longer installed so set them to the default (their code may break but at least we ensure their source code is not served)
+                    logger->info("User $user’s vhost “$vhost” is set to PHP “$pkg” which is no longer installed. Setting them to inherit …");
+                    $apache->set_vhost_lang_package( userdata => $userdata, vhost => $vhost, lang => $lang, package => $default );
+                    $userdata->set_vhost_lang_package( vhost => $vhost, lang => $lang, package => $default );
+                }
+            }
+            catch {
+                push @error, $_;
+            };
+        }
+    }
+
+    die Cpanel::Exception::create( 'Collection', [ exceptions => \@error ] ) if @error > 1;
+    die $error[0]                                                            if @error == 1;
+
+    return 1;
+}
+
 sub setup_session_save_path {
     require Cpanel::ProgLang::Supported::php::Ini;
     if ( Cpanel::ProgLang::Supported::php::Ini->can('setup_session_save_path') ) {
-        return Cpanel::ProgLang::Supported::php::Ini::setup_session_save_path();
+        my $rv = eval { Cpanel::ProgLang::Supported::php::Ini::setup_session_save_path() };
+        return 2 if ref($@) eq "Cpanel::Exception::FeatureNotEnabled";    # ignore failures from PHP not being installed
+        return $rv;
     }
     return;
 }
@@ -377,7 +442,13 @@ Some of the things it does are as follows:
 
 =item * If no PHP packages are installed on the system, it will remove all cPanel and Apache configuration information related to PHP.
 
-=item * If a PHP package is removed usingt the package manager, configuration for that package is removed.
+It will leave users’ configurations as-is in case it was a temporary situation or a mistake. It also acts as a security benefit because they will get an error instead of the source code.
+
+=item * If a PHP package is removed using the package manager, configuration for that package is removed.
+
+Users assigned to it will be moved to the newest PHP installed.
+
+This uses userdata for efficiency and reliability. It will not traverse the file system looking for C<.htaccess> files that have PHP looking handlers. That would be an expensive and fragile operation. As long as they use MultiPHP Manager (or CL’s PHP selector/cagefs system?) they will be in ship shape.
 
 =item * If a PHP package is added using the package manager, a default configuration is applied.
 

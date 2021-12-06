@@ -24,6 +24,11 @@
 [% ELSE -%]
   ServerAlias [% vhost.serveralias %]
 [% END -%]
+[% IF vhost.uid %]
+  <IfModule env_module>
+   SetEnv USER_ID [% vhost.uid %]
+  </IfModule>
+[% END -%]
 [% IF vhost.proxy_backend -%]
   <Location "/">
     ProxyPass "http://[% vhost.proxy_backend %]/"
