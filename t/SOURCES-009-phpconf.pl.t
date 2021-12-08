@@ -29,7 +29,7 @@ use strict;
 use warnings;
 our $Path;
 our $Conf;
-sub new { return bless( {}, __PACKAGE__ ) }
+sub new           { return bless( {}, __PACKAGE__ ) }
 sub get_file_path { return $Path }
 sub get_conf      { return $Conf }
 sub set_conf      { shift; my %args = @_; $Conf = $args{conf} }
@@ -39,7 +39,7 @@ package Mock::Cpanel::ConfigFiles::Apache;
 use strict;
 use warnings;
 our $Path;
-sub new { return bless( {}, __PACKAGE__ ) }
+sub new                { return bless( {}, __PACKAGE__ ) }
 sub file_conf_php_conf { return $Path }
 
 package Mock::Cpanel::WebServer::Supported::apache;
@@ -56,7 +56,7 @@ use strict;
 use warnings;
 use parent qw( Cpanel::WebServer );
 
-sub new { return bless( {}, __PACKAGE__ ) }
+sub new        { return bless( {}, __PACKAGE__ ) }
 sub get_server { return Mock::Cpanel::WebServer::Supported::apache->new() }
 
 package t::SOURCES::009_phpconf;
@@ -75,8 +75,15 @@ use Test::Filesys     ();
 use Cpanel::EA4::Util ();
 use Cpanel::PackMan   ();
 
+our @last_update_users_set_to_non_existant_phps_args;
+our $orig_update_users_set_to_non_existant_phps;
+
 sub init : Test(startup => 1) {
     require_ok("$FindBin::Bin/../SOURCES/009-phpconf.pl");
+    $orig_update_users_set_to_non_existant_phps = \&ea_apache2_config::phpconf::update_users_set_to_non_existant_phps;
+
+    no warnings "redefine";
+    *ea_apache2_config::phpconf::update_users_set_to_non_existant_phps = sub { @last_update_users_set_to_non_existant_phps_args = @_ };
     return;
 }
 
@@ -85,13 +92,13 @@ sub test_is_handler_supported : Tests(8) {
     can_ok( 'ea_apache2_config::phpconf', 'is_handler_supported' );
 
     my @tests = (
-        { handler => 'suphp', mods => {}, result => 0, note => "The 'suphp' handler isn't supported when no Apache modules installed" },
-        { handler => 'cgi',   mods => {}, result => 0, note => "The 'cgi' handler isn't supported when no Apache modules installed" },
-        { handler => 'dso',   mods => {}, result => 0, note => "The 'dso' handler isn't supported when no Apache modules installed" },
+        { handler => 'suphp', mods => {},             result => 0, note => "The 'suphp' handler isn't supported when no Apache modules installed" },
+        { handler => 'cgi',   mods => {},             result => 0, note => "The 'cgi' handler isn't supported when no Apache modules installed" },
+        { handler => 'dso',   mods => {},             result => 0, note => "The 'dso' handler isn't supported when no Apache modules installed" },
         { handler => 'suphp', mods => { suphp => 1 }, result => 1, note => "The 'suphp' handler is supported when the Apache mod_suphp module is installed" },
-        { handler => 'dso',   mods => { dso   => 1 }, result => 1, note => "The 'dso' handler is supported when the Apache libphp5 module is installed" },
-        { handler => 'cgi',   mods => { cgi   => 1 }, result => 1, note => "The 'cgi' handler is supported when the Apache mod_cgi module is installed" },
-        { handler => 'cgi',   mods => { cgi   => 1 }, result => 1, note => "The 'cgi' handler is supported when the Apache mod_cgid module is installed" },
+        { handler => 'dso',   mods => { dso => 1 },   result => 1, note => "The 'dso' handler is supported when the Apache libphp5 module is installed" },
+        { handler => 'cgi',   mods => { cgi => 1 },   result => 1, note => "The 'cgi' handler is supported when the Apache mod_cgi module is installed" },
+        { handler => 'cgi',   mods => { cgi => 1 },   result => 1, note => "The 'cgi' handler is supported when the Apache mod_cgid module is installed" },
     );
 
     for my $test (@tests) {
@@ -120,8 +127,8 @@ sub test_get_php_config : Tests(5) {
     can_ok( 'ea_apache2_config::phpconf', 'get_php_config' );
 
     no warnings qw( redefine );
-    local $INC{'Cpanel/ProgLang.pm'}      = 1;
-    local $INC{'Cpanel/ProgLang/Conf.pm'} = 1;
+    local $INC{'Cpanel/ProgLang.pm'}        = 1;
+    local $INC{'Cpanel/ProgLang/Conf.pm'}   = 1;
     local *Cpanel::ConfigFiles::Apache::new = sub { return Mock::Cpanel::ConfigFiles::Apache->new() };
     local *Cpanel::ProgLang::new            = sub { return Mock::Cpanel::ProgLang->new() };
     local *Cpanel::ProgLang::Conf::new      = sub { return Mock::Cpanel::ProgLang::Conf->new() };
@@ -140,15 +147,15 @@ sub test_get_php_config : Tests(5) {
     is_deeply( $ref, \%expect, qq{get_php_config: Contains correct config structure when PHP not installed} ) or diag explain($ref);
 
     $Mock::Cpanel::ProgLang::PHPInstalled = 1;
-    local $Mock::Cpanel::ProgLang::Packages = [qw( x y z )];
+    local $Mock::Cpanel::ProgLang::Packages   = [qw( x y z )];
     local $Mock::Cpanel::ProgLang::Conf::Conf = { brindle => 1, bovine => 2 };
     $ref = ea_apache2_config::phpconf::get_php_config();
     isa_ok( $ref->{php}, q{Cpanel::ProgLang::Supported::php} );
     delete $ref->{php};
     delete $ref->{args};
     %expect = ( api => 'new', apache_path => "/path/to/apache/cfg$$", cfg_path => "/path/to/cpanel/cfg$$", packages => [qw( x y z )], cfg_ref => {} );
-    is_deeply( $ref, \%expect, qq{get_php_config: Returned correct config structure when old packages no longer installed} ) or diag explain $ref;
-    is_deeply( $Mock::Cpanel::ProgLang::Conf::Conf, { default => 'z', x => "foobar$$", y => "foobar$$", z => "foobar$$" }, qq{get_php_config: Saved a working php.conf when old packages are no longer installed} ) or diag explain $Mock::Cpanel::ProgLang::Conf::Conf;
+    is_deeply( $ref,                                \%expect,                                                              qq{get_php_config: Returned correct config structure when old packages no longer installed} ) or diag explain $ref;
+    is_deeply( $Mock::Cpanel::ProgLang::Conf::Conf, { default => 'z', x => "foobar$$", y => "foobar$$", z => "foobar$$" }, qq{get_php_config: Saved a working php.conf when old packages are no longer installed} )      or diag explain $Mock::Cpanel::ProgLang::Conf::Conf;
 
     return;
 }
@@ -158,8 +165,8 @@ sub test_get_rebuild_settings : Tests(10) {
     can_ok( 'ea_apache2_config::phpconf', 'get_rebuild_settings' );
 
     no warnings qw( redefine );
-    local $INC{'Cpanel/ProgLang.pm'}      = 1;
-    local $INC{'Cpanel/ProgLang/Conf.pm'} = 1;
+    local $INC{'Cpanel/ProgLang.pm'}        = 1;
+    local $INC{'Cpanel/ProgLang/Conf.pm'}   = 1;
     local *Cpanel::ConfigFiles::Apache::new = sub { return Mock::Cpanel::ConfigFiles::Apache->new() };
     local *Cpanel::ProgLang::new            = sub { return Mock::Cpanel::ProgLang->new() };
     local *Cpanel::ProgLang::Conf::new      = sub { return Mock::Cpanel::ProgLang::Conf->new() };
@@ -242,7 +249,59 @@ sub test_get_rebuild_settings : Tests(10) {
     return;
 }
 
-sub test_apply_rebuild_settings : Tests(11) {
+sub test_update_users_set_to_non_existant_phps : Tests(4) {
+    note "Testing update_users_set_to_non_existant_phps()";
+    can_ok( 'ea_apache2_config::phpconf', 'update_users_set_to_non_existant_phps' );
+
+    no warnings "redefine", "once";
+
+    # Mock the guts away
+    local *Cpanel::Config::LoadUserDomains::loadtrueuserdomains = sub {
+        my $hr = shift;
+        $hr->{bob} = 1;    # inherit, not updated
+        $hr->{sam} = 2;    # ea-not-installed, set to inherit
+        $hr->{sal} = 3;    # ea-installed, not updated
+    };
+    local *Cpanel::Config::LoadCpUserFile::load_or_die = sub { return { PLAN => 42 } };
+
+    my @ws_set_vhost_lang_package_calls;
+    my $apache = Mock::Cpanel::ConfigFiles::Apache->new();
+    local *Mock::Cpanel::ConfigFiles::Apache::set_vhost_lang_package = sub { shift; push @ws_set_vhost_lang_package_calls, \@_ };
+
+    my $lang = return Mock::Cpanel::ProgLang->new();
+    local $Mock::Cpanel::ProgLang::Packages = [qw(ea-installed)];
+
+    my $ud = {
+        bob => { "bob.test" => "inherit" },             # inherit, not updated
+        sam => { "sam.test" => "ea-not-installed" },    # ea-not-installed, set to inherit
+        sal => { "sal.test" => "ea-installed" },        # ea-installed, not updated
+    };
+    my @ud_set_vhost_lang_package_calls;
+    my $mud = Test::MockModule->new("Cpanel::WebServer::Userdata")->redefine( new => sub { my ( $class, %args ) = @_; return bless \%args, $class } )->redefine( get_vhost_list => sub { my ($self) = @_; return keys %{ $ud->{ $self->{user} } } } )->redefine( get_vhost_lang_package => sub { my ( $self, %args ) = @_; return $ud->{ $self->{user} }{ $args{vhost} } } )
+      ->redefine( set_vhost_lang_package => sub { shift; push @ud_set_vhost_lang_package_calls, \@_ } );
+
+    my $sam_ud = Cpanel::WebServer::Userdata->new( user => "sam" );
+
+    # now call it and verify:
+    $orig_update_users_set_to_non_existant_phps->( $apache, $lang, "inherit" );
+
+    is_deeply \@ws_set_vhost_lang_package_calls,
+      [ [ userdata => $sam_ud, vhost => "sam.test", lang => $lang, package => "inherit" ] ],
+      "webserver updated only for domain set to non-existent version";
+    is_deeply \@ud_set_vhost_lang_package_calls,
+      [ [ vhost => "sam.test", lang => $lang, package => "inherit" ] ],
+      "userdata updated only for domain set to non-existent version";
+
+    {
+        @ws_set_vhost_lang_package_calls = ();
+        @ud_set_vhost_lang_package_calls = ();
+        local $Mock::Cpanel::ProgLang::Packages = [];
+        $orig_update_users_set_to_non_existant_phps->( $apache, $lang, "inherit" );
+        is_deeply [ \@ws_set_vhost_lang_package_calls, \@ud_set_vhost_lang_package_calls ], [ [], [] ], "update_users_set_to_non_existant_phps() does not update users when there are no PHPs";
+    }
+}
+
+sub test_apply_rebuild_settings : Tests(14) {
     note "Testing apply_rebuild_settings()";
     can_ok( 'ea_apache2_config::phpconf', 'apply_rebuild_settings' );
     %Mock::Cpanel::WebServer::Supported::apache::Package = ();
@@ -252,7 +311,9 @@ sub test_apply_rebuild_settings : Tests(11) {
 
     ok( scalar stat(qq{$tmpdir/apachecfg$$.conf}), q{apply_rebuild_settings: Apache temp config file created} );
     ok( scalar stat(qq{$tmpdir/cpanelcfg$$.conf}), q{apply_rebuild_settings: Cpanel temp config file created} );
+
     my $ret = ea_apache2_config::phpconf::apply_rebuild_settings( { packages => [], apache_path => qq{$tmpdir/apachecfg$$.conf}, cfg_path => qq{$tmpdir/cpanelcfg$$.conf} }, {} );
+
     is_deeply( \%Mock::Cpanel::WebServer::Supported::apache::Package, {}, q{apply_rebuild_settings: Didn't apply any packages when PHP isn't installed} );
     ok( $ret,                                       q{apply_rebuild_settings: Correct return value when no PHP packages installed} );
     ok( !scalar stat(qq{$tmpdir/apachecfg$$.conf}), q{apply_rebuild_settings: Apache temp config file removed when no PHP packages installed} );
@@ -262,15 +323,21 @@ sub test_apply_rebuild_settings : Tests(11) {
 
     no warnings qw( redefine once );
     local $INC{'Cpanel/WebServer.pm'} = 1;
-    local *Cpanel::WebServer::new = sub { return Mock::Cpanel::WebServer->new() };
-    local *Cpanel::Logger::die = sub { $caught_error = 1 };
+    local *Cpanel::WebServer::new     = sub { return Mock::Cpanel::WebServer->new() };
+    local *Cpanel::Logger::die        = sub { $caught_error = 1 };
     use warnings qw( redefine once );
 
     my @packages = qw( x y z );
     my %settings = ( x => "xfoobar$$", y => "yfoobaz$$", z => "zfoofoo$$", default => 'x' );
     my $php      = Mock::Cpanel::ProgLang->new();
+    local @last_update_users_set_to_non_existant_phps_args = ();
     $ret = trap { ea_apache2_config::phpconf::apply_rebuild_settings( { api => 'new', php => $php, packages => \@packages }, \%settings ) };
     $trap->return_ok( 0, qq{apply_rebuild_settings: Returned successfully after setting package handlers} );
+
+    isa_ok $last_update_users_set_to_non_existant_phps_args[0], "Mock::Cpanel::WebServer::Supported::apache", "apply_rebuild_settings calls update_users_set_to_non_existant_phps_args w/ correct first arg obj";
+    isa_ok $last_update_users_set_to_non_existant_phps_args[1], "Mock::Cpanel::ProgLang",                     "apply_rebuild_settings calls update_users_set_to_non_existant_phps_args w/ correct second arg obj";
+    is $last_update_users_set_to_non_existant_phps_args[2],     "inherit",                                    "apply_rebuild_settings calls update_users_set_to_non_existant_phps_args w/ “inherit” as third arg";
+
     is( $Mock::Cpanel::ProgLang::DefaultPackage, q{x}, q{apply_rebuild_settings: Set the correct system default package} );
     delete $settings{default};
     is_deeply( \%Mock::Cpanel::WebServer::Supported::apache::Package, \%settings, q{apply_rebuild_settings: Set each package to the correct handler} );
