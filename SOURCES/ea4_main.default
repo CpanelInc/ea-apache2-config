@@ -259,10 +259,6 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% main.rlimitmem.item.maxrlim
     </IfModule>
 </IfModule>
 
-# This allows us to not log requests proxied to Apache from nginx;
-#    That way hits are not double recorded.
-SetEnvIf cPanel-localhost 1 isproxyrequest
-
 [% IF enable_piped_logs -%]
 <IfModule mod_log_config.c>
     LogFormat "%v:%p [% IF main.exists('logformat_combined') %][% main.logformat_combined.item.logformat_combined %][% ELSE %]%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"[% END %]" combinedvhost
@@ -288,9 +284,9 @@ SetEnvIf cPanel-localhost 1 isproxyrequest
         [%# noop but catch is required or it dies %]
     [%- END -%]
     <IfModule logio_module>
-        CustomLog "|/usr/local/cpanel/bin/splitlogs --dir=[% paths.dir_domlogs %] --main=[% wildcard_safe(servername) %] --suffix=-bytes_log[% splitlogsextra %]" bytesvhost env=!isproxyrequest
+        CustomLog "|/usr/local/cpanel/bin/splitlogs --dir=[% paths.dir_domlogs %] --main=[% wildcard_safe(servername) %] --suffix=-bytes_log[% splitlogsextra %]" bytesvhost
     </IfModule>
-    CustomLog "|/usr/local/cpanel/bin/splitlogs --dir=[% paths.dir_domlogs %] --main=[% wildcard_safe(servername) %] --mainout=[% paths.file_access_log %][% splitlogsextra %]" combinedvhost env=!isproxyrequest
+    CustomLog "|/usr/local/cpanel/bin/splitlogs --dir=[% paths.dir_domlogs %] --main=[% wildcard_safe(servername) %] --mainout=[% paths.file_access_log %][% splitlogsextra %]" combinedvhost
 </IfModule>
 [% ELSE %]
 <IfModule log_config_module>
@@ -314,10 +310,10 @@ SetEnvIf cPanel-localhost 1 isproxyrequest
     # access_log format can be set in WHM under 'Basic WebHost Manager® Setup'
 [%  IF main.ifmodulemodlogconfigc.customlog.items.length -%]
 [%      FOREACH dir IN main.ifmodulemodlogconfigc.customlog.items -%]
-    CustomLog [% dir.target %] [% dir.format %] env=!isproxyrequest
+    CustomLog [% dir.target %] [% dir.format %]
 [%      END -%]
 [%  ELSE -%]
-    CustomLog logs/access_log [% logstyle %] env=!isproxyrequest
+    CustomLog logs/access_log [% logstyle %]
 [%  END -%]
 </IfModule>
 [% END %]

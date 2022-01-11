@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 180
+%define release_prefix 181
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -190,6 +190,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Wed Dec 22 2021 Stephen Bee <stephen@cpanel.net> - 1.0-181
+- SEC-614: Remove conditional logging based on the cPanel-localhost header.
+
 * Wed Nov 17 2021 Dan Muey <dan@cpanel.net> - 1.0-180
 - ZC-9503: Have 009 hook find users set to no-longer-installed PHP versions and set them to default
 
