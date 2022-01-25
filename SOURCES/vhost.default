@@ -54,6 +54,10 @@
     [%- IF !enable_piped_logs || !supported.mod_log_config -%]
   CustomLog [% paths.dir_domlogs %]/[% wildcard_safe(vhost.log_servername) %] combined env=!isproxyrequest
     [%- END %]
+[% ELSIF logstyle == 'common' -%]
+    [%- IF !enable_piped_logs || !supported.mod_log_config -%]
+  CustomLog [% paths.dir_domlogs %]/[% wildcard_safe(vhost.log_servername) %] common
+    [%- END %]
 [% ELSE %]
   TransferLog [% paths.dir_domlogs %]/[% wildcard_safe(vhost.log_servername) %]
 [% END -%]

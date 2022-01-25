@@ -305,7 +305,7 @@ RequestHeader unset cPanel-localhost
     <IfModule logio_module>
         CustomLog "|/usr/local/cpanel/bin/splitlogs --dir=[% paths.dir_domlogs %] --main=[% wildcard_safe(servername) %] --suffix=-bytes_log[% splitlogsextra %]" bytesvhost env=!isproxyrequest
     </IfModule>
-    CustomLog "|/usr/local/cpanel/bin/splitlogs --dir=[% paths.dir_domlogs %] --main=[% wildcard_safe(servername) %] --mainout=[% paths.file_access_log %][% splitlogsextra %]" combinedvhost env=!isproxyrequest
+    CustomLog "|/usr/local/cpanel/bin/splitlogs --dir=[% paths.dir_domlogs %] --main=[% wildcard_safe(servername) %] --mainout=[% paths.file_access_log %][% splitlogsextra %]" [% logstyle %] env=!isproxyrequest
 </IfModule>
 [% ELSE %]
 <IfModule log_config_module>
