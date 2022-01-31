@@ -275,6 +275,7 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% main.rlimitmem.item.maxrlim
 # This allows us to not log requests proxied to Apache from nginx;
 #    That way hits are not double recorded.
 SetEnvIf cPanel-localhost [% cpanel_localhost_value %] isproxyrequest
+RequestHeader unset cPanel-localhost
 [% END -%]
 
 [% IF enable_piped_logs -%]
