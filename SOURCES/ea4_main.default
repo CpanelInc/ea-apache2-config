@@ -943,11 +943,11 @@ Include "[% paths.dir_conf_includes %]/post_virtualhost_2.conf"
     <Directory "[% paths.dir_docroot %]">
         AllowOverride All
     </Directory>
-    [%- END -%]
+    [%- END %]
 
-    [%- IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' -%]
+    [% IF supported.mod_userdir && userdirprotect_enabled && defaultvhost.userdirprotect != '-1' -%]
     UserDir disabled
-    [%- IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 && !supported.mod_passenger -%]
+    [% IF defaultvhost.userdirprotect != '' && !supported.mpm_itk && !supported.mod_ruid2 && !supported.mod_passenger -%]
     UserDir enabled [% defaultvhost.userdirprotect %]
     [%- END -%]
     [%- END -%]
