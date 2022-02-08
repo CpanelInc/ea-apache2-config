@@ -41,7 +41,7 @@
     [%- END %]
 [% ELSIF logstyle == 'common' -%]
     [%- IF !enable_piped_logs || !supported.mod_log_config -%]
-  CustomLog [% paths.dir_domlogs %]/[% wildcard_safe(vhost.log_servername) %]-ssl_log common
+  CustomLog [% paths.dir_domlogs %]/[% wildcard_safe(vhost.log_servername) %]-ssl_log common env=!isproxyrequest
     [%- END %]
 [% ELSE %]
   TransferLog [% paths.dir_domlogs %]/[% wildcard_safe(vhost.log_servername) %]-ssl_log
