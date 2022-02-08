@@ -1,3 +1,15 @@
+[%
+USE JSON;
+
+SET nginx_is_enabled = file_test('f', '/etc/nginx/ea-nginx/cpanel_localhost_header.json');
+IF nginx_is_enabled;
+    SET header_data = JSON.loadfile('/etc/nginx/ea-nginx/cpanel_localhost_header.json');
+
+    IF header_data.exists('cPanel-localhost');
+        SET cpanel_localhost_value = header_data.item('cPanel-localhost');
+    END;
+END;
+%]
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
 #   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -259,6 +271,13 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% main.rlimitmem.item.maxrlim
     </IfModule>
 </IfModule>
 
+[% IF nginx_is_enabled && cpanel_localhost_value %]
+# This allows us to not log requests proxied to Apache from nginx;
+#    That way hits are not double recorded.
+SetEnvIf cPanel-localhost [% cpanel_localhost_value %] isproxyrequest
+RequestHeader unset cPanel-localhost
+[% END -%]
+
 [% IF enable_piped_logs -%]
 <IfModule mod_log_config.c>
     LogFormat "%v:%p [% IF main.exists('logformat_combined') %][% main.logformat_combined.item.logformat_combined %][% ELSE %]%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"[% END %]" combinedvhost
@@ -284,9 +303,9 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% main.rlimitmem.item.maxrlim
         [%# noop but catch is required or it dies %]
     [%- END -%]
     <IfModule logio_module>
-        CustomLog "|/usr/local/cpanel/bin/splitlogs --dir=[% paths.dir_domlogs %] --main=[% wildcard_safe(servername) %] --suffix=-bytes_log[% splitlogsextra %]" bytesvhost
+        CustomLog "|/usr/local/cpanel/bin/splitlogs --dir=[% paths.dir_domlogs %] --main=[% wildcard_safe(servername) %] --suffix=-bytes_log[% splitlogsextra %]" bytesvhost env=!isproxyrequest
     </IfModule>
-    CustomLog "|/usr/local/cpanel/bin/splitlogs --dir=[% paths.dir_domlogs %] --main=[% wildcard_safe(servername) %] --mainout=[% paths.file_access_log %][% splitlogsextra %]" combinedvhost
+    CustomLog "|/usr/local/cpanel/bin/splitlogs --dir=[% paths.dir_domlogs %] --main=[% wildcard_safe(servername) %] --mainout=[% paths.file_access_log %][% splitlogsextra %]" combinedvhost env=!isproxyrequest
 </IfModule>
 [% ELSE %]
 <IfModule log_config_module>
@@ -310,10 +329,10 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% main.rlimitmem.item.maxrlim
     # access_log format can be set in WHM under 'Basic WebHost Manager® Setup'
 [%  IF main.ifmodulemodlogconfigc.customlog.items.length -%]
 [%      FOREACH dir IN main.ifmodulemodlogconfigc.customlog.items -%]
-    CustomLog [% dir.target %] [% dir.format %]
+    CustomLog [% dir.target %] [% dir.format %] env=!isproxyrequest
 [%      END -%]
 [%  ELSE -%]
-    CustomLog logs/access_log [% logstyle %]
+    CustomLog logs/access_log [% logstyle %] env=!isproxyrequest
 [%  END -%]
 </IfModule>
 [% END %]
