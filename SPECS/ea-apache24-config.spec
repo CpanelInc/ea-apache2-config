@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 183
+%define release_prefix 184
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -190,6 +190,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Mon Feb 08 2022 Tim Mullin <tim@cpanel.net> - 1.0-184
+- EA-9376: Fix piped logging with log style set to common
+
 * Tue Feb 08 2022 Travis Holloway <t.holloway@cpanel.net> - 1.0-183
 - ZC-9700: Do not use predictable cPanel-localhost header
 
