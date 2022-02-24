@@ -276,6 +276,11 @@ RLimitMEM [% main.rlimitmem.item.softrlimitmem %] [% main.rlimitmem.item.maxrlim
 #    That way hits are not double recorded.
 SetEnvIf cPanel-localhost [% cpanel_localhost_value %] isproxyrequest
 RequestHeader unset cPanel-localhost
+<IfModule remoteip_module>
+    RemoteIPHeader X-Forwarded-For-[% cpanel_localhost_value %]
+    RemoteIPInternalProxy [% wildcard_safe(main.servername.item.servername) %]
+    RequestHeader unset X-Forwarded-For-[% cpanel_localhost_value %]
+</IfModule>
 [% END -%]
 
 [% IF enable_piped_logs -%]
