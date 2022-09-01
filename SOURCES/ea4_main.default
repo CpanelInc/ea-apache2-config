@@ -279,6 +279,9 @@ RequestHeader unset cPanel-localhost
 <IfModule remoteip_module>
     RemoteIPHeader X-Forwarded-For-[% cpanel_localhost_value %]
     RemoteIPInternalProxy [% wildcard_safe(main.servername.item.servername) %]
+[% FOREACH ip IN ips_in_use -%]
+    RemoteIPInternalProxy [% ip %]
+[% END -%]
     RequestHeader unset X-Forwarded-For-[% cpanel_localhost_value %]
 </IfModule>
 [% END -%]
