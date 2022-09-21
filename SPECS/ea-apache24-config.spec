@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 186
+%define release_prefix 187
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -190,6 +190,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Wed Sep 21 2022 Travis Holloway <t.holloway@cpanel.net> - 1.0-187
+- EA-10935: Account for IPv6 addresses when setting up mod_remoteip
+
 * Thu Sep 01 2022 Tim Mullin <tim@cpanel.net> - 1.0-186
 - EA-10912: Setup mod_remoteip to work with all the server IPs
 
