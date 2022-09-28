@@ -280,6 +280,8 @@ RequestHeader unset cPanel-localhost
     RemoteIPHeader X-Forwarded-For-[% cpanel_localhost_value %]
     RemoteIPInternalProxy [% wildcard_safe(main.servername.item.servername) %]
 [% FOREACH ip IN ips_in_use -%]
+[% ip = ip.remove( '^\[' ) -%]
+[% ip = ip.remove( '\]$' ) -%]
     RemoteIPInternalProxy [% ip %]
 [% END -%]
     RequestHeader unset X-Forwarded-For-[% cpanel_localhost_value %]
