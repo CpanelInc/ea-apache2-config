@@ -290,12 +290,12 @@ RequestHeader unset cPanel-localhost
 
 [% IF enable_piped_logs -%]
 <IfModule mod_log_config.c>
-    LogFormat "%v:%p [% IF main.exists('logformat_combined') %][% main.logformat_combined.item.logformat_combined %][% ELSE %]%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"[% END %]" combinedvhost
+    LogFormat "%v:%{local}p [% IF main.exists('logformat_combined') %][% main.logformat_combined.item.logformat_combined %][% ELSE %]%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"[% END %]" combinedvhost
     <IfModule logio_module>
         LogFormat "%v %{%s}t %I .\n%v %{%s}t %O ." bytesvhost
     </IfModule>
-    LogFormat "%v:%p [% IF main.exists('logformat_combined') %][% main.logformat_combined.item.logformat_combined %][% ELSE %]%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"[% END %]" combined
-    LogFormat "%v:%p [% IF main.exists('logformat_common') %][% main.logformat_common.item.logformat_common %][% ELSE %]%h %l %u %t \"%r\" %>s %b[% END %]" common
+    LogFormat "%v:%{local}p [% IF main.exists('logformat_combined') %][% main.logformat_combined.item.logformat_combined %][% ELSE %]%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"[% END %]" combined
+    LogFormat "%v:%{local}p [% IF main.exists('logformat_common') %][% main.logformat_common.item.logformat_common %][% ELSE %]%h %l %u %t \"%r\" %>s %b[% END %]" common
     LogFormat "%{Referer}i -> %U" referer
     LogFormat "%{User-agent}i" agent
 
