@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 188
+%define release_prefix 189
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -190,6 +190,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Tue Jan 17 2023 Travis Holloway <t.holloway@cpanel.net> - 1.0-189
+- EA-11159: Provide touchfile to disable apache restart for glibc update
+
 * Wed Sep 28 2022 Travis Holloway <t.holloway@cpanel.net> - 1.0-188
 - EA-10947: Use %{local}p to send correct port to splitlogs when piped logging is enabled
 
