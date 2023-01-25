@@ -1,5 +1,5 @@
 #!/usr/local/cpanel/3rdparty/bin/perl
-# cpanel - SOURCES-500-restartsrv_httpd.t         Copyright(c) 2016 cPanel, Inc.
+# cpanel - SOURCES-500-restartsrv_httpd.t       Copyright(c) 2023 cPanel, L.L.C.
 #                                                           All rights Reserved.
 # copyright@cpanel.net                                         http://cpanel.net
 # This code is subject to the cPanel license. Unauthorized copying is prohibited
@@ -13,8 +13,8 @@ my $script = "$FindBin::Bin/../SOURCES/500-restartsrv_httpd";
 our $current_system = sub { goto &Test::Mock::Cmd::orig_system; };
 use Test::Mock::Cmd 'system' => sub { $current_system->(@_) };
 
-use Test::More tests => 11 + 1;    # +1 is NoWarnings
-use Test::NoWarnings;
+use Test::More tests => 13;
+use Test::FailWarnings;
 
 use File::Temp;
 my $dir = File::Temp->newdir();
@@ -40,6 +40,16 @@ is( _run("--pkg_list=$dir/exists-with-pkg-anymod"), 2, "--pkg_list w/ any httpd 
 {
     local $0 = "whatevs/100-glibc-restartsrv_httpd";
     is( _run(), 2, "glibc symlink will trigger hard restart" );
+
+    local $ea_apache24_config_runtime::SOURCES::restartsrv_httpd::disable_flag_file = "$dir/ea4-disable-500-restartsrv_httpd-for-glibc";
+    write_file( $ea_apache24_config_runtime::SOURCES::restartsrv_httpd::disable_flag_file, '' );
+    is( _run(), 0, 'glibc symlink exits without restarting apache if disable touchfile is in place' );
+}
+
+{
+    local $ea_apache24_config_runtime::SOURCES::restartsrv_httpd::disable_flag_file = "$dir/ea4-disable-500-restartsrv_httpd-for-glibc";
+    write_file( $ea_apache24_config_runtime::SOURCES::restartsrv_httpd::disable_flag_file, '' );
+    is( _run(), 1, 'disable touchfile does not prevent apache restart unless it is called through the glibc symlink' );
 }
 
 sub _run {

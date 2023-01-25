@@ -1,6 +1,6 @@
 #!/usr/local/cpanel/3rdparty/bin/perl
 
-# Copyright (c) 2016, cPanel, Inc.
+# Copyright (c) 2023, cPanel, L.L.C.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -23,6 +23,8 @@ package ea_apache24_config_runtime::SOURCES::restartsrv_httpd;
 use strict;
 use warnings;
 
+our $disable_flag_file = '/var/cpanel/ea4-disable-500-restartsrv_httpd-for-glibc';
+
 run(@ARGV) unless caller();
 
 sub run {
@@ -44,7 +46,10 @@ sub run {
         }
     }
 
-    $hard_restart = 1 if $0 =~ m{glibc-restartsrv_httpd$};
+    if( $0 =~ m{glibc-restartsrv_httpd$} ) {
+        return 0 if -e $disable_flag_file;
+        $hard_restart = 1
+    }
 
     if ($hard_restart) {
         system('/usr/local/cpanel/scripts/restartsrv_httpd --stop');
