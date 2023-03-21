@@ -113,13 +113,23 @@ sub test_is_handler_supported : Tests(8) {
 }
 
 sub test_get_preferred_handler : Tests(2) {
-    no warnings "redefine";
+    my $warning_logged;
+
+    no warnings "redefine", "once";
     local *Cpanel::WebServer::Supported::apache::get_available_handlers = sub { };
-    warnings_like {
-        is( ea_apache2_config::phpconf::get_preferred_handler("ea-whatwhat"), "cgi", "get_preferred_handler() should default to cgi if no handlers are found" );
-    }
-    qr/Could not find a handler for ea-whatwhat\. Defaulting to “cgi” so that, at worst case, we get an error instead of source code\./,
-      "give a warning when we must default to 'cgi'";
+    local *Cpanel::Logger::info = sub { shift; $warning_logged = shift; };
+
+    is(
+        ea_apache2_config::phpconf::get_preferred_handler("ea-whatwhat"),
+        "cgi",
+        "get_preferred_handler() should default to cgi if no handlers are found"
+    );
+
+    like(
+        $warning_logged,
+        qr/Could not find a handler for ea-whatwhat\. Defaulting to “cgi” so that, at worst case, we get an error instead of source code\./,
+        "give a warning when we must default to 'cgi'",
+    );
 }
 
 sub test_get_php_config : Tests(5) {
