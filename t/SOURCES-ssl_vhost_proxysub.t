@@ -17,7 +17,7 @@ use FindBin;
 use lib "$FindBin::Bin/../SOURCES/whostmgr-plugin/perl/", "$FindBin::Bin/lib", qw( /usr/local/cpanel/ /usr/local/cpanel/t/lib );
 
 use parent qw(
-  Cpanel::TestObj::TempFile
+  Cpanel::TestObj::FileTemp
 );
 
 use Test::More;
