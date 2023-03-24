@@ -172,7 +172,6 @@
 [% IF supported.stapling && !has_ocsp(vhost.sslcertificatefile) -%]
     SSLUseStapling off
 [% END -%]
-    SetEnvIf User-Agent ".*MSIE.*" nokeepalive ssl-unclean-shutdown
     <Directory "[% vhost.documentroot %]/cgi-bin">
       SSLOptions +StdEnvVars
     </Directory>
