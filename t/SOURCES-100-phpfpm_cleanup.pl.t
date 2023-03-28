@@ -11,7 +11,7 @@ use Test::Spec;    # automatically turns on strict and warnings
 use Test::MockModule ();
 use Capture::Tiny 'capture_merged';
 
-use Test::MockFile;
+use Test::MockFile qw< nostrict >;
 
 use FindBin ();
 require "$FindBin::Bin/../SOURCES/100-phpfpm_cleanup.pl";
