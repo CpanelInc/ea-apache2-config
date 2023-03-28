@@ -15,7 +15,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 190
+%define release_prefix 191
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -190,6 +190,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Fri Mar 24 2023 Tim Mullin <tim@cpanel.net> - 1.0-191
+- EA-11222: Remove ancient MSIE SSL keepalive hack
+
 * Fri Jan 27 2023 Travis Holloway <t.holloway@cpanel.net> - 1.0-190
 - EA-11169: Ensure apache restart during glibc updates on Ubuntu
 
