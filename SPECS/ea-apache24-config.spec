@@ -8,14 +8,11 @@
 %global ns_name  ea
 %global pkg_name %{ns_name}-apache24-config
 
-# do not produce empty debuginfo package
-%global debug_package %{nil}
-
 Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 191
+%define release_prefix 192
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -190,6 +187,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Mon May 08 2023 Julian Brown <julian.brown@cpanel.net> - 1.0-192
+- ZC-10936: Clean up Makefile and remove debug-package-nil
+
 * Fri Mar 24 2023 Tim Mullin <tim@cpanel.net> - 1.0-191
 - EA-11222: Remove ancient MSIE SSL keepalive hack
 
