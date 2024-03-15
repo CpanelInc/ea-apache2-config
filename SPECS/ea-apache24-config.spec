@@ -12,7 +12,7 @@ Summary:       Package that installs Apache 2.4 on CentOS 6
 Name:          %{pkg_name}
 Version:       1.0
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4546 for more details
-%define release_prefix 192
+%define release_prefix 193
 Release: %{release_prefix}%{?dist}.cpanel
 Group:         System Environment/Daemons
 License:       Apache License 2.0
@@ -187,6 +187,9 @@ rm -rf %{buildroot}
 %config %attr(0640,root,root) %{_httpd_confdir}/php_add_handler_fix.conf
 
 %changelog
+* Thu Mar 14 2024 Julian Brown <julian.brown@cpanel.net> - 1.0-193
+- ZC-11694: Correct problem where changing MPM does not restart Apache
+
 * Mon May 08 2023 Julian Brown <julian.brown@cpanel.net> - 1.0-192
 - ZC-10936: Clean up Makefile and remove debug-package-nil
 
