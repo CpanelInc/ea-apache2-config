@@ -36,7 +36,7 @@ sub run {
         if ( open( my $fh, '<', $path ) ) {
             my @lines = <$fh>;
             close($fh);
-            if ( grep { m/^ea-apache24$/ || m/^ea-apache24-mod_/ } @lines ) {
+            if ( grep { m/^ea-apache24$/ || m/^ea-apache24-mod[_\-]/ } @lines ) {
                 $hard_restart = 1;
             }
         }
